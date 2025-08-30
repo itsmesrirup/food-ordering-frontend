@@ -2,29 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
-
-// Import MUI components
-import { 
-    Container, 
-    Typography, 
-    Grid, 
-    Paper, 
-    Button, 
-    CircularProgress, 
-    Box, 
-    Divider,
-    IconButton
-} from '@mui/material';
-
-// Import MUI Icons
+import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EventIcon from '@mui/icons-material/Event'; // Icon for booking
 import { toast } from 'react-hot-toast';
 
 function MenuPage() {
     const [restaurant, setRestaurant] = useState(null);
-    const [menu, setMenu] = useState([]);
+    const [menu, setMenu] =useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { restaurantId } = useParams();
     const { addToCart } = useCart();
@@ -33,29 +20,21 @@ function MenuPage() {
         const fetchMenuData = async () => {
             setIsLoading(true);
             try {
-                // Fetch both restaurant details and menu in parallel for speed
                 const [resResponse, menuResponse] = await Promise.all([
                     fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`),
                     fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}/menu`)
                 ]);
-
-                if (!resResponse.ok || !menuResponse.ok) {
-                    throw new Error("Failed to load restaurant data.");
-                }
-
+                if (!resResponse.ok || !menuResponse.ok) throw new Error("Failed to load restaurant data.");
                 const resData = await resResponse.json();
                 const menuData = await menuResponse.json();
-                
                 setRestaurant(resData);
                 setMenu(menuData);
             } catch (error) {
-                console.error("Failed to fetch menu data:", error);
                 toast.error(error.message);
             } finally {
                 setIsLoading(false);
             }
         };
-        
         fetchMenuData();
     }, [restaurantId]);
 
@@ -65,15 +44,11 @@ function MenuPage() {
     };
 
     if (isLoading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-                <CircularProgress />
-            </Box>
-        );
+        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
     }
 
     if (!restaurant) {
-        return <Typography align="center" sx={{ mt: 4 }}>Restaurant not found.</Typography>
+        return <Typography align="center" sx={{ mt: 4 }}>Restaurant not found.</Typography>;
     }
 
     return (
@@ -82,17 +57,22 @@ function MenuPage() {
                 All Restaurants
             </Button>
             
-            <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 4 }}>
-                <Typography variant="h4" gutterBottom>{restaurant.name}</Typography>
-                <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
-            </Paper>
-
-            <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 4 }}>
-                <Typography variant="h4" gutterBottom>{restaurant.name}</Typography>
-                <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
-                <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" sx={{ mt: 1 }}>
-                    Book a Table
-                </Button>
+            {/* ✅ NEW: Clean, single header section */}
+            <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+                    <Box>
+                        <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
+                        <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
+                    </Box>
+                    <Button 
+                        component={Link} 
+                        to={`/restaurants/${restaurantId}/reserve`} 
+                        variant="outlined" 
+                        startIcon={<EventIcon />}
+                    >
+                        Book a Table
+                    </Button>
+                </Box>
             </Paper>
 
             <Grid container spacing={4}>
