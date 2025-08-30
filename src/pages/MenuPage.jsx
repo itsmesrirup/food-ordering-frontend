@@ -87,6 +87,14 @@ function MenuPage() {
                 <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
             </Paper>
 
+            <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 4 }}>
+                <Typography variant="h4" gutterBottom>{restaurant.name}</Typography>
+                <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
+                <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" sx={{ mt: 1 }}>
+                    Book a Table
+                </Button>
+            </Paper>
+
             <Grid container spacing={4}>
                 {/* Menu Items Column */}
                 <Grid item xs={12} md={8}>

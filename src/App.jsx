@@ -5,6 +5,7 @@ import MenuPage from './pages/MenuPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import { Toaster } from 'react-hot-toast'; // 1. Import Toaster
+import ReservationPage from './pages/ReservationPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+          <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
         </Routes>
       </main>
     </div>
