@@ -9,7 +9,7 @@ function LandingPage() {
                     Modern Online Ordering for Local Businesses
                 </Typography>
                 <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                    This online ordering system is proudly powered by [Your Brand Name Here].
+                    This online ordering system is proudly powered by Tablo.
                 </Typography>
                 <Button 
                     variant="contained" 
