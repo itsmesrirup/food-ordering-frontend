@@ -59,7 +59,7 @@ function MenuPage() {
                 All Restaurants
             </Button>
 
-            {tableNumber && (
+            {tableNumber && restaurant.qrCodeOrderingEnabled && (
                 <Alert severity="info" sx={{ mb: 2 }}>
                     You are ordering for Table #{tableNumber}
                 </Alert>
