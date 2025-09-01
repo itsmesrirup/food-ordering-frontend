@@ -1,61 +1,61 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import HomePage from './pages/HomePage';
-import LandingPage from "./pages/LandingPage";
-import MenuPage from "./pages/MenuPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import OrderConfirmationPage from "./pages/OrderConfirmationPage";
-import { Toaster } from "react-hot-toast"; // 1. Import Toaster
-import ReservationPage from "./pages/ReservationPage";
-import { Box, Typography, Link } from "@mui/material";
+import React from 'react';
+import { Routes, Route, Link as RouterLink } from 'react-router-dom';
+import { Container, Typography, Box, Link, Button } from '@mui/material';
+import LandingPage from './pages/LandingPage';
+import MenuPage from './pages/MenuPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import ReservationPage from './pages/ReservationPage';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
-    <div>
-      <Box
-        sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-      >
-        <Toaster position="top-center" />
-
-        <header>
-          <h1>Welcome to Food Order</h1>
-        </header>
-        <main>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/restaurants" element={<HomePage />} />
-            <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route
-              path="/order-confirmation/:orderId"
-              element={<OrderConfirmationPage />}
-            />
-            <Route
-              path="/restaurants/:restaurantId/reserve"
-              element={<ReservationPage />}
-            />
-          </Routes>
-        </main>
-        <Box
-          component="footer"
-          sx={{
-            py: 2, // Vertical padding
-            px: 2, // Horizontal padding
-            mt: "auto", // Pushes footer to the bottom
-            backgroundColor: "#f5f5f5",
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            This online ordering system is proudly powered by{" "}
-            <Link color="inherit" href="https://your-future-website.com">
-              <strong>Tablo</strong>
-            </Link>
-          </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Toaster position="top-center" />
+      
+      <header>
+        <Box sx={{ p: 2, backgroundColor: 'primary.main', color: 'white' }}>
+          <Container maxWidth="lg">
+            <Typography variant="h6" component="div">
+              {/* This link will always take the user back to your landing page */}
+              <Link component={RouterLink} to="/" color="inherit" underline="none">
+                Tablo
+              </Link>
+            </Typography>
+          </Container>
         </Box>
+      </header>
+
+      <main style={{ flexGrow: 1, padding: '1rem 0' }}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+          <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
+          {/* A catch-all route for any other URL to show a simple "Not Found" */}
+          <Route path="*" element={
+            <Container sx={{ textAlign: 'center', mt: 4 }}>
+              <Typography variant="h4">Page Not Found</Typography>
+              <Button component={RouterLink} to="/" variant="contained" sx={{ mt: 2 }}>Go Home</Button>
+            </Container>
+          } />
+        </Routes>
+      </main>
+
+      <Box 
+        component="footer" 
+        sx={{ py: 2, px: 2, mt: 'auto', backgroundColor: '#f5f5f5', textAlign: 'center' }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          Online ordering powered by{' '}
+          <Link color="inherit" href="https://your-website.com">
+            <strong>Tablo</strong>
+          </Link>
+        </Typography>
       </Box>
-    </div>
-  );
+    </Box>
+  )
 }
 
 export default App;
