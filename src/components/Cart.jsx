@@ -1,12 +1,13 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Box, Typography, Button, List, ListItem, ListItemText, IconButton, Divider } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 function Cart() {
     const { cartItems, updateQuantity } = useCart();
+    const location = useLocation(); //Get the current location object
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
     if (cartItems.length === 0) {
@@ -43,7 +44,12 @@ function Cart() {
                 <Typography variant="h6">Total:</Typography>
                 <Typography variant="h6" fontWeight="bold">${totalPrice.toFixed(2)}</Typography>
             </Box>
-            <Button component={Link} to="/checkout" variant="contained" fullWidth>
+            <Button 
+                component={Link} 
+                to={`/checkout${location.search}`} // Appends "?table=X" if it exists
+                variant="contained" 
+                fullWidth
+            >
                 Proceed to Checkout
             </Button>
         </Box>

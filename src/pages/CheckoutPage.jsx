@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider } from '@mui/material';
 
 function CheckoutPage() {
@@ -9,6 +9,8 @@ function CheckoutPage() {
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    const [searchParams] = useSearchParams();
+    const tableNumber = searchParams.get("table");
     const handleInputChange = (e) => {
         setCustomerDetails({ ...customerDetails, [e.target.name]: e.target.value });
     };
@@ -37,6 +39,7 @@ function CheckoutPage() {
             // Step 2: Prepare the order payload
             const orderPayload = {
                 customerId: customerData.id,
+                tableNumber: tableNumber,
                 items: cartItems.map(item => ({
                     menuItemId: item.id,
                     quantity: item.quantity

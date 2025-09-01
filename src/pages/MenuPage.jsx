@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
 import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider } from '@mui/material';
@@ -12,6 +12,8 @@ import { toast } from 'react-hot-toast';
 function MenuPage() {
     const [restaurant, setRestaurant] = useState(null);
     const [menu, setMenu] =useState([]);
+    const [searchParams] = useSearchParams();
+    const tableNumber = searchParams.get("table");
     const [isLoading, setIsLoading] = useState(true);
     const { restaurantId } = useParams();
     const { addToCart } = useCart();
@@ -56,24 +58,34 @@ function MenuPage() {
             <Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
                 All Restaurants
             </Button>
+
+            {tableNumber && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                    You are ordering for Table #{tableNumber}
+                </Alert>
+            )}
             
-            {/* ✅ NEW: Clean, single header section */}
+            {/* Clean, single header section */}
             <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
                     <Box>
                         <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
                         <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
                     </Box>
-                    <Button 
-                        component={Link} 
-                        to={`/restaurants/${restaurantId}/reserve`} 
-                        variant="outlined" 
-                        startIcon={<EventIcon />}
-                    >
-                        Book a Table
-                    </Button>
+                    {restaurant.reservationsEnabled && (
+                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`}>
+                            Book a Table
+                        </Button>
+                    )}
                 </Box>
             </Paper>
+
+            {/* If QR ordering is enabled, you might show table info. Otherwise, you don't. */}
+            {restaurant.qrCodeOrderingEnabled && tableNumber && (
+                <Alert severity="info">
+                    Ordering for Table #{tableNumber}
+                </Alert>
+            )}
 
             <Grid container spacing={4}>
                 {/* Menu Items Column */}
