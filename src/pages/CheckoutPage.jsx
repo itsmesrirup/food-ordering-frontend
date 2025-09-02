@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider } from '@mui/material';
 
 function CheckoutPage() {
+    const { t } = useTranslation(); // Get the 't' function
     const { cartItems, clearCart } = useCart();
     const navigate = useNavigate();
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
@@ -21,7 +23,7 @@ function CheckoutPage() {
         setError(null);
 
         if (cartItems.length === 0) {
-            setError("Your cart is empty.");
+            setError(t('cartIsEmptyError'));
             setIsSubmitting(false);
             return;
         }
@@ -60,8 +62,10 @@ function CheckoutPage() {
             navigate(`/order-confirmation/${newOrder.id}`);
 
         } catch (err) {
-            setError(err.message || "An unexpected error occurred. Please try again.");
-            toast.error(err.message || "An unexpected error occurred.");
+            const unexpectedErrorMessage = t('unexpectedError');
+            const finalErrorMessage = err.message || unexpectedErrorMessage;
+            setError(finalErrorMessage);
+            toast.error(finalErrorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -72,11 +76,11 @@ function CheckoutPage() {
     return (
         <Container maxWidth="sm" sx={{ mt: 4 }}>
             <Paper elevation={3} sx={{ p: 4 }}>
-                <Typography variant="h4" align="center" gutterBottom>Checkout</Typography>
+                <Typography variant="h4" align="center" gutterBottom>{t('checkoutTitle')}</Typography>
                 <Box component="form" onSubmit={handleSubmitOrder}>
-                    <Typography variant="h6" gutterBottom>Your Details</Typography>
+                    <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
                     <TextField 
-                        label="Your Name" 
+                        label={t('fullNameLabel')}
                         name="name" 
                         value={customerDetails.name} 
                         onChange={handleInputChange} 
@@ -85,7 +89,7 @@ function CheckoutPage() {
                         margin="normal"
                     />
                     <TextField 
-                        label="Your Email" 
+                        label={t('emailLabel')} 
                         name="email" 
                         type="email"
                         value={customerDetails.email} 
@@ -97,7 +101,7 @@ function CheckoutPage() {
                     
                     <Divider sx={{ my: 2 }} />
                     
-                    <Typography variant="h6">Order Summary</Typography>
+                    <Typography variant="h6">{t('orderSummary')}</Typography>
                     {cartItems.map(item => (
                          <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography>{item.quantity} x {item.name}</Typography>
@@ -118,7 +122,7 @@ function CheckoutPage() {
                             fullWidth 
                             disabled={isSubmitting || cartItems.length === 0}
                         >
-                            Place Order
+                            {t('placeOrder')}
                         </Button>
                         {isSubmitting && (
                             <CircularProgress

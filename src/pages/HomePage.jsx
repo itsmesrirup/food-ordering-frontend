@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 // Import MUI components for a rich UI
@@ -17,6 +18,7 @@ import {
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'; // An icon for the button
 
 function HomePage() {
+    const { t } = useTranslation(); // Get the 't' function
     const [restaurants, setRestaurants] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -65,7 +67,7 @@ function HomePage() {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}> {/* py adds vertical padding */}
             <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ mb: 6, fontWeight: 'bold' }}>
-                Découvrez les saveurs de Strasbourg
+                {t('chooseRestaurant')}
             </Typography>
             <Grid container spacing={4}>
                 {restaurants.map((restaurant, index) => (
@@ -94,7 +96,7 @@ function HomePage() {
                                     fullWidth
                                     endIcon={<ArrowForwardIcon />}
                                 >
-                                    View Menu & Order
+                                    {t('viewMenu')}
                                 </Button>
                             </CardActions>
                         </Card>

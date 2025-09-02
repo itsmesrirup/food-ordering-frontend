@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
@@ -10,6 +11,7 @@ import EventIcon from '@mui/icons-material/Event'; // Icon for booking
 import { toast } from 'react-hot-toast';
 
 function MenuPage() {
+    const { t } = useTranslation();
     const [restaurant, setRestaurant] = useState(null);
     const [menu, setMenu] =useState([]);
     const [searchParams] = useSearchParams();
@@ -42,7 +44,7 @@ function MenuPage() {
 
     const handleAddToCart = (item) => {
         addToCart(item);
-        toast.success(`${item.name} added to cart!`);
+        toast.success(t('itemAddedToCart', { itemName: item.name }));
     };
 
     if (isLoading) {
@@ -56,12 +58,12 @@ function MenuPage() {
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
-                All Restaurants
+                {t('allRestaurants')}
             </Button>
 
             {tableNumber && restaurant.qrCodeOrderingEnabled && (
                 <Alert severity="info" sx={{ mb: 2 }}>
-                    You are ordering for Table #{tableNumber}
+                    {t('youAreOrdForTable')} #{tableNumber}
                 </Alert>
             )}
             
@@ -74,7 +76,7 @@ function MenuPage() {
                     </Box>
                     {restaurant.reservationsEnabled && (
                         <Button component={Link} to={`/restaurants/${restaurantId}/reserve`}>
-                            Book a Table
+                            {t('bookTable')}
                         </Button>
                     )}
                 </Box>
@@ -83,7 +85,7 @@ function MenuPage() {
             {/* If QR ordering is enabled, you might show table info. Otherwise, you don't. */}
             {restaurant.qrCodeOrderingEnabled && tableNumber && (
                 <Alert severity="info">
-                    Ordering for Table #{tableNumber}
+                    {t('orderingForTable')} #{tableNumber}
                 </Alert>
             )}
 
@@ -91,7 +93,7 @@ function MenuPage() {
                 {/* Menu Items Column */}
                 <Grid item xs={12} md={8}>
                     <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <RestaurantMenuIcon sx={{ mr: 1 }} /> Menu
+                        <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                     {menu.length > 0 ? menu.map(item => (
@@ -102,7 +104,7 @@ function MenuPage() {
                                 <Typography variant="h6" color="primary.main" fontWeight="bold">${item.price.toFixed(2)}</Typography>
                             </Box>
                             <Button variant="outlined" startIcon={<AddShoppingCartIcon />} onClick={() => handleAddToCart(item)}>
-                                Add
+                                {t('add')}
                             </Button>
                         </Paper>
                     )) : (

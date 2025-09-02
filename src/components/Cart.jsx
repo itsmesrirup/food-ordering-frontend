@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { Link, useLocation } from 'react-router-dom';
 import { Box, Typography, Button, List, ListItem, ListItemText, IconButton, Divider } from '@mui/material';
@@ -6,6 +7,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 function Cart() {
+    const { t } = useTranslation(); // Get the 't' function
     const { cartItems, updateQuantity } = useCart();
     const location = useLocation(); //Get the current location object
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -13,15 +15,15 @@ function Cart() {
     if (cartItems.length === 0) {
         return (
             <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 2, backgroundColor: 'background.paper' }}>
-                <Typography variant="h6" gutterBottom>Your Cart</Typography>
-                <Typography variant="body2">Your cart is currently empty.</Typography>
+                <Typography variant="h6" gutterBottom>{t('yourCart')}</Typography>
+                <Typography variant="body2">{t('yourCartIsCurrentlyEmpty')}</Typography>
             </Box>
         );
     }
 
     return (
         <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 2, backgroundColor: 'background.paper' }}>
-            <Typography variant="h6" gutterBottom>Your Order</Typography>
+            <Typography variant="h6" gutterBottom>{t('yourOrder')}</Typography>
             <List>
                 {cartItems.map(item => (
                     <ListItem key={item.id} disableGutters>
@@ -50,7 +52,7 @@ function Cart() {
                 variant="contained" 
                 fullWidth
             >
-                Proceed to Checkout
+                {t('proceedToCheckout')}
             </Button>
         </Box>
     );

@@ -7,10 +7,12 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ReservationPage from './pages/ReservationPage';
 import { Toaster } from 'react-hot-toast';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 function App() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <LanguageSwitcher />
       <Toaster position="top-center" />
       
       <header>
