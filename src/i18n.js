@@ -5,6 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 // Import your translation files
 import enTranslations from './locales/en/translation.json';
 import frTranslations from './locales/fr/translation.json';
+import deTranslations from './locales/de/translation.json';
 
 i18n
   // Detect user language
@@ -24,6 +25,9 @@ i18n
       },
       fr: {
         translation: frTranslations
+      },
+      de: {
+        translation: deTranslations
       }
     }
   });
