@@ -6,24 +6,26 @@ import MenuPage from './pages/MenuPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ReservationPage from './pages/ReservationPage';
+import LanguageSwitcher from './components/LanguageSwitcher'; // Make sure this component exists
 import { Toaster } from 'react-hot-toast';
-import LanguageSwitcher from './components/LanguageSwitcher';
 
 function App() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <LanguageSwitcher />
       <Toaster position="top-center" />
       
       <header>
         <Box sx={{ p: 2, backgroundColor: 'primary.main', color: 'white' }}>
-          <Container maxWidth="lg">
+          <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Left Side: Brand Name */}
             <Typography variant="h6" component="div">
-              {/* This link will always take the user back to your landing page */}
               <Link component={RouterLink} to="/" color="inherit" underline="none">
                 Tablo
               </Link>
             </Typography>
+
+            {/* ✅ Right Side: Language Switcher */}
+            <LanguageSwitcher />
           </Container>
         </Box>
       </header>
@@ -35,7 +37,6 @@ function App() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
           <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
-          {/* A catch-all route for any other URL to show a simple "Not Found" */}
           <Route path="*" element={
             <Container sx={{ textAlign: 'center', mt: 4 }}>
               <Typography variant="h4">Page Not Found</Typography>

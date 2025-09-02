@@ -6,7 +6,7 @@ import Cart from '../components/Cart';
 import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+//import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EventIcon from '@mui/icons-material/Event'; // Icon for booking
 import { toast } from 'react-hot-toast';
 
@@ -57,9 +57,9 @@ function MenuPage() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
+            {/*<Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
                 {t('allRestaurants')}
-            </Button>
+            </Button>*/}
 
             {tableNumber && restaurant.qrCodeOrderingEnabled && (
                 <Alert severity="info" sx={{ mb: 2 }}>
