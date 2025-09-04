@@ -6,14 +6,50 @@ import Cart from '../components/Cart';
 import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-//import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import EventIcon from '@mui/icons-material/Event'; // Icon for booking
+import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
+
+// --- Reusable Sub-components for a Cleaner Layout ---
+
+const MenuItemCard = ({ item, onAddToCart, t }) => (
+    <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2 }}>
+        <Box>
+            <Typography variant="h6">{item.name}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
+            <Typography variant="h6" color="primary.main" fontWeight="bold">${item.price.toFixed(2)}</Typography>
+        </Box>
+        {/* We can add the isAvailable check here from a previous feature discussion */}
+        <Button variant="outlined" startIcon={<AddShoppingCartIcon />} onClick={() => onAddToCart(item)}>
+            {t('add')}
+        </Button>
+    </Paper>
+);
+
+const MenuCategory = ({ category, onAddToCart, t }) => (
+    <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" gutterBottom>{category.name}</Typography>
+        <Divider sx={{ mb: 2 }} />
+        
+        {category.menuItems && category.menuItems.map(item => (
+            <MenuItemCard key={item.id} item={item} onAddToCart={onAddToCart} t={t} />
+        ))}
+
+        {category.subCategories && category.subCategories.length > 0 && (
+            <Box sx={{ pl: { xs: 2, md: 4 }, mt: 2 }}>
+                {category.subCategories.map(subCategory => (
+                    <MenuCategory key={subCategory.id} category={subCategory} onAddToCart={onAddToCart} t={t} />
+                ))}
+            </Box>
+        )}
+    </Box>
+);
+
+// --- Main Page Component ---
 
 function MenuPage() {
     const { t } = useTranslation();
     const [restaurant, setRestaurant] = useState(null);
-    const [menu, setMenu] =useState([]);
+    const [categorizedMenu, setCategorizedMenu] = useState([]); // Changed from 'menu'
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
     const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +68,7 @@ function MenuPage() {
                 const resData = await resResponse.json();
                 const menuData = await menuResponse.json();
                 setRestaurant(resData);
-                setMenu(menuData);
+                setCategorizedMenu(menuData); // Set the categorized menu
             } catch (error) {
                 toast.error(error.message);
             } finally {
@@ -57,17 +93,14 @@ function MenuPage() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            {/*<Button component={Link} to="/" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
-                {t('allRestaurants')}
-            </Button>*/}
+            {/* The "All Restaurants" button is removed for the white-label experience */}
 
             {tableNumber && restaurant.qrCodeOrderingEnabled && (
                 <Alert severity="info" sx={{ mb: 2 }}>
-                    {t('youAreOrdForTable')} #{tableNumber}
+                    {t('orderingForTable')} #{tableNumber}
                 </Alert>
             )}
             
-            {/* Clean, single header section */}
             <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
                     <Box>
@@ -75,44 +108,26 @@ function MenuPage() {
                         <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
                     </Box>
                     {restaurant.reservationsEnabled && (
-                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`}>
+                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" startIcon={<EventIcon />}>
                             {t('bookTable')}
                         </Button>
                     )}
                 </Box>
             </Paper>
 
-            {/* If QR ordering is enabled, you might show table info. Otherwise, you don't. */}
-            {restaurant.qrCodeOrderingEnabled && tableNumber && (
-                <Alert severity="info">
-                    {t('orderingForTable')} #{tableNumber}
-                </Alert>
-            )}
-
             <Grid container spacing={4}>
-                {/* Menu Items Column */}
                 <Grid item xs={12} md={8}>
                     <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                         <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    {menu.length > 0 ? menu.map(item => (
-                        <Paper key={item.id} elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2 }}>
-                            <Box>
-                                <Typography variant="h6">{item.name}</Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
-                                <Typography variant="h6" color="primary.main" fontWeight="bold">${item.price.toFixed(2)}</Typography>
-                            </Box>
-                            <Button variant="outlined" startIcon={<AddShoppingCartIcon />} onClick={() => handleAddToCart(item)}>
-                                {t('add')}
-                            </Button>
-                        </Paper>
-                    )) : (
-                        <Typography>This restaurant has not added any menu items yet.</Typography>
+                    {categorizedMenu.length > 0 ? (
+                        categorizedMenu.map(category => (
+                            <MenuCategory key={category.id} category={category} onAddToCart={handleAddToCart} t={t} />
+                        ))
+                    ) : (
+                        <Typography>This restaurant has not added any menu categories yet.</Typography>
                     )}
                 </Grid>
-
-                {/* Cart Column */}
                 <Grid item xs={12} md={4}>
                     <Cart />
                 </Grid>
