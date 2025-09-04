@@ -12,15 +12,21 @@ import { toast } from 'react-hot-toast';
 // --- Reusable Sub-components for a Cleaner Layout ---
 
 const MenuItemCard = ({ item, onAddToCart, t }) => (
-    <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2 }}>
+    // Add opacity to visually fade out unavailable items
+    <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2, opacity: item.isAvailable ? 1 : 0.4 }}>
         <Box>
             <Typography variant="h6">{item.name}</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
             <Typography variant="h6" color="primary.main" fontWeight="bold">${item.price.toFixed(2)}</Typography>
         </Box>
-        {/* We can add the isAvailable check here from a previous feature discussion */}
-        <Button variant="outlined" startIcon={<AddShoppingCartIcon />} onClick={() => onAddToCart(item)}>
-            {t('add')}
+        {/* Logic to disable button and change text */}
+        <Button 
+            variant="outlined" 
+            startIcon={<AddShoppingCartIcon />} 
+            onClick={() => onAddToCart(item)}
+            disabled={!item.isAvailable}
+        >
+            {item.isAvailable ? t('add') : t('unavailable')}
         </Button>
     </Paper>
 );

@@ -26,5 +26,6 @@
   "orderConfirmation_preparation": "Das Restaurant wird in Kürze mit der Zubereitung beginnen.",
   "orderConfirmation_backHome": "Zurück zur Startseite",
   "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
-  "noMenuCategoriesYet": "Dieses Restaurant hat noch keine Menükategorien hinzugefügt."
+  "noMenuCategoriesYet": "Dieses Restaurant hat noch keine Menükategorien hinzugefügt.",
+  "unavailable": "Nicht verfügbar"
 }
