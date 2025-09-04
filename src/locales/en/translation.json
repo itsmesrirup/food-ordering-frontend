@@ -25,5 +25,6 @@
   "orderConfirmation_orderNumber": "Your order number is: <1>#{{orderId}}</1>",
   "orderConfirmation_preparation": "The restaurant will start preparing it shortly.",
   "orderConfirmation_backHome": "Back to Home",
-  "unexpectedError": "An unexpected error occurred. Please try again."
+  "unexpectedError": "An unexpected error occurred. Please try again.",
+  "noMenuCategoriesYet": "This restaurant has not added any menu categories yet."
 }

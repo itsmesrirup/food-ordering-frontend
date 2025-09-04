@@ -25,5 +25,6 @@
   "orderConfirmation_orderNumber": "Votre numéro de commande est : <1>#{{orderId}}</1>",
   "orderConfirmation_preparation": "Le restaurant commencera bientôt sa préparation.",
   "orderConfirmation_backHome": "Retour à l'accueil",
-  "unexpectedError": "Une erreur inattendue est survenue. Veuillez réessayer."
+  "unexpectedError": "Une erreur inattendue est survenue. Veuillez réessayer.",
+  "noMenuCategoriesYet": "Ce restaurant n'a pas encore ajouté de catégories de menu."
 }

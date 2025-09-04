@@ -30,12 +30,16 @@ const MenuCategory = ({ category, onAddToCart, t }) => (
         <Typography variant="h5" gutterBottom>{category.name}</Typography>
         <Divider sx={{ mb: 2 }} />
         
-        {category.menuItems && category.menuItems.map(item => (
-            <MenuItemCard key={item.id} item={item} onAddToCart={onAddToCart} t={t} />
-        ))}
+        {/* RENDER items that belong DIRECTLY to this category */}
+        {category.menuItems && category.menuItems.length > 0 ? (
+            category.menuItems.map(item => (
+                <MenuItemCard key={item.id} item={item} onAddToCart={onAddToCart} t={t} />
+            ))
+        ) : null}
 
+        {/* RECURSIVELY render subcategories with an indent */}
         {category.subCategories && category.subCategories.length > 0 && (
-            <Box sx={{ pl: { xs: 2, md: 4 }, mt: 2 }}>
+            <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
                 {category.subCategories.map(subCategory => (
                     <MenuCategory key={subCategory.id} category={subCategory} onAddToCart={onAddToCart} t={t} />
                 ))}
@@ -125,7 +129,7 @@ function MenuPage() {
                             <MenuCategory key={category.id} category={category} onAddToCart={handleAddToCart} t={t} />
                         ))
                     ) : (
-                        <Typography>This restaurant has not added any menu categories yet.</Typography>
+                        <Typography>{t('noMenuCategoriesYet')}</Typography>
                     )}
                 </Grid>
                 <Grid item xs={12} md={4}>
