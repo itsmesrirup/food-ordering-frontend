@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-// The 'restaurantData' prop is passed down from the DynamicThemeProvider
-function ReservationPage({ restaurantData }) {
+function ReservationPage() {
     const { t } = useTranslation();
     const { restaurantId } = useParams();
     const navigate = useNavigate();
+    const [restaurantName, setRestaurantName] = useState('');
     const [formData, setFormData] = useState({
         customerName: '',
         customerEmail: '',
@@ -18,6 +18,20 @@ function ReservationPage({ restaurantData }) {
         reservationTime: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Fetch the restaurant name to display in the title
+    useEffect(() => {
+        const fetchRestaurantName = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
+                const data = await response.json();
+                setRestaurantName(data.name);
+            } catch (error) {
+                console.error("Could not fetch restaurant name", error);
+            }
+        };
+        fetchRestaurantName();
+    }, [restaurantId]);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -50,11 +64,11 @@ function ReservationPage({ restaurantData }) {
             </Button>
             <Paper elevation={3} sx={{ p: 4 }}>
                 <Typography variant="h4" align="center" gutterBottom>
-                    {t('bookTable')} at {restaurantData?.name}
+                    {t('bookTable')} at {restaurantName}
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit}>
                     <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label={t('emailLabel')} name="email" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField label={t('partySizeLabel')} name="partySize" type="number" value={formData.partySize} onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField 
@@ -69,7 +83,7 @@ function ReservationPage({ restaurantData }) {
                     />
                     <Box sx={{ mt: 3, position: 'relative' }}>
                         <Button type="submit" variant="contained" color="primary" fullWidth disabled={isSubmitting}>
-                            {isSubmitting ? 'Sending Request...' : 'Request Reservation'}
+                            {isSubmitting ? t('sendingRequest') : t('requestReservation')}
                         </Button>
                         {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
                     </Box>

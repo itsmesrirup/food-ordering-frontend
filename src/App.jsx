@@ -9,6 +9,7 @@ import ReservationPage from './pages/ReservationPage';
 import LanguageSwitcher from './components/LanguageSwitcher'; // Make sure this component exists
 import { Toaster } from 'react-hot-toast';
 import DynamicThemeProvider from './components/DynamicThemeProvider';
+import RestaurantLayout from './layouts/RestaurantLayout';
 
 function App() {
   return (
@@ -37,15 +38,12 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-          {/* ✅ Wrap restaurant-specific pages with the dynamic theme provider */}
-          <Route 
-            path="/restaurants/:restaurantId" 
-            element={<DynamicThemeProvider><MenuPage /></DynamicThemeProvider>} 
-          />
-          <Route 
-            path="/restaurants/:restaurantId/reserve" 
-            element={<DynamicThemeProvider><ReservationPage /></DynamicThemeProvider>} 
-          />
+          {/* Nested routes that use the RestaurantLayout */}
+          {/* Any route inside here will be rendered where the <Outlet /> is */}
+          <Route element={<RestaurantLayout />}>
+            <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
+            <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
+          </Route>
           <Route path="*" element={
             <Container sx={{ textAlign: 'center', mt: 4 }}>
               <Typography variant="h4">Page Not Found</Typography>
