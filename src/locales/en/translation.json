@@ -1,5 +1,6 @@
 {
   "welcomeMessage": "Welcome to Food Order",
+  "backToMenu": "Back to Menu",
   "bookTable": "Book a Table",
   "allRestaurants": "All Restaurants",
   "chooseRestaurant": "Choose a Restaurant",
@@ -18,6 +19,10 @@
   "yourDetails": "Your Details",
   "fullNameLabel": "Full Name",
   "emailLabel": "Email",
+  "phoneNumberLabel": "Phone Number",
+  "partySizeLabel": "Party Size",
+  "dateAndTimeLabel": "Date and Time",
+  "requestReservation": "Request Reservation",
   "orderSummary": "Order Summary",
   "placeOrder": "Place Order",
   "orderConfirmation_thankYou": "Thank you for your order!",

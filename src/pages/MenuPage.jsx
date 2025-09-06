@@ -10,67 +10,59 @@ import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 import { useTheme } from '@mui/material/styles';
 
-// --- Reusable Sub-components for a Cleaner Layout ---
-
-const MenuItemCard = ({ item, onAddToCart, t }) => (
-    // Add opacity to visually fade out unavailable items
-    <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2, opacity: item.isAvailable ? 1 : 0.4 }}>
-        <Box>
-            <Typography variant="h6">{item.name}</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
-            <Typography variant="h6" color="primary.main" fontWeight="bold">${item.price.toFixed(2)}</Typography>
-        </Box>
-        {/* Logic to disable button and change text */}
-        <Button 
-            variant="outlined" 
-            startIcon={<AddShoppingCartIcon />} 
-            onClick={() => onAddToCart(item)}
-            disabled={!item.isAvailable}
-        >
-            {item.isAvailable ? t('add') : t('unavailable')}
-        </Button>
-    </Paper>
-);
-
-const MenuCategory = ({ category, onAddToCart, t }) => (
-    <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" gutterBottom>{category.name}</Typography>
-        <Divider sx={{ mb: 2 }} />
-        
-        {/* RENDER items that belong DIRECTLY to this category */}
-        {category.menuItems && category.menuItems.length > 0 ? (
-            category.menuItems.map(item => (
-                <MenuItemCard key={item.id} item={item} onAddToCart={onAddToCart} t={t} />
-            ))
-        ) : null}
-
-        {/* RECURSIVELY render subcategories with an indent */}
-        {category.subCategories && category.subCategories.length > 0 && (
-            <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
-                {category.subCategories.map(subCategory => (
-                    <MenuCategory key={subCategory.id} category={subCategory} onAddToCart={onAddToCart} t={t} />
-                ))}
-            </Box>
-        )}
-    </Box>
-);
-
-// --- Main Page Component ---
-
 function MenuPage({ restaurantData }) {
-    const theme = useTheme(); // Get the current theme object
+    const theme = useTheme(); // Get the dynamically loaded theme
     const { t } = useTranslation();
     const [restaurant, setRestaurant] = useState(restaurantData);
-    const [categorizedMenu, setCategorizedMenu] = useState([]); // Changed from 'menu'
+    const [categorizedMenu, setCategorizedMenu] = useState([]);
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
     const [isLoading, setIsLoading] = useState(true);
     const { restaurantId } = useParams();
     const { addToCart } = useCart();
 
+    // --- Reusable Sub-components defined INSIDE the main component ---
+    // Now they have access to the 'theme' and 't' variables from the parent scope.
+
+    const MenuItemCard = ({ item, onAddToCart }) => (
+        <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2, opacity: item.isAvailable ? 1 : 0.4 }}>
+            <Box>
+                <Typography variant="h6">{item.name}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }} fontWeight="bold">
+                    ${item.price.toFixed(2)}
+                </Typography>
+            </Box>
+            <Button 
+                variant="outlined" 
+                startIcon={<AddShoppingCartIcon />} 
+                onClick={() => onAddToCart(item)}
+                disabled={!item.isAvailable}
+                sx={{ borderColor: theme.palette.primary.main, color: theme.palette.primary.main }} // Use the theme color
+            >
+                {item.isAvailable ? t('add') : t('unavailable')}
+            </Button>
+        </Paper>
+    );
+
+    const MenuCategory = ({ category, onAddToCart }) => (
+        <Box sx={{ mb: 4 }}>
+            <Typography variant="h5" gutterBottom>{category.name}</Typography>
+            <Divider sx={{ mb: 2 }} />
+            {category.menuItems?.map(item => (
+                <MenuItemCard key={item.id} item={item} onAddToCart={onAddToCart} />
+            ))}
+            {category.subCategories?.length > 0 && (
+                <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
+                    {category.subCategories.map(subCategory => (
+                        <MenuCategory key={subCategory.id} category={subCategory} onAddToCart={onAddToCart} />
+                    ))}
+                </Box>
+            )}
+        </Box>
+    );
+
     useEffect(() => {
-        // ✅ We NO LONGER need to fetch the restaurant details here.
-        // We only need to fetch the menu.
         const fetchMenu = async () => {
             setIsLoading(true);
             try {
@@ -84,17 +76,15 @@ function MenuPage({ restaurantData }) {
                 setIsLoading(false);
             }
         };
-        fetchMenu();
-    }, [restaurantId]);
+        if (restaurantData) {
+            fetchMenu();
+        }
+    }, [restaurantId, restaurantData]);
 
     const handleAddToCart = (item) => {
         addToCart(item);
         toast.success(t('itemAddedToCart', { itemName: item.name }));
     };
-
-    if (isLoading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
-    }
 
     if (!restaurant) {
         return <Typography align="center" sx={{ mt: 4 }}>Restaurant not found.</Typography>;
@@ -102,24 +92,9 @@ function MenuPage({ restaurantData }) {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            {/* The "All Restaurants" button is removed for the white-label experience */}
-
-            {tableNumber && restaurant.qrCodeOrderingEnabled && (
-                <Alert severity="info" sx={{ mb: 2 }}>
-                    {t('orderingForTable')} #{tableNumber}
-                </Alert>
-            )}
-            
             <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
-                    {/* Display the restaurant's logo */}
-                    {restaurant.logoUrl && (
-                        <img 
-                            src={restaurant.logoUrl} 
-                            alt={`${restaurant.name} logo`} 
-                            style={{ height: '80px', width: 'auto', objectFit: 'contain' }} 
-                        />
-                    )}
+                    {restaurant.logoUrl && <img src={restaurant.logoUrl} alt={`${restaurant.name} logo`} style={{ height: '80px', width: 'auto', objectFit: 'contain' }} />}
                     <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
                         <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
@@ -130,7 +105,6 @@ function MenuPage({ restaurantData }) {
                             to={`/restaurants/${restaurantId}/reserve`} 
                             variant="outlined" 
                             startIcon={<EventIcon />}
-                            // Explicitly use the theme's secondary color for contrast
                             sx={{ borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main }}
                         >
                             {t('bookTable')}
@@ -144,12 +118,14 @@ function MenuPage({ restaurantData }) {
                     <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                         <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
                     </Typography>
-                    {categorizedMenu.length > 0 ? (
-                        categorizedMenu.map(category => (
-                            <MenuCategory key={category.id} category={category} onAddToCart={handleAddToCart} t={t} />
-                        ))
-                    ) : (
-                        <Typography>{t('noMenuCategoriesYet')}</Typography>
+                    {isLoading ? <CircularProgress /> : (
+                        categorizedMenu.length > 0 ? (
+                            categorizedMenu.map(category => (
+                                <MenuCategory key={category.id} category={category} onAddToCart={handleAddToCart} />
+                            ))
+                        ) : (
+                            <Typography>{t('noMenuCategoriesYet')}</Typography>
+                        )
                     )}
                 </Grid>
                 <Grid item xs={12} md={4}>

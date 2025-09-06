@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-function ReservationPage() {
+// The 'restaurantData' prop is passed down from the DynamicThemeProvider
+function ReservationPage({ restaurantData }) {
+    const { t } = useTranslation();
     const { restaurantId } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -23,9 +26,7 @@ function ReservationPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        
         const payload = { ...formData, restaurantId: parseInt(restaurantId) };
-        
         try {
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reservations`, {
                 method: 'POST',
@@ -33,10 +34,8 @@ function ReservationPage() {
                 body: JSON.stringify(payload)
             });
             if (!response.ok) throw new Error('Could not submit reservation. Please try again.');
-            
             toast.success('Your reservation request has been sent!');
-            navigate(`/restaurants/${restaurantId}`); // Go back to the menu page
-            
+            navigate(`/restaurants/${restaurantId}`);
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -47,27 +46,29 @@ function ReservationPage() {
     return (
         <Container maxWidth="sm" sx={{ mt: 4 }}>
             <Button component={Link} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
-                Back to Menu
+                {t('backToMenu')}
             </Button>
             <Paper elevation={3} sx={{ p: 4 }}>
-                <Typography variant="h4" align="center" gutterBottom>Book a Table</Typography>
+                <Typography variant="h4" align="center" gutterBottom>
+                    {t('bookTable')} at {restaurantData?.name}
+                </Typography>
                 <Box component="form" onSubmit={handleSubmit}>
-                    <TextField label="Full Name" name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label="Email" name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label="Phone Number" name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label="Party Size" name="partySize" type="number" value={formData.partySize} onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('emailLabel')} name="email" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('partySizeLabel')} name="partySize" type="number" value={formData.partySize} onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField 
-                        label="Date and Time" 
+                        label={t('dateAndTimeLabel')} 
                         name="reservationTime" 
-                        type="datetime-local" // Simple date time picker
+                        type="datetime-local"
                         onChange={handleInputChange} 
                         required 
                         fullWidth 
                         margin="normal"
-                        InputLabelProps={{ shrink: true }} // Important for datetime-local
+                        InputLabelProps={{ shrink: true }}
                     />
                     <Box sx={{ mt: 3, position: 'relative' }}>
-                        <Button type="submit" variant="contained" fullWidth disabled={isSubmitting}>
+                        <Button type="submit" variant="contained" color="primary" fullWidth disabled={isSubmitting}>
                             {isSubmitting ? 'Sending Request...' : 'Request Reservation'}
                         </Button>
                         {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
