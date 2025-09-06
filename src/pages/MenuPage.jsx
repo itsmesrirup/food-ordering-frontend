@@ -8,6 +8,7 @@ import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
+import { useTheme } from '@mui/material/styles';
 
 // --- Reusable Sub-components for a Cleaner Layout ---
 
@@ -56,9 +57,10 @@ const MenuCategory = ({ category, onAddToCart, t }) => (
 
 // --- Main Page Component ---
 
-function MenuPage() {
+function MenuPage({ restaurantData }) {
+    const theme = useTheme(); // Get the current theme object
     const { t } = useTranslation();
-    const [restaurant, setRestaurant] = useState(null);
+    const [restaurant, setRestaurant] = useState(restaurantData);
     const [categorizedMenu, setCategorizedMenu] = useState([]); // Changed from 'menu'
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
@@ -67,25 +69,22 @@ function MenuPage() {
     const { addToCart } = useCart();
 
     useEffect(() => {
-        const fetchMenuData = async () => {
+        // ✅ We NO LONGER need to fetch the restaurant details here.
+        // We only need to fetch the menu.
+        const fetchMenu = async () => {
             setIsLoading(true);
             try {
-                const [resResponse, menuResponse] = await Promise.all([
-                    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`),
-                    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}/menu`)
-                ]);
-                if (!resResponse.ok || !menuResponse.ok) throw new Error("Failed to load restaurant data.");
-                const resData = await resResponse.json();
+                const menuResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}/menu`);
+                if (!menuResponse.ok) throw new Error("Failed to load menu");
                 const menuData = await menuResponse.json();
-                setRestaurant(resData);
-                setCategorizedMenu(menuData); // Set the categorized menu
+                setCategorizedMenu(menuData);
             } catch (error) {
                 toast.error(error.message);
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchMenuData();
+        fetchMenu();
     }, [restaurantId]);
 
     const handleAddToCart = (item) => {
@@ -112,13 +111,28 @@ function MenuPage() {
             )}
             
             <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
-                    <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
+                    {/* Display the restaurant's logo */}
+                    {restaurant.logoUrl && (
+                        <img 
+                            src={restaurant.logoUrl} 
+                            alt={`${restaurant.name} logo`} 
+                            style={{ height: '80px', width: 'auto', objectFit: 'contain' }} 
+                        />
+                    )}
+                    <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
                         <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
                     </Box>
                     {restaurant.reservationsEnabled && (
-                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" startIcon={<EventIcon />}>
+                        <Button 
+                            component={Link} 
+                            to={`/restaurants/${restaurantId}/reserve`} 
+                            variant="outlined" 
+                            startIcon={<EventIcon />}
+                            // Explicitly use the theme's secondary color for contrast
+                            sx={{ borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main }}
+                        >
                             {t('bookTable')}
                         </Button>
                     )}
