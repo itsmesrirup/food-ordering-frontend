@@ -2,24 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import defaultTheme from '../theme';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-function ReservationPage() {
+// --- Inner Content Component ---
+const ReservationPageContent = () => {
     const { t } = useTranslation();
     const { restaurantId } = useParams();
     const navigate = useNavigate();
     const [restaurantName, setRestaurantName] = useState('');
-    const [formData, setFormData] = useState({
-        customerName: '',
-        customerEmail: '',
-        customerPhone: '',
-        partySize: 2,
-        reservationTime: '',
-    });
+    const [formData, setFormData] = useState({ customerName: '', customerEmail: '', customerPhone: '', partySize: 2, reservationTime: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Fetch the restaurant name to display in the title
     useEffect(() => {
         const fetchRestaurantName = async () => {
             try {
@@ -90,6 +86,47 @@ function ReservationPage() {
                 </Box>
             </Paper>
         </Container>
+    );
+};
+
+// --- Theme Loading Wrapper Component ---
+function ReservationPage() {
+    const { restaurantId } = useParams();
+    const [theme, setTheme] = useState(null);
+
+    useEffect(() => {
+        const fetchTheme = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
+                const data = await response.json();
+                if (data.themePrimaryColor) {
+                    const customTheme = createTheme({
+                        ...defaultTheme,
+                        palette: {
+                            ...defaultTheme.palette,
+                            primary: { main: data.themePrimaryColor },
+                            secondary: { main: data.themeSecondaryColor || defaultTheme.palette.secondary.main },
+                        },
+                    });
+                    setTheme(customTheme);
+                } else {
+                    setTheme(defaultTheme);
+                }
+            } catch (error) {
+                setTheme(defaultTheme);
+            }
+        };
+        fetchTheme();
+    }, [restaurantId]);
+
+    if (!theme) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
+    }
+
+    return (
+        <ThemeProvider theme={theme}>
+            <ReservationPageContent />
+        </ThemeProvider>
     );
 }
 

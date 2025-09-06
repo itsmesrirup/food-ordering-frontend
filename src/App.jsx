@@ -6,10 +6,8 @@ import MenuPage from './pages/MenuPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ReservationPage from './pages/ReservationPage';
-import LanguageSwitcher from './components/LanguageSwitcher'; // Make sure this component exists
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { Toaster } from 'react-hot-toast';
-import DynamicThemeProvider from './components/DynamicThemeProvider';
-import RestaurantLayout from './layouts/RestaurantLayout';
 
 function App() {
   return (
@@ -19,14 +17,11 @@ function App() {
       <header>
         <Box sx={{ p: 2, backgroundColor: 'primary.main', color: 'white' }}>
           <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {/* Left Side: Brand Name */}
             <Typography variant="h6" component="div">
               <Link component={RouterLink} to="/" color="inherit" underline="none">
                 Tablo
               </Link>
             </Typography>
-
-            {/* ✅ Right Side: Language Switcher */}
             <LanguageSwitcher />
           </Container>
         </Box>
@@ -34,16 +29,15 @@ function App() {
 
       <main style={{ flexGrow: 1, padding: '1rem 0' }}>
         <Routes>
-          {/* Landing, Checkout, etc., use the default theme */}
+          {/* Routes that use the default theme */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-          {/* Nested routes that use the RestaurantLayout */}
-          {/* Any route inside here will be rendered where the <Outlet /> is */}
-          <Route element={<RestaurantLayout />}>
-            <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
-            <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
-          </Route>
+
+          {/* Restaurant-specific routes that will handle their own dynamic themes */}
+          <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
+          <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
+          
           <Route path="*" element={
             <Container sx={{ textAlign: 'center', mt: 4 }}>
               <Typography variant="h4">Page Not Found</Typography>

@@ -3,15 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
+import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
+import defaultTheme from '../theme';
 import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
-import { useTheme } from '@mui/material/styles';
 
-function MenuPage() {
-    const theme = useTheme();
+// --- Inner Content Component ---
+// This component renders the actual page content and is guaranteed to be inside the correct ThemeProvider.
+const MenuPageContent = () => {
+    const theme = useTheme(); // This will now correctly receive the dynamic theme
     const { t } = useTranslation();
     const { restaurantId } = useParams();
     const [restaurant, setRestaurant] = useState(null);
@@ -20,32 +23,6 @@ function MenuPage() {
     const { addToCart } = useCart();
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
-
-    const MenuItemCard = ({ item, onAddToCart }) => (
-        <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2, opacity: item.isAvailable ? 1 : 0.4 }}>
-            <Box>
-                <Typography variant="h6">{item.name}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }} fontWeight="bold">${item.price.toFixed(2)}</Typography>
-            </Box>
-            <Button variant="outlined" startIcon={<AddShoppingCartIcon />} onClick={() => onAddToCart(item)} disabled={!item.isAvailable} sx={{ borderColor: theme.palette.primary.main, color: theme.palette.primary.main }}>
-                {item.isAvailable ? t('add') : t('unavailable')}
-            </Button>
-        </Paper>
-    );
-
-    const MenuCategory = ({ category, onAddToCart }) => (
-        <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" gutterBottom>{category.name}</Typography>
-            <Divider sx={{ mb: 2 }} />
-            {category.menuItems?.map(item => <MenuItemCard key={item.id} item={item} onAddToCart={onAddToCart} />)}
-            {category.subCategories?.length > 0 && (
-                <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
-                    {category.subCategories.map(subCategory => <MenuCategory key={subCategory.id} category={subCategory} onAddToCart={onAddToCart} />)}
-                </Box>
-            )}
-        </Box>
-    );
 
     useEffect(() => {
         const fetchPageData = async () => {
@@ -74,13 +51,34 @@ function MenuPage() {
         toast.success(t('itemAddedToCart', { itemName: item.name }));
     };
 
-    if (isLoading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
-    }
+    const MenuItemCard = ({ item }) => (
+        <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2, opacity: item.isAvailable ? 1 : 0.4 }}>
+            <Box>
+                <Typography variant="h6">{item.name}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
+                <Typography variant="h6" sx={{ color: theme.palette.primary.main }} fontWeight="bold">${item.price.toFixed(2)}</Typography>
+            </Box>
+            <Button variant="outlined" startIcon={<AddShoppingCartIcon />} onClick={() => handleAddToCart(item)} disabled={!item.isAvailable} sx={{ borderColor: theme.palette.primary.main, color: theme.palette.primary.main }}>
+                {item.isAvailable ? t('add') : t('unavailable')}
+            </Button>
+        </Paper>
+    );
 
-    if (!restaurant) {
-        return <Typography align="center" sx={{ mt: 4 }}>{t('restaurantNotFound')}</Typography>; // Add a key for this
-    }
+    const MenuCategory = ({ category }) => (
+        <Box sx={{ mb: 4 }}>
+            <Typography variant="h5" gutterBottom>{category.name}</Typography>
+            <Divider sx={{ mb: 2 }} />
+            {category.menuItems?.map(item => <MenuItemCard key={item.id} item={item} />)}
+            {category.subCategories?.length > 0 && (
+                <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
+                    {category.subCategories.map(subCategory => <MenuCategory key={subCategory.id} category={subCategory} />)}
+                </Box>
+            )}
+        </Box>
+    );
+
+    if (isLoading) return <CircularProgress />;
+    if (!restaurant) return <Typography align="center" sx={{ mt: 4 }}>{t('restaurantNotFound')}</Typography>;
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -99,9 +97,7 @@ function MenuPage() {
                 </Box>
             </Paper>
 
-            {tableNumber && restaurant.qrCodeOrderingEnabled && (
-                <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>
-            )}
+            {tableNumber && restaurant.qrCodeOrderingEnabled && <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>}
 
             <Grid container spacing={4}>
                 <Grid item xs={12} md={8}>
@@ -109,16 +105,57 @@ function MenuPage() {
                         <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
                     </Typography>
                     {categorizedMenu.length > 0 ? (
-                        categorizedMenu.map(category => <MenuCategory key={category.id} category={category} onAddToCart={handleAddToCart} />)
+                        categorizedMenu.map(category => <MenuCategory key={category.id} category={category} />)
                     ) : (
-                        <Typography>{t('noMenuCategoriesYet')}</Typography> // Add a key for this
+                        <Typography>{t('noMenuCategoriesYet')}</Typography>
                     )}
                 </Grid>
-                <Grid item xs={12} md={4}>
-                    <Cart />
-                </Grid>
+                <Grid item xs={12} md={4}><Cart /></Grid>
             </Grid>
         </Container>
+    );
+};
+
+
+// --- Theme Loading Wrapper Component ---
+function MenuPage() {
+    const { restaurantId } = useParams();
+    const [theme, setTheme] = useState(null); // Start with null to indicate loading
+
+    useEffect(() => {
+        const fetchTheme = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
+                const data = await response.json();
+                if (data.themePrimaryColor) {
+                    const customTheme = createTheme({
+                        ...defaultTheme,
+                        palette: {
+                            ...defaultTheme.palette,
+                            primary: { main: data.themePrimaryColor },
+                            secondary: { main: data.themeSecondaryColor || defaultTheme.palette.secondary.main },
+                        },
+                    });
+                    setTheme(customTheme);
+                } else {
+                    setTheme(defaultTheme);
+                }
+            } catch (error) {
+                console.error("Theme loading failed, using default:", error);
+                setTheme(defaultTheme);
+            }
+        };
+        fetchTheme();
+    }, [restaurantId]);
+
+    if (!theme) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
+    }
+
+    return (
+        <ThemeProvider theme={theme}>
+            <MenuPageContent />
+        </ThemeProvider>
     );
 }
 
