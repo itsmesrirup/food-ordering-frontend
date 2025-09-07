@@ -1,18 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { useRestaurant } from '../layouts/RestaurantLayout';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 function ReservationPage() {
-    const { restaurant } = useRestaurant();
     const { t } = useTranslation();
     const { restaurantId } = useParams();
     const navigate = useNavigate();
+    const [restaurantName, setRestaurantName] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState({ customerName: '', customerEmail: '', customerPhone: '', partySize: 2, reservationTime: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        const fetchRestaurantName = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
+                const data = await response.json();
+                setRestaurantName(data.name);
+            } catch (error) {
+                console.error("Could not fetch restaurant name", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchRestaurantName();
+    }, [restaurantId]);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,42 +52,44 @@ function ReservationPage() {
             setIsSubmitting(false);
         }
     };
+    
+    if (isLoading) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+    }
 
     return (
-        <main>
-            <Container maxWidth="sm" sx={{ mt: 4 }}>
-                <Button component={Link} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
-                    {t('backToMenu')}
-                </Button>
-                <Paper elevation={3} sx={{ p: 4 }}>
-                    <Typography variant="h4" align="center" gutterBottom>
-                        {t('bookTable')} at {restaurant.name}
-                    </Typography>
-                    <Box component="form" onSubmit={handleSubmit}>
-                        <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
-                        <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
-                        <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
-                        <TextField label={t('partySizeLabel')} name="partySize" type="number" defaultValue={2} onChange={handleInputChange} required fullWidth margin="normal" />
-                        <TextField 
-                            label={t('dateAndTimeLabel')} 
-                            name="reservationTime" 
-                            type="datetime-local"
-                            onChange={handleInputChange} 
-                            required 
-                            fullWidth 
-                            margin="normal"
-                            InputLabelProps={{ shrink: true }}
-                        />
-                        <Box sx={{ mt: 3, position: 'relative' }}>
-                            <Button type="submit" variant="contained" color="primary" fullWidth disabled={isSubmitting}>
-                                {isSubmitting ? t('sendingRequest') : t('requestReservation')}
-                            </Button>
-                            {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
-                        </Box>
+        <Container maxWidth="sm" sx={{ mt: 4 }}>
+            <Button component={Link} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
+                {t('backToMenu')}
+            </Button>
+            <Paper elevation={3} sx={{ p: 4 }}>
+                <Typography variant="h4" align="center" gutterBottom>
+                    {t('bookTable')} at {restaurantName}
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit}>
+                    <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('partySizeLabel')} name="partySize" type="number" defaultValue={2} onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField 
+                        label={t('dateAndTimeLabel')} 
+                        name="reservationTime" 
+                        type="datetime-local"
+                        onChange={handleInputChange} 
+                        required 
+                        fullWidth 
+                        margin="normal"
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <Box sx={{ mt: 3, position: 'relative' }}>
+                        <Button type="submit" variant="contained" color="primary" fullWidth disabled={isSubmitting}>
+                            {isSubmitting ? t('sendingRequest') : t('requestReservation')}
+                        </Button>
+                        {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
                     </Box>
-                </Paper>
-            </Container>
-        </main>
+                </Box>
+            </Paper>
+        </Container>
     );
 }
 
