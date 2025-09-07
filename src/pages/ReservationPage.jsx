@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { lightTheme, darkTheme } from '../theme';
-import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, CssBaseline, Link, Grid } from '@mui/material';
+import { useRestaurant } from '../layouts/RestaurantLayout';
+import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Grid } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LanguageSwitcher from '../components/LanguageSwitcher';
 
-// --- Inner Content Component ---
-// Renders the actual form and logic, guaranteed to be inside the correct ThemeProvider.
-const ReservationPageContent = ({ restaurant }) => {
+function ReservationPage() {
+    const { restaurant } = useRestaurant();
     const { t } = useTranslation();
     const { restaurantId } = useParams();
     const navigate = useNavigate();
@@ -41,12 +38,15 @@ const ReservationPageContent = ({ restaurant }) => {
         }
     };
 
+    if (!restaurant) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+    }
+
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={4} justifyContent="center" alignItems="center">
-                {/* The Form Column */}
                 <Grid item xs={12} md={6}>
-                    <Button component={RouterLink} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />}>
+                     <Button component={RouterLink} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />}>
                         {t('backToMenu')}
                     </Button>
                     <Paper elevation={3} sx={{ p: 4, mt: 2 }}>
@@ -78,7 +78,6 @@ const ReservationPageContent = ({ restaurant }) => {
                     </Paper>
                 </Grid>
                 
-                {/* ✅ The Image Column */}
                 {restaurant.heroImageUrl && (
                     <Grid item md={6} sx={{ display: { xs: 'none', md: 'block' } }}>
                         <Box 
@@ -91,69 +90,6 @@ const ReservationPageContent = ({ restaurant }) => {
                 )}
             </Grid>
         </Container>
-    );
-};
-
-
-// --- Theme Loading Wrapper Component ---
-function ReservationPage() {
-    const { restaurantId } = useParams();
-    const [theme, setTheme] = useState(null);
-    const [restaurant, setRestaurant] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchAllDataAndTheme = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
-                if (!response.ok) throw new Error("Restaurant data not found");
-                const data = await response.json();
-                setRestaurant(data);
-
-                if (data.useDarkTheme) {
-                    let customTheme = { ...darkTheme };
-                    if (data.themePrimaryColor) customTheme.palette.primary.main = data.themePrimaryColor;
-                    if (data.themeSecondaryColor) customTheme.palette.secondary.main = data.themeSecondaryColor;
-                    setTheme(createTheme(customTheme));
-                } else {
-                    let customTheme = { ...lightTheme };
-                    if (data.themePrimaryColor) customTheme.palette.primary.main = data.themePrimaryColor;
-                    if (data.themeSecondaryColor) customTheme.palette.secondary.main = data.themeSecondaryColor;
-                    setTheme(createTheme(customTheme));
-                }
-            } catch (error) {
-                toast.error(error.message);
-                setTheme(lightTheme);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchAllDataAndTheme();
-    }, [restaurantId]);
-
-    if (isLoading || !theme) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
-    }
-
-    return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <header>
-                 <Box sx={{ p: 2, backgroundColor: 'primary.main', color: theme.palette.getContrastText(theme.palette.primary.main) }}>
-                    <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Link component={RouterLink} to={`/restaurants/${restaurantId}`} color="inherit" underline="none">
-                            {restaurant.logoUrl ? (
-                                <img src={restaurant.logoUrl} alt={`${restaurant.name} logo`} style={{ height: '40px', display: 'block' }} />
-                            ) : (
-                                <Typography variant="h6">{restaurant.name}</Typography>
-                            )}
-                        </Link>
-                        <LanguageSwitcher />
-                    </Container>
-                </Box>
-            </header>
-            <ReservationPageContent restaurant={restaurant} />
-        </ThemeProvider>
     );
 }
 
