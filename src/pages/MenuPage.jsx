@@ -50,13 +50,13 @@ function MenuPage() {
     };
 
     const MenuItemCard = ({ item }) => (
-        <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2, opacity: item.isAvailable ? 1 : 0.4 }}>
+        <Paper elevation={2} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2 }}>
             <Box>
                 <Typography variant="h6">{item.name}</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.main }} fontWeight="bold">${item.price.toFixed(2)}</Typography>
+                <Typography variant="h6" color="primary" fontWeight="bold">${item.price.toFixed(2)}</Typography>
             </Box>
-            <Button variant="outlined" startIcon={<AddShoppingCartIcon />} onClick={() => handleAddToCart(item)} disabled={!item.isAvailable} sx={{ borderColor: theme.palette.primary.main, color: theme.palette.primary.main }}>
+            <Button variant="outlined" color="secondary" startIcon={<AddShoppingCartIcon />} onClick={() => handleAddToCart(item)} disabled={!item.isAvailable}>
                 {item.isAvailable ? t('add') : t('unavailable')}
             </Button>
         </Paper>
@@ -85,34 +85,46 @@ function MenuPage() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
-                        <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
-                    </Box>
-                    {restaurant.reservationsEnabled && (
-                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" startIcon={<EventIcon />} sx={{ borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main }}>
-                            {t('bookTable')}
-                        </Button>
-                    )}
-                </Box>
-            </Paper>
+             <Grid container spacing={4}>
+                {/* Decorative Image Column */}
+                {restaurant.heroImageUrl && (
+                    <Grid item md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <Box component="img" src={restaurant.heroImageUrl} sx={{ width: '100%', borderRadius: 2, objectFit: 'cover', height: '100%' }} />
+                    </Grid>
+                )}
 
-            {tableNumber && restaurant.qrCodeOrderingEnabled && <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>}
+                {/* Main Menu and Cart Column */}
+                <Grid item xs={12} md={restaurant.heroImageUrl ? 8 : 12}>
+                    <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
+                            <Box sx={{ flexGrow: 1 }}>
+                                <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
+                                <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
+                            </Box>
+                            {restaurant.reservationsEnabled && (
+                                <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" color="secondary" startIcon={<EventIcon />}>
+                                    {t('bookTable')}
+                                </Button>
+                            )}
+                        </Box>
+                    </Paper>
 
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={8}>
-                    <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
-                    </Typography>
-                    {categorizedMenu.length > 0 ? (
-                        categorizedMenu.map(category => <MenuCategory key={category.id} category={category} />)
-                    ) : (
-                        <Typography>{t('noMenuCategoriesYet')}</Typography>
-                    )}
+                    {tableNumber && restaurant.qrCodeOrderingEnabled && <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>}
+
+                    <Grid container spacing={4}>
+                        <Grid item xs={12} md={8}>
+                            <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                                <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
+                            </Typography>
+                            {categorizedMenu.length > 0 ? (
+                                categorizedMenu.map(category => <MenuCategory key={category.id} category={category} />)
+                            ) : (
+                                <Typography>{t('noMenuCategoriesYet')}</Typography>
+                            )}
+                        </Grid>
+                        <Grid item xs={12} md={4}><Cart /></Grid>
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} md={4}><Cart /></Grid>
             </Grid>
         </Container>
     );
