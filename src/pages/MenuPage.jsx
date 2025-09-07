@@ -6,7 +6,7 @@ import Cart from '../components/Cart';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '../theme';
-import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert, Link } from '@mui/material';
+import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert, Link, CssBaseline } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import EventIcon from '@mui/icons-material/Event';

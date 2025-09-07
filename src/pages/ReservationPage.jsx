@@ -4,10 +4,12 @@ import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '../theme';
-import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, CssBaseline, Link } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, CssBaseline, Link, Grid } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
+// --- Inner Content Component ---
+// Renders the actual form and logic, guaranteed to be inside the correct ThemeProvider.
 const ReservationPageContent = ({ restaurant }) => {
     const { t } = useTranslation();
     const { restaurantId } = useParams();
@@ -40,41 +42,60 @@ const ReservationPageContent = ({ restaurant }) => {
     };
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-            <Button component={RouterLink} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />}>
-                {t('backToMenu')}
-            </Button>
-            <Paper elevation={3} sx={{ p: 4, mt: 2 }}>
-                <Typography variant="h4" align="center" gutterBottom>
-                    {t('bookTable')} at {restaurant.name}
-                </Typography>
-                <Box component="form" onSubmit={handleSubmit}>
-                    <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label={t('partySizeLabel')} name="partySize" type="number" defaultValue={2} onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField 
-                        label={t('dateAndTimeLabel')} 
-                        name="reservationTime" 
-                        type="datetime-local"
-                        onChange={handleInputChange} 
-                        required 
-                        fullWidth 
-                        margin="normal"
-                        InputLabelProps={{ shrink: true }}
-                    />
-                    <Box sx={{ mt: 3, position: 'relative' }}>
-                        <Button type="submit" variant="contained" color="secondary" fullWidth disabled={isSubmitting}>
-                            {isSubmitting ? t('sendingRequest') : t('requestReservation')}
-                        </Button>
-                        {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
-                    </Box>
-                </Box>
-            </Paper>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={4} justifyContent="center" alignItems="center">
+                {/* The Form Column */}
+                <Grid item xs={12} md={6}>
+                    <Button component={RouterLink} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />}>
+                        {t('backToMenu')}
+                    </Button>
+                    <Paper elevation={3} sx={{ p: 4, mt: 2 }}>
+                        <Typography variant="h4" align="center" gutterBottom>
+                            {t('bookTable')} at {restaurant.name}
+                        </Typography>
+                        <Box component="form" onSubmit={handleSubmit}>
+                            <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
+                            <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
+                            <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
+                            <TextField label={t('partySizeLabel')} name="partySize" type="number" defaultValue={2} onChange={handleInputChange} required fullWidth margin="normal" />
+                            <TextField 
+                                label={t('dateAndTimeLabel')} 
+                                name="reservationTime" 
+                                type="datetime-local"
+                                onChange={handleInputChange} 
+                                required 
+                                fullWidth 
+                                margin="normal"
+                                InputLabelProps={{ shrink: true }}
+                            />
+                            <Box sx={{ mt: 3, position: 'relative' }}>
+                                <Button type="submit" variant="contained" color="secondary" fullWidth disabled={isSubmitting}>
+                                    {isSubmitting ? t('sendingRequest') : t('requestReservation')}
+                                </Button>
+                                {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Grid>
+                
+                {/* ✅ The Image Column */}
+                {restaurant.heroImageUrl && (
+                    <Grid item md={6} sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <Box 
+                            component="img" 
+                            src={restaurant.heroImageUrl} 
+                            alt={`${restaurant.name} decorative image`}
+                            sx={{ width: '100%', borderRadius: 2, maxHeight: '600px', objectFit: 'cover' }} 
+                        />
+                    </Grid>
+                )}
+            </Grid>
         </Container>
     );
 };
 
+
+// --- Theme Loading Wrapper Component ---
 function ReservationPage() {
     const { restaurantId } = useParams();
     const [theme, setTheme] = useState(null);
