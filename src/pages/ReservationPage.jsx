@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -8,6 +8,7 @@ import { Container, Paper, Typography, TextField, Button, Box, CircularProgress 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // --- Inner Content Component ---
+// Renders the actual form and logic, guaranteed to be inside the correct ThemeProvider.
 const ReservationPageContent = () => {
     const { t } = useTranslation();
     const { restaurantId } = useParams();
@@ -15,15 +16,20 @@ const ReservationPageContent = () => {
     const [restaurantName, setRestaurantName] = useState('');
     const [formData, setFormData] = useState({ customerName: '', customerEmail: '', customerPhone: '', partySize: 2, reservationTime: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoadingName, setIsLoadingName] = useState(true);
 
     useEffect(() => {
         const fetchRestaurantName = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
+                if (!response.ok) throw new Error("Could not find restaurant.");
                 const data = await response.json();
                 setRestaurantName(data.name);
             } catch (error) {
-                console.error("Could not fetch restaurant name", error);
+                toast.error(error.message);
+                setRestaurantName("this restaurant"); // Fallback name
+            } finally {
+                setIsLoadingName(false);
             }
         };
         fetchRestaurantName();
@@ -52,6 +58,10 @@ const ReservationPageContent = () => {
             setIsSubmitting(false);
         }
     };
+    
+    if (isLoadingName) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
+    }
 
     return (
         <Container maxWidth="sm" sx={{ mt: 4 }}>
@@ -66,7 +76,7 @@ const ReservationPageContent = () => {
                     <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
-                    <TextField label={t('partySizeLabel')} name="partySize" type="number" value={formData.partySize} onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('partySizeLabel')} name="partySize" type="number" defaultValue={2} onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField 
                         label={t('dateAndTimeLabel')} 
                         name="reservationTime" 
@@ -90,15 +100,18 @@ const ReservationPageContent = () => {
 };
 
 // --- Theme Loading Wrapper Component ---
+// This is the main export. Its only job is to load the theme and then render the content.
 function ReservationPage() {
     const { restaurantId } = useParams();
-    const [theme, setTheme] = useState(null);
+    const [dynamicTheme, setDynamicTheme] = useState(null);
 
     useEffect(() => {
         const fetchTheme = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
+                if (!response.ok) throw new Error('Theme data not found');
                 const data = await response.json();
+                
                 if (data.themePrimaryColor) {
                     const customTheme = createTheme({
                         ...defaultTheme,
@@ -108,23 +121,26 @@ function ReservationPage() {
                             secondary: { main: data.themeSecondaryColor || defaultTheme.palette.secondary.main },
                         },
                     });
-                    setTheme(customTheme);
+                    setDynamicTheme(customTheme);
                 } else {
-                    setTheme(defaultTheme);
+                    setDynamicTheme(defaultTheme);
                 }
             } catch (error) {
-                setTheme(defaultTheme);
+                console.error(error);
+                setDynamicTheme(defaultTheme); // Fallback to default on error
             }
         };
         fetchTheme();
     }, [restaurantId]);
 
-    if (!theme) {
+    // Render nothing until the theme is calculated
+    if (!dynamicTheme) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
     }
 
+    // Once the theme is ready, render the ThemeProvider and the content
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={dynamicTheme}>
             <ReservationPageContent />
         </ThemeProvider>
     );
