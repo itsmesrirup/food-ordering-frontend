@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -12,7 +12,7 @@ import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 
 function MenuPage() {
-    const { restaurant } = useRestaurant(); // This hook gets the data from the layout
+    const { restaurant } = useRestaurant();
     const theme = useTheme();
     const { t } = useTranslation();
     const { restaurantId } = useParams();
@@ -73,6 +73,20 @@ function MenuPage() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            {/* ✅ NEW: Full-width Hero Image Banner */}
+            {restaurant.heroImageUrl && (
+                <Box
+                    sx={{
+                        height: '300px',
+                        mb: 4,
+                        borderRadius: 4,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundImage: `url(${restaurant.heroImageUrl})`,
+                    }}
+                />
+            )}
+            
             <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
                     <Box sx={{ flexGrow: 1 }}>

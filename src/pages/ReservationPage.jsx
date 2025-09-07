@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -43,52 +43,56 @@ function ReservationPage() {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={4} justifyContent="center" alignItems="center">
-                <Grid item xs={12} md={6}>
-                     <Button component={RouterLink} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />}>
-                        {t('backToMenu')}
-                    </Button>
-                    <Paper elevation={3} sx={{ p: 4, mt: 2 }}>
-                        <Typography variant="h4" align="center" gutterBottom>
-                            {t('bookTable')} at {restaurant.name}
-                        </Typography>
-                        <Box component="form" onSubmit={handleSubmit}>
-                            <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
-                            <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
-                            <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
-                            <TextField label={t('partySizeLabel')} name="partySize" type="number" defaultValue={2} onChange={handleInputChange} required fullWidth margin="normal" />
-                            <TextField 
-                                label={t('dateAndTimeLabel')} 
-                                name="reservationTime" 
-                                type="datetime-local"
-                                onChange={handleInputChange} 
-                                required 
-                                fullWidth 
-                                margin="normal"
-                                InputLabelProps={{ shrink: true }}
-                            />
-                            <Box sx={{ mt: 3, position: 'relative' }}>
-                                <Button type="submit" variant="contained" color="secondary" fullWidth disabled={isSubmitting}>
-                                    {isSubmitting ? t('sendingRequest') : t('requestReservation')}
-                                </Button>
-                                {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
-                            </Box>
-                        </Box>
-                    </Paper>
-                </Grid>
+        <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+            <Button component={RouterLink} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />}>
+                {t('backToMenu')}
+            </Button>
+            <Paper elevation={3} sx={{ p: 4, mt: 2, textAlign: 'center' }}>
                 
+                {/* ✅ NEW: Smaller, tasteful hero image inside the card */}
                 {restaurant.heroImageUrl && (
-                    <Grid item md={6} sx={{ display: { xs: 'none', md: 'block' } }}>
-                        <Box 
-                            component="img" 
-                            src={restaurant.heroImageUrl} 
-                            alt={`${restaurant.name} decorative image`}
-                            sx={{ width: '100%', borderRadius: 2, maxHeight: '600px', objectFit: 'cover' }} 
-                        />
-                    </Grid>
+                    <Box
+                        component="img"
+                        src={restaurant.heroImageUrl}
+                        alt="" // Decorative image, alt text not needed
+                        sx={{
+                            width: 120,
+                            height: 120,
+                            borderRadius: '50%', // Make it circular
+                            objectFit: 'cover',
+                            mb: 2,
+                            border: '4px solid',
+                            borderColor: 'secondary.main' // Use the accent color for the border
+                        }}
+                    />
                 )}
-            </Grid>
+                
+                <Typography variant="h4" gutterBottom>
+                    {t('bookTable')} at {restaurant.name}
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} sx={{ textAlign: 'left' }}>
+                    <TextField label={t('fullNameLabel')} name="customerName" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('emailLabel')} name="customerEmail" type="email" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('phoneNumberLabel')} name="customerPhone" onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('partySizeLabel')} name="partySize" type="number" defaultValue={2} onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField 
+                        label={t('dateAndTimeLabel')} 
+                        name="reservationTime" 
+                        type="datetime-local"
+                        onChange={handleInputChange} 
+                        required 
+                        fullWidth 
+                        margin="normal"
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <Box sx={{ mt: 3, position: 'relative' }}>
+                        <Button type="submit" variant="contained" color="secondary" fullWidth disabled={isSubmitting}>
+                            {isSubmitting ? t('sendingRequest') : t('requestReservation')}
+                        </Button>
+                        {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-12px' }} />}
+                    </Box>
+                </Box>
+            </Paper>
         </Container>
     );
 }
