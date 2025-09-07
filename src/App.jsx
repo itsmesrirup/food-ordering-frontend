@@ -7,6 +7,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ReservationPage from './pages/ReservationPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import RestaurantLayout from './layouts/RestaurantLayout';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -14,29 +15,20 @@ function App() {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Toaster position="top-center" />
       
-      <header>
-        <Box sx={{ p: 2, backgroundColor: 'primary.main', color: 'white' }}>
-          <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" component="div">
-              <Link component={RouterLink} to="/" color="inherit" underline="none">
-                Tablo
-              </Link>
-            </Typography>
-            <LanguageSwitcher />
-          </Container>
-        </Box>
-      </header>
-
-      <main style={{ flexGrow: 1, padding: '1rem 0' }}>
+      <Box sx={{ flexGrow: 1 }}>
         <Routes>
-          {/* Routes that use the default theme */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+          {/* Main App Shell for pages without a custom header */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+          </Route>
 
-          {/* Restaurant-specific routes that will handle their own dynamic themes */}
-          <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
-          <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
+          {/* Group restaurant-specific routes under the RestaurantLayout */}
+          <Route element={<RestaurantLayout />}>
+            <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
+            <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
+          </Route>
           
           <Route path="*" element={
             <Container sx={{ textAlign: 'center', mt: 4 }}>
@@ -45,12 +37,9 @@ function App() {
             </Container>
           } />
         </Routes>
-      </main>
+      </Box>
 
-      <Box 
-        component="footer" 
-        sx={{ py: 2, px: 2, mt: 'auto', backgroundColor: '#f5f5f5', textAlign: 'center' }}
-      >
+      <Box component="footer" sx={{ py: 2, px: 2, backgroundColor: '#f5f5f5', textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           Online ordering powered by{' '}
           <Link color="inherit" href="https://your-website.com">
@@ -59,7 +48,28 @@ function App() {
         </Typography>
       </Box>
     </Box>
-  )
+  );
 }
+
+// A simple layout for non-restaurant pages
+const MainLayout = () => (
+  <>
+    <header>
+      <Box sx={{ p: 2, backgroundColor: 'primary.main', color: 'white' }}>
+        <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="div">
+            <Link component={RouterLink} to="/" color="inherit" underline="none">
+              Tablo
+            </Link>
+          </Typography>
+          <LanguageSwitcher />
+        </Container>
+      </Box>
+    </header>
+    <main>
+      <Outlet />
+    </main>
+  </>
+);
 
 export default App;

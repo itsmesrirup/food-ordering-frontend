@@ -1,31 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
-import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
-import defaultTheme from '../theme';
+import { useRestaurant } from '../layouts/RestaurantLayout';
 import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 
-// --- Inner Content Component ---
-// This component renders the actual page content and is guaranteed to be inside the correct ThemeProvider.
-const MenuPageContent = () => {
-    const theme = useTheme(); // This will now correctly receive the dynamic theme
+function MenuPage() {
+    const { restaurant } = useRestaurant();
+    const theme = useTheme();
     const { t } = useTranslation();
     const { restaurantId } = useParams();
     const { addToCart } = useCart();
-    
-    const [restaurant, setRestaurant] = useState(null);
     const [categorizedMenu, setCategorizedMenu] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMenu, setIsLoadingMenu] = useState(true);
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
 
-    // Reusable Sub-components defined INSIDE the content component to access scope (theme, t)
+    useEffect(() => {
+        const fetchMenu = async () => {
+            setIsLoadingMenu(true);
+            try {
+                const menuResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}/menu`);
+                if (!menuResponse.ok) throw new Error("Failed to load menu");
+                const menuData = await menuResponse.json();
+                setCategorizedMenu(menuData);
+            } catch (error) {
+                toast.error(error.message);
+            } finally {
+                setIsLoadingMenu(false);
+            }
+        };
+        fetchMenu();
+    }, [restaurantId]);
+
+    const handleAddToCart = (item) => {
+        addToCart(item);
+        toast.success(t('itemAddedToCart', { itemName: item.name }));
+    };
+
     const MenuItemCard = ({ item }) => (
         <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: 2, opacity: item.isAvailable ? 1 : 0.4 }}>
             <Box>
@@ -52,122 +70,42 @@ const MenuPageContent = () => {
         </Box>
     );
 
-    useEffect(() => {
-        const fetchPageData = async () => {
-            setIsLoading(true);
-            try {
-                const [resResponse, menuResponse] = await Promise.all([
-                    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`),
-                    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}/menu`)
-                ]);
-                if (!resResponse.ok || !menuResponse.ok) throw new Error("Failed to load restaurant data.");
-                const resData = await resResponse.json();
-                const menuData = await menuResponse.json();
-                setRestaurant(resData);
-                setCategorizedMenu(menuData);
-            } catch (error) {
-                toast.error(error.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchPageData();
-    }, [restaurantId]);
-
-    const handleAddToCart = (item) => {
-        addToCart(item);
-        toast.success(t('itemAddedToCart', { itemName: item.name }));
-    };
-
-    if (isLoading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
-    }
-
-    if (!restaurant) {
-        return <Typography align="center" sx={{ mt: 4 }}>{t('restaurantNotFound')}</Typography>;
-    }
-
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
-                    {restaurant.logoUrl && <img src={restaurant.logoUrl} alt={`${restaurant.name} logo`} style={{ height: '80px', width: 'auto', objectFit: 'contain' }} />}
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
-                        <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
+        <main>
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
+                        <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
+                            <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
+                        </Box>
+                        {restaurant.reservationsEnabled && (
+                            <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" startIcon={<EventIcon />} sx={{ borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main }}>
+                                {t('bookTable')}
+                            </Button>
+                        )}
                     </Box>
-                    {restaurant.reservationsEnabled && (
-                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" startIcon={<EventIcon />} sx={{ borderColor: theme.palette.secondary.main, color: theme.palette.secondary.main }}>
-                            {t('bookTable')}
-                        </Button>
-                    )}
-                </Box>
-            </Paper>
+                </Paper>
 
-            {tableNumber && restaurant.qrCodeOrderingEnabled && <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>}
+                {tableNumber && restaurant.qrCodeOrderingEnabled && <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>}
 
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={8}>
-                    <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
-                    </Typography>
-                    {categorizedMenu.length > 0 ? (
-                        categorizedMenu.map(category => <MenuCategory key={category.id} category={category} />)
-                    ) : (
-                        <Typography>{t('noMenuCategoriesYet')}</Typography>
-                    )}
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={8}>
+                        <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                            <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
+                        </Typography>
+                        {isLoadingMenu ? <CircularProgress /> : (
+                            categorizedMenu.length > 0 ? (
+                                categorizedMenu.map(category => <MenuCategory key={category.id} category={category} />)
+                            ) : (
+                                <Typography>{t('noMenuCategoriesYet')}</Typography>
+                            )
+                        )}
+                    </Grid>
+                    <Grid item xs={12} md={4}><Cart /></Grid>
                 </Grid>
-                <Grid item xs={12} md={4}><Cart /></Grid>
-            </Grid>
-        </Container>
-    );
-};
-
-
-// --- Theme Loading Wrapper Component ---
-// This is the main export. Its only job is to load the theme and then render the content.
-function MenuPage() {
-    const { restaurantId } = useParams();
-    const [dynamicTheme, setDynamicTheme] = useState(null); // Start with null to indicate loading
-
-    useEffect(() => {
-        const fetchAndSetTheme = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
-                if (!response.ok) throw new Error('Theme data not found');
-                const data = await response.json();
-                
-                if (data.themePrimaryColor) {
-                    const customTheme = createTheme({
-                        ...defaultTheme,
-                        palette: {
-                            ...defaultTheme.palette,
-                            primary: { main: data.themePrimaryColor },
-                            secondary: { main: data.themeSecondaryColor || defaultTheme.palette.secondary.main },
-                        },
-                    });
-                    setDynamicTheme(customTheme);
-                } else {
-                    setDynamicTheme(defaultTheme);
-                }
-            } catch (error) {
-                console.error(error);
-                setDynamicTheme(defaultTheme); // Fallback to default on error
-            }
-        };
-        fetchAndSetTheme();
-    }, [restaurantId]);
-
-    // Render nothing until the theme is calculated
-    if (!dynamicTheme) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
-    }
-
-    // Once the theme is ready, render the ThemeProvider and the content
-    return (
-        <ThemeProvider theme={dynamicTheme}>
-            <MenuPageContent />
-        </ThemeProvider>
+            </Container>
+        </main>
     );
 }
 
