@@ -39,6 +39,10 @@ function ReservationPage() {
         }
     };
 
+    if (!restaurant) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
+    }
+
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             {/* ✅ Use the reusable header component. */}

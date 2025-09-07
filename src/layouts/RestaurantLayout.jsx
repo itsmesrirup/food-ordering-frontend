@@ -79,7 +79,7 @@ function RestaurantLayout() {
 
 // Custom hook for child components to get the restaurant data
 export function useRestaurant() {
-    return useOutletContext();
+    return useOutletContext() || {};
 }
 
 export default RestaurantLayout;

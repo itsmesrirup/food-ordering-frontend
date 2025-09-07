@@ -37,6 +37,12 @@ function MenuPage() {
         fetchMenu();
     }, [restaurantId]);
 
+    // If the restaurant data hasn't been passed down from the layout yet,
+    // show a loading spinner and wait.
+    if (!restaurant) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
+    }
+
     const handleAddToCart = (item) => {
         addToCart(item);
         toast.success(t('itemAddedToCart', { itemName: item.name }));
