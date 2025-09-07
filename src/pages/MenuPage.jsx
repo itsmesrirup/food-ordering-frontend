@@ -85,34 +85,27 @@ function MenuPage() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-             <Grid container spacing={4}>
-                {/* Decorative Image Column */}
-                {restaurant.heroImageUrl && (
-                    <Grid item md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-                        <Box component="img" src={restaurant.heroImageUrl} sx={{ width: '100%', borderRadius: 2, objectFit: 'cover', height: '100%' }} />
-                    </Grid>
-                )}
+            <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
+                    <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
+                        <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
+                    </Box>
+                    {restaurant.reservationsEnabled && (
+                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" color="secondary" startIcon={<EventIcon />}>
+                            {t('bookTable')}
+                        </Button>
+                    )}
+                </Box>
+            </Paper>
 
-                {/* Main Menu and Cart Column */}
+            {tableNumber && restaurant.qrCodeOrderingEnabled && <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>}
+
+            <Grid container spacing={4}>
+                {/* Main Content Column */}
                 <Grid item xs={12} md={restaurant.heroImageUrl ? 8 : 12}>
-                    <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
-                            <Box sx={{ flexGrow: 1 }}>
-                                <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
-                                <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
-                            </Box>
-                            {restaurant.reservationsEnabled && (
-                                <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" color="secondary" startIcon={<EventIcon />}>
-                                    {t('bookTable')}
-                                </Button>
-                            )}
-                        </Box>
-                    </Paper>
-
-                    {tableNumber && restaurant.qrCodeOrderingEnabled && <Alert severity="info" sx={{ mb: 2 }}>{t('orderingForTable')} #{tableNumber}</Alert>}
-
                     <Grid container spacing={4}>
-                        <Grid item xs={12} md={8}>
+                        <Grid item xs={12} lg={8}>
                             <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                                 <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
                             </Typography>
@@ -122,9 +115,29 @@ function MenuPage() {
                                 <Typography>{t('noMenuCategoriesYet')}</Typography>
                             )}
                         </Grid>
-                        <Grid item xs={12} md={4}><Cart /></Grid>
+                        <Grid item xs={12} lg={4}>
+                            <Cart />
+                        </Grid>
                     </Grid>
                 </Grid>
+
+                {/* Decorative Image Column */}
+                {restaurant.heroImageUrl && (
+                    <Grid item md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+                        <Box 
+                            component="img" 
+                            src={restaurant.heroImageUrl} 
+                            alt={`${restaurant.name} decorative image`}
+                            sx={{ 
+                                width: '100%', 
+                                borderRadius: 2, 
+                                objectFit: 'cover', 
+                                maxHeight: '600px', 
+                                height: 'auto' 
+                            }} 
+                        />
+                    </Grid>
+                )}
             </Grid>
         </Container>
     );

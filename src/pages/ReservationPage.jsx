@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import defaultTheme from '../theme';
-import { lightTheme, darkTheme } from '../theme';
+import { lightTheme, darkTheme } from '../theme'; // Import theme templates
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -16,13 +15,7 @@ const ReservationPageContent = () => {
     const navigate = useNavigate();
     const [restaurantName, setRestaurantName] = useState('');
     const [isLoadingName, setIsLoadingName] = useState(true);
-    const [formData, setFormData] = useState({
-        customerName: '',
-        customerEmail: '',
-        customerPhone: '',
-        partySize: 2,
-        reservationTime: '',
-    });
+    const [formData, setFormData] = useState({ customerName: '', customerEmail: '', customerPhone: '', partySize: 2, reservationTime: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -35,7 +28,7 @@ const ReservationPageContent = () => {
                 setRestaurantName(data.name);
             } catch (error) {
                 toast.error(error.message);
-                setRestaurantName("this restaurant"); // Fallback name
+                setRestaurantName("this restaurant");
             } finally {
                 setIsLoadingName(false);
             }
@@ -107,9 +100,8 @@ const ReservationPageContent = () => {
     );
 };
 
-
 // --- Theme Loading Wrapper Component ---
-// This is the main export. Its only job is to load the theme and then render the content.
+// This is the main export. It mirrors the structure of MenuPage.jsx
 function ReservationPage() {
     const { restaurantId } = useParams();
     const [dynamicTheme, setDynamicTheme] = useState(null);
@@ -123,12 +115,8 @@ function ReservationPage() {
                 
                 if (data.useDarkTheme) {
                     let customDarkThemeOptions = { ...darkTheme };
-                    if (data.themePrimaryColor) { // Allow overrides
-                        customDarkThemeOptions.palette.primary.main = data.themePrimaryColor;
-                    }
-                    if (data.themeSecondaryColor) {
-                        customDarkThemeOptions.palette.secondary.main = data.themeSecondaryColor;
-                    }
+                    if (data.themePrimaryColor) customDarkThemeOptions.palette.primary.main = data.themePrimaryColor;
+                    if (data.themeSecondaryColor) customDarkThemeOptions.palette.secondary.main = data.themeSecondaryColor;
                     setDynamicTheme(createTheme(customDarkThemeOptions));
                 } else {
                     if (data.themePrimaryColor) {
