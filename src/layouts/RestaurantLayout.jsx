@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Outlet, Link as RouterLink, useOutletContext } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '../theme'; // ✅ Import your theme templates
-import { Container, Typography, Box, Link, CircularProgress } from '@mui/al';
+import { Container, Typography, Box, Link, CircularProgress } from '@mui/material';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 function RestaurantLayout() {
