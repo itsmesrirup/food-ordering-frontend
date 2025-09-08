@@ -9,6 +9,7 @@ export const CartProvider = ({ children }) => {
     // ✅ NEW STATE: Track which restaurant the cart belongs to.
     // Can be null if the cart is empty.
     const [cartRestaurantId, setCartRestaurantId] = useState(null);
+    const [lastAddedItemId, setLastAddedItemId] = useState(null);
 
     const addToCart = (item) => {
         // The item being added MUST have a restaurantId.
@@ -49,6 +50,7 @@ export const CartProvider = ({ children }) => {
             }
             return [...prevItems, { ...item, quantity: 1 }];
         });
+        setLastAddedItemId(item.id);
     };
 
     const removeFromCart = (itemId) => {
@@ -81,7 +83,7 @@ export const CartProvider = ({ children }) => {
     };
 
     // Expose the cartRestaurantId in the context value
-    const value = { cartItems, cartRestaurantId, addToCart, removeFromCart, updateQuantity, clearCart };
+    const value = { cartItems, cartRestaurantId, lastAddedItemId, addToCart, removeFromCart, updateQuantity, clearCart };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

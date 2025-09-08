@@ -2,14 +2,16 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { Link, useLocation } from 'react-router-dom';
+import Recommendations from './Recommendations'; // ✅ 1. Import the new component
 import { Box, Typography, Button, List, ListItem, ListItemText, IconButton, Divider } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 function Cart() {
-    const { t } = useTranslation(); // Get the 't' function
-    const { cartItems, updateQuantity } = useCart();
-    const location = useLocation(); //Get the current location object
+    const { t } = useTranslation();
+    // ✅ 2. Get lastAddedItemId from the context
+    const { cartItems, updateQuantity, lastAddedItemId } = useCart();
+    const location = useLocation();
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
     if (cartItems.length === 0) {
@@ -31,11 +33,11 @@ function Cart() {
                           primary={item.name} 
                           secondary={`$${(item.price * item.quantity).toFixed(2)}`} 
                         />
-                        <IconButton onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                        <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                             <RemoveCircleOutlineIcon fontSize="small" />
                         </IconButton>
                         <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
-                        <IconButton onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                        <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                             <AddCircleOutlineIcon fontSize="small" />
                         </IconButton>
                     </ListItem>
@@ -48,12 +50,15 @@ function Cart() {
             </Box>
             <Button 
                 component={Link} 
-                to={`/checkout${location.search}`} // Appends "?table=X" if it exists
+                to={`/checkout${location.search}`}
                 variant="contained" 
                 fullWidth
             >
                 {t('proceedToCheckout')}
             </Button>
+            
+            {/* ✅ 3. Render the Recommendations component, passing the ID */}
+            <Recommendations lastAddedItemId={lastAddedItemId} />
         </Box>
     );
 }
