@@ -10,6 +10,12 @@ export const CartProvider = ({ children }) => {
     // Can be null if the cart is empty.
     const [cartRestaurantId, setCartRestaurantId] = useState(null);
     const [lastAddedItemId, setLastAddedItemId] = useState(null);
+    const [currentRestaurant, setCurrentRestaurant] = useState(null);
+
+    // call this function from MenuPage when it loads
+    const setCartContext = (restaurant) => {
+        setCurrentRestaurant(restaurant);
+    };
 
     const addToCart = (item) => {
         // The item being added MUST have a restaurantId.
@@ -83,7 +89,7 @@ export const CartProvider = ({ children }) => {
     };
 
     // Expose the cartRestaurantId in the context value
-    const value = { cartItems, cartRestaurantId, lastAddedItemId, addToCart, removeFromCart, updateQuantity, clearCart };
+    const value = { cartItems, cartRestaurantId, lastAddedItemId, addToCart, removeFromCart, updateQuantity, clearCart, currentRestaurant, setCartContext };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

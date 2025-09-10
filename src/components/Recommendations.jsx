@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 
 function Recommendations({ lastAddedItemId }) {
     const { t } = useTranslation();
-    const { addToCart } = useCart();
+    const { cartItems, addToCart } = useCart();
     const [recommendations, setRecommendations] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -41,26 +41,32 @@ function Recommendations({ lastAddedItemId }) {
         fetchRecommendations();
     }, [lastAddedItemId]); // Re-run this effect whenever a NEW item is added
 
+    // Filter out items that are already in the cart
+    const filteredRecommendations = recommendations.filter(recommendedItem => 
+        !cartItems.some(cartItem => cartItem.id === recommendedItem.id)
+    );
+    
     const handleAddToCart = (item) => {
         addToCart(item);
         toast.success(t('itemAddedToCart', { itemName: item.name }));
     };
 
     // Don't render anything if loading or if there are no recommendations
-    if (isLoading || recommendations.length === 0) {
+    if (isLoading || filteredRecommendations.length === 0) {
         return null;
     }
 
     return (
-        <Paper elevation={2} sx={{ p: 2, mt: 3, backgroundColor: 'grey.100' }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+        <Paper elevation={2} sx={{ p: 2, mt: 3 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="text.primary">
                 Goes great with...
             </Typography>
-            {recommendations.map(item => (
+            {filteredRecommendations.map(item => (
                 <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 1 }}>
                     <Box>
-                        <Typography variant="body2">{item.name}</Typography>
-                        <Typography variant="body2" fontWeight="bold">${item.price.toFixed(2)}</Typography>
+                        {/* Used text.primary and text.secondary for theme-aware text colors */}
+                        <Typography variant="body2" color="text.primary">{item.name}</Typography>
+                        <Typography variant="body2" fontWeight="bold" color="text.secondary">${item.price.toFixed(2)}</Typography>
                     </Box>
                     <Button 
                         size="small" 

@@ -16,7 +16,7 @@ function MenuPage() {
     const theme = useTheme();
     const { t } = useTranslation();
     const { restaurantId } = useParams();
-    const { addToCart } = useCart();
+    const { addToCart, setCartContext } = useCart();
     
     const [categorizedMenu, setCategorizedMenu] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
@@ -34,6 +34,13 @@ function MenuPage() {
         };
         fetchMenu();
     }, [restaurantId]);
+
+    // NEW useEffect to set the restaurant context for the cart
+    useEffect(() => {
+        if (restaurant) {
+            setCartContext(restaurant);
+        }
+    }, [restaurant, setCartContext]);
 
     const handleAddToCart = (item) => {
         addToCart(item);

@@ -10,7 +10,7 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 function Cart() {
     const { t } = useTranslation();
     // ✅ 2. Get lastAddedItemId from the context
-    const { cartItems, updateQuantity, lastAddedItemId } = useCart();
+    const { cartItems, updateQuantity, lastAddedItemId, currentRestaurant } = useCart();
     const location = useLocation();
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
@@ -57,8 +57,10 @@ function Cart() {
                 {t('proceedToCheckout')}
             </Button>
             
-            {/* ✅ 3. Render the Recommendations component, passing the ID */}
-            <Recommendations lastAddedItemId={lastAddedItemId} />
+            {/* Conditionally render the Recommendations component, passing the ID */}
+            {currentRestaurant?.recommendationsEnabled && (
+                <Recommendations lastAddedItemId={lastAddedItemId} />
+            )}
         </Box>
     );
 }
