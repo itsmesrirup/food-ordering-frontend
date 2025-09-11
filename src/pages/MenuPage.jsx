@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -22,6 +22,10 @@ function MenuPage() {
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
 
     useEffect(() => {
+        if (restaurant) {
+            setCartContext(restaurant);
+        }
+        
         const fetchMenu = async () => {
             setIsLoadingMenu(true);
             try {
@@ -32,15 +36,11 @@ function MenuPage() {
             } catch (error) { toast.error(error.message); } 
             finally { setIsLoadingMenu(false); }
         };
-        fetchMenu();
-    }, [restaurantId]);
 
-    // NEW useEffect to set the restaurant context for the cart
-    useEffect(() => {
-        if (restaurant) {
-            setCartContext(restaurant);
+        if (restaurant) { // Only fetch menu if we have restaurant data
+            fetchMenu();
         }
-    }, [restaurant, setCartContext]);
+    }, [restaurantId, restaurant, setCartContext]);
 
     const handleAddToCart = (item) => {
         addToCart(item);
@@ -73,25 +73,14 @@ function MenuPage() {
         </Box>
     );
 
-    // This is the guard clause that prevents the "Cannot destructure" error.
     if (!restaurant) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
     }
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            {/* ✅ NEW: Full-width Hero Image Banner */}
             {restaurant.heroImageUrl && (
-                <Box
-                    sx={{
-                        height: '300px',
-                        mb: 4,
-                        borderRadius: 4,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundImage: `url(${restaurant.heroImageUrl})`,
-                    }}
-                />
+                <Box sx={{ height: '300px', mb: 4, borderRadius: 4, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${restaurant.heroImageUrl})` }} />
             )}
             
             <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
@@ -108,8 +97,9 @@ function MenuPage() {
                 </Box>
             </Paper>
 
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={8}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+
+                <Box sx={{ width: { xs: '100%', md: '65%' }, flexShrink: 0 }}>
                     <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                         <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
                     </Typography>
@@ -120,16 +110,18 @@ function MenuPage() {
                             <Typography>{t('noMenuCategoriesYet')}</Typography>
                         )
                     )}
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Box sx={{
-                        position: 'sticky', // This is the magic property
-                        top: '20px',        // Sticking it 20px from the top of the viewport
-                    }}>
-                        <Cart />
-                    </Box>
-                </Grid>
-            </Grid>
+                </Box>
+
+                <Box sx={{ 
+                    width: { xs: '100%', md: '35%' },
+                    position: { md: 'sticky' },
+                    top: { md: '20px' },
+                    alignSelf: 'flex-start'
+                }}>
+                    <Cart />
+                </Box>
+
+            </Box>
         </Container>
     );
 }
