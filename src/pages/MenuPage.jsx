@@ -121,7 +121,14 @@ function MenuPage() {
                         )
                     )}
                 </Grid>
-                <Grid item xs={12} md={4}><Cart /></Grid>
+                <Grid item xs={12} md={4}>
+                    <Box sx={{
+                        position: 'sticky', // This is the magic property
+                        top: '20px',        // Sticking it 20px from the top of the viewport
+                    }}>
+                        <Cart />
+                    </Box>
+                </Grid>
             </Grid>
         </Container>
     );
