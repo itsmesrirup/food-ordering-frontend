@@ -37,7 +37,7 @@ function MenuPage() {
             finally { setIsLoadingMenu(false); }
         };
 
-        if (restaurant) { // Only fetch menu if we have restaurant data
+        if (restaurant) {
             fetchMenu();
         }
     }, [restaurantId, restaurant, setCartContext]);
@@ -78,7 +78,8 @@ function MenuPage() {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        // Added pb (padding-bottom) to account for the floating mobile button
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, pb: { xs: 10, md: 0 } }}> 
             {restaurant.heroImageUrl && (
                 <Box sx={{ height: '300px', mb: 4, borderRadius: 4, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${restaurant.heroImageUrl})` }} />
             )}
@@ -98,7 +99,7 @@ function MenuPage() {
             </Paper>
 
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-
+                {/* --- Main Content: Menu --- */}
                 <Box sx={{ width: { xs: '100%', md: '65%' }, flexShrink: 0 }}>
                     <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                         <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
@@ -112,6 +113,8 @@ function MenuPage() {
                     )}
                 </Box>
 
+                {/* --- Sidebar: Cart --- */}
+                {/* The Cart component itself now handles being a sidebar or a modal */}
                 <Box sx={{ 
                     width: { xs: '100%', md: '35%' },
                     position: { md: 'sticky' },
@@ -120,7 +123,6 @@ function MenuPage() {
                 }}>
                     <Cart />
                 </Box>
-
             </Box>
         </Container>
     );
