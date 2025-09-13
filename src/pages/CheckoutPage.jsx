@@ -46,12 +46,10 @@ function CheckoutPage() {
                 items: cartItems.map(item => ({
                     menuItemId: item.id,
                     quantity: item.quantity,
-                    // Send the selected options to the backend
-                    selectedOptions: item.selectedOptions
-                    ? item.selectedOptions.flatMap(option => option.choices)
-                    : []
+                    selectedOptions: Array.isArray(item.selectedOptions) ? item.selectedOptions : []
                 }))
             };
+            console.log("Order Payload:", orderPayload); // Debug!
 
             // Step 3: Submit the order
             const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/orders`, {

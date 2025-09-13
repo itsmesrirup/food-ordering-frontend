@@ -9,17 +9,35 @@ const style = {
   borderRadius: 2, boxShadow: 24, p: 4, maxHeight: '90vh', overflowY: 'auto'
 };
 
-function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
+function CustomizeItemModal({ open, handleClose, menuItem, initialSelections, onSave, isEditing }) {
     const { t } = useTranslation();
-    const [selections, setSelections] = useState({});
+    // Default: build blank selections for each option group
+    const buildDefaultSelections = () =>
+        menuItem.options.reduce((acc, option) => ({ ...acc, [option.id]: [] }), {});
+
+    // --- PATCH: Initialize with previous selections if editing ---
+    const [selections, setSelections] = useState(buildDefaultSelections());
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Reset selections when the modal opens for a new item
     useEffect(() => {
-        if (open) {
-            setSelections({});
+        if (isEditing && initialSelections) {
+            // Convert initialSelections to the modal's expected format
+            // initialSelections: [{optionName, choices}], menuItem.options: [{id, name, ...}]
+            const mappedSelections = {};
+            menuItem.options.forEach(option => {
+                const found = initialSelections.find(sel => sel.optionName === option.name);
+                mappedSelections[option.id] = found ? found.choices.map(choiceName => {
+                    // Find choice id from name for this option
+                    const choiceObj = option.choices.find(ch => ch.name === choiceName);
+                    return choiceObj ? choiceObj.id : null;
+                }).filter(Boolean) : [];
+            });
+            setSelections(mappedSelections);
+        } else {
+            setSelections(buildDefaultSelections());
         }
-    }, [open]);
+    }, [open, isEditing, initialSelections, menuItem]);
 
     if (!menuItem) return null;
 
@@ -49,27 +67,21 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
         });
     };
 
+    // On Save:
+    // Convert selections back to [{optionName, choices}]
     const handleSubmit = () => {
-        setIsSubmitting(true);
-        
         const selectedOptionsForCart = menuItem.options.map(option => {
-            const selectedChoices = option.choices.filter(choice => 
-                selections[option.id]?.includes(choice.id)
-            );
+            const selectedChoices = option.choices.filter(choice => selections[option.id]?.includes(choice.id));
             return {
                 optionName: option.name,
                 choices: selectedChoices.map(c => c.name)
             };
         });
-
         const itemForCart = {
             ...menuItem,
-            selectedOptions: selectedOptionsForCart // Add the selected choices to the item
+            selectedOptions: selectedOptionsForCart
         };
-        
-        handleAddToCart(itemForCart);
-        handleClose();
-        setIsSubmitting(false);
+        onSave(itemForCart); // <-- PATCH: Use new onSave logic
     };
 
     return (
