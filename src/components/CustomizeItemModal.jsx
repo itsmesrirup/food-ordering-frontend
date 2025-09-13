@@ -53,14 +53,13 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
     };
 
     const handleSubmit = () => {
-        // Create a user-friendly summary of the selections to be displayed in the cart.
-        const selectedOptionsForCart = menuItem.options.flatMap(option => {
-            const selectedChoiceIds = selections[option.id] || [];
-            return option.choices
-                .filter(choice => selectedChoiceIds.includes(choice.id))
-                .map(choice => `${option.name}: ${choice.name}`);
+        const selectedOptionsForCart = menuItem.options.map(option => {
+            const selectedChoiceId = selections[option.id]?.[0]; // Assuming single choice for now
+            const choiceName = menuItem.options
+                .find(opt => opt.id === option.id).choices
+                .find(ch => ch.id === selectedChoiceId)?.name || '';
+            return `${option.name}: ${choiceName}`;
         });
-
         // Create the final item object to be added to the cart.
         const itemForCart = {
             ...menuItem,
