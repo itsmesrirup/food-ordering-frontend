@@ -48,6 +48,8 @@ function CheckoutPage() {
                     quantity: item.quantity,
                     // Send the selected options to the backend
                     selectedOptions: item.selectedOptions
+                    ? item.selectedOptions.flatMap(option => option.choices)
+                    : []
                 }))
             };
 
