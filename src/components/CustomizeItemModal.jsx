@@ -7,7 +7,7 @@ const style = {
   position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
   width: '90%', maxWidth: 500, bgcolor: 'background.paper', border: '1px solid #ddd',
   borderRadius: 2, boxShadow: 24, p: 4, maxHeight: '90vh', overflowY: 'auto'
-};{option.minChoices === 1 && option.maxChoices === 1 ? 'Choose 1' : `Choose between ${option.minChoices} and ${option.maxChoices}`}
+};
 
 function CustomizeItemModal({ open, handleClose, initialMenuItem, handleAddToCart }) {
     const { t } = useTranslation();
