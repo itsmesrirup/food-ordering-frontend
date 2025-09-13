@@ -9,7 +9,7 @@ const style = {
   borderRadius: 2, boxShadow: 24, p: 4, maxHeight: '90vh', overflowY: 'auto'
 };
 
-function CustomizeItemModal({ open, handleClose, initialMenuItem, handleAddToCart }) {
+function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
     const { t } = useTranslation();
     const [selections, setSelections] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
