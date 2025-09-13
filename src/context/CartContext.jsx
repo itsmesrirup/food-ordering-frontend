@@ -36,6 +36,7 @@ export const CartProvider = ({ children }) => {
                 // Clear the cart and add the new item as the first item
                 setCartItems([{ ...item, quantity: 1 }]);
                 setCartRestaurantId(item.restaurantId);
+                setLastAddedItemId(item.id);
             }
             // If they cancel, do nothing.
             return;
@@ -48,7 +49,7 @@ export const CartProvider = ({ children }) => {
 
         // Standard logic: add new item or update quantity for the same restaurant
         setCartItems(prevItems => {
-            const existingItem = prevItems.find(i => i.id === item.id);
+            const existingItem = prevItems.find(i => i.id === item.id && JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions)); // Also check options
             if (existingItem) {
                 return prevItems.map(i => 
                     i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
@@ -65,6 +66,7 @@ export const CartProvider = ({ children }) => {
             // If the cart becomes empty, reset the restaurant ID
             if (newItems.length === 0) {
                 setCartRestaurantId(null);
+                setLastAddedItemId(null);
             }
             return newItems;
         });
@@ -86,6 +88,7 @@ export const CartProvider = ({ children }) => {
         setCartItems([]);
         // Also reset the restaurant ID
         setCartRestaurantId(null);
+        setLastAddedItemId(null);
     };
 
     // Expose the cartRestaurantId in the context value

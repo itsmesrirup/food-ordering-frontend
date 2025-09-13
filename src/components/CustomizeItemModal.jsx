@@ -52,14 +52,12 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
     const handleSubmit = () => {
         setIsSubmitting(true);
         
+        // This creates an array of strings like: ["Entrée au choix: SAMOSSA", "Plat au choix: POULET TIKKA"]
         const selectedOptionsForCart = menuItem.options.map(option => {
-            const selectedChoices = option.choices.filter(choice => 
+            const selectedChoice = option.choices.find(choice => 
                 selections[option.id]?.includes(choice.id)
             );
-            return {
-                optionName: option.name,
-                choices: selectedChoices.map(c => c.name)
-            };
+            return `${option.name}: ${selectedChoice.name}`;
         });
 
         const itemForCart = {

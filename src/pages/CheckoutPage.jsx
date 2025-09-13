@@ -44,7 +44,9 @@ function CheckoutPage() {
                 tableNumber: tableNumber,
                 items: cartItems.map(item => ({
                     menuItemId: item.id,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    // Send the selected options to the backend
+                    selectedOptions: item.selectedOptions
                 }))
             };
 
