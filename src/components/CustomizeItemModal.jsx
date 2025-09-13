@@ -9,33 +9,28 @@ const style = {
   borderRadius: 2, boxShadow: 24, p: 4, maxHeight: '90vh', overflowY: 'auto'
 };
 
-function CustomizeItemModal({ open, handleClose, initialMenuItem, handleAddToCart }) {
+// This component receives the full menuItem object with all options as a prop.
+function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
     const { t } = useTranslation();
-    const [detailedItem, setDetailedItem] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
     const [selections, setSelections] = useState({});
 
+    // Reset the internal selections state whenever the modal is opened for a new item.
     useEffect(() => {
-        if (open && initialMenuItem) {
-            const fetchDetailedItem = async () => {
-                setIsLoading(true);
-                setSelections({});
-                try {
-                    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/menu-items/${initialMenuItem.id}`);
-                    if (!response.ok) throw new Error("Could not load item details.");
-                    const data = await response.json();
-                    setDetailedItem(data);
-                } catch (error) { console.error(error); handleClose(); } 
-                finally { setIsLoading(false); }
-            };
-            fetchDetailedItem();
+        if (open) {
+            setSelections({});
         }
-    }, [open, initialMenuItem, handleClose]);
+    }, [open]);
 
-    if (!initialMenuItem) return null;
+    // This is the safety guard. If the modal is open but has no item, or the item has no options, don't render.
+    if (!menuItem || !menuItem.options) {
+        return null;
+    }
 
     const handleRadioChange = (optionId, choiceId) => {
-        setSelections(prev => ({ ...prev, [optionId]: [parseInt(choiceId)] }));
+        setSelections(prev => ({
+            ...prev,
+            [optionId]: [parseInt(choiceId)] // Store the selected choice ID
+        }));
     };
 
     const handleCheckboxChange = (optionId, choiceId) => {
@@ -49,25 +44,29 @@ function CustomizeItemModal({ open, handleClose, initialMenuItem, handleAddToCar
         });
     };
     
+    // Check if the current selections meet the min/max requirements for all option groups.
     const isSelectionValid = () => {
-        if (!detailedItem || !detailedItem.options) return false;
-        return detailedItem.options.every(option => {
+        return menuItem.options.every(option => {
             const selectedCount = selections[option.id]?.length || 0;
             return selectedCount >= option.minChoices && selectedCount <= option.maxChoices;
         });
     };
 
     const handleSubmit = () => {
-        // ✅ THIS IS THE FIX: Create a simple array of strings
-        const selectedOptionsForCart = detailedItem.options.flatMap(option => {
+        // Create a user-friendly summary of the selections to be displayed in the cart.
+        const selectedOptionsForCart = menuItem.options.flatMap(option => {
             const selectedChoiceIds = selections[option.id] || [];
-            // Find the full choice objects for the selected IDs
             return option.choices
                 .filter(choice => selectedChoiceIds.includes(choice.id))
-                .map(choice => `${option.name}: ${choice.name}`); // Create the string
+                .map(choice => `${option.name}: ${choice.name}`);
         });
 
-        const itemForCart = { ...detailedItem, selectedOptions: selectedOptionsForCart };
+        // Create the final item object to be added to the cart.
+        const itemForCart = {
+            ...menuItem,
+            selectedOptions: selectedOptionsForCart
+        };
+        
         handleAddToCart(itemForCart);
         handleClose();
     };
@@ -75,35 +74,58 @@ function CustomizeItemModal({ open, handleClose, initialMenuItem, handleAddToCar
     return (
         <Modal open={open} onClose={handleClose}>
             <Box sx={style}>
-                <Typography variant="h5">{initialMenuItem.name}</Typography>
+                <Typography variant="h5" component="h2">{menuItem.name}</Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>{menuItem.description}</Typography>
                 <Divider sx={{ my: 2 }} />
-                {isLoading || !detailedItem ? <CircularProgress /> : (
-                    <>
-                        {detailedItem.options?.map(option => (
-                            <Box key={option.id} sx={{ my: 2 }}>
-                                <Typography variant="h6">{option.name}</Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    {option.minChoices === 1 && option.maxChoices === 1 ? 'Choose 1' : `Choose between ${option.minChoices} and ${option.maxChoices}`}
-                                </Typography>
-                                {option.maxChoices === 1 ? (
-                                    <RadioGroup value={selections[option.id]?.[0] || ''} onChange={(e) => handleRadioChange(option.id, e.target.value)}>
-                                        {option.choices.map(choice => <FormControlLabel key={choice.id} value={choice.id} control={<Radio />} label={choice.name} />)}
-                                    </RadioGroup>
-                                ) : (
-                                    <FormGroup>
-                                        {option.choices.map(choice => <FormControlLabel key={choice.id} control={<Checkbox checked={selections[option.id]?.includes(choice.id) || false} onChange={() => handleCheckboxChange(option.id, choice.id)} disabled={(selections[option.id]?.length >= option.maxChoices) && !selections[option.id]?.includes(choice.id)} />} label={choice.name} />)}
-                                    </FormGroup>
-                                )}
-                            </Box>
-                        ))}
-                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                            <Button onClick={handleClose}>Cancel</Button>
-                            <Button variant="contained" color="secondary" onClick={handleSubmit} disabled={!isSelectionValid()}>
-                                Add to Cart
-                            </Button>
-                        </Box>
-                    </>
-                )}
+
+                {menuItem.options.map(option => (
+                    <Box key={option.id} sx={{ my: 2 }}>
+                        <Typography variant="h6">{option.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {option.minChoices === 1 && option.maxChoices === 1 ? 'Choose 1' : `Choose between ${option.minChoices} and ${option.maxChoices}`}
+                        </Typography>
+                        
+                        {option.maxChoices === 1 ? (
+                            <RadioGroup
+                                value={selections[option.id]?.[0] || ''}
+                                onChange={(e) => handleRadioChange(option.id, e.target.value)}
+                            >
+                                {option.choices.map(choice => (
+                                    <FormControlLabel key={choice.id} value={choice.id} control={<Radio />} label={choice.name} />
+                                ))}
+                            </RadioGroup>
+                        ) : (
+                            <FormGroup>
+                                {option.choices.map(choice => (
+                                    <FormControlLabel 
+                                        key={choice.id} 
+                                        control={
+                                            <Checkbox
+                                                checked={selections[option.id]?.includes(choice.id) || false}
+                                                onChange={() => handleCheckboxChange(option.id, choice.id)}
+                                                disabled={(selections[option.id]?.length >= option.maxChoices) && !selections[option.id]?.includes(choice.id)}
+                                            />
+                                        } 
+                                        label={choice.name} 
+                                    />
+                                ))}
+                            </FormGroup>
+                        )}
+                    </Box>
+                ))}
+
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button 
+                        variant="contained" 
+                        color="secondary"
+                        onClick={handleSubmit}
+                        disabled={!isSelectionValid()}
+                        startIcon={<AddShoppingCartIcon />}
+                    >
+                        {t('add')} to Cart
+                    </Button>
+                </Box>
             </Box>
         </Modal>
     );
