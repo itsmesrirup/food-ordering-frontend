@@ -25,18 +25,24 @@ const CartContent = () => {
                 <>
                     <List>
                         {cartItems.map(item => (
-                            <ListItem key={item.id} disableGutters>
-                                <ListItemText 
-                                  primary={item.name} 
-                                  secondary={`$${(item.price * item.quantity).toFixed(2)}`} 
-                                />
-                                <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                                    <RemoveCircleOutlineIcon fontSize="small" />
-                                </IconButton>
-                                <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
-                                <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                                    <AddCircleOutlineIcon fontSize="small" />
-                                </IconButton>
+                            <ListItem key={item.id} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                                <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                                    <ListItemText 
+                                      primary={item.name} 
+                                      secondary={`$${(item.price * item.quantity).toFixed(2)}`} 
+                                    />
+                                    <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}><RemoveCircleOutlineIcon fontSize="small" /></IconButton>
+                                    <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
+                                    <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}><AddCircleOutlineIcon fontSize="small" /></IconButton>
+                                </Box>
+                                {/* Display selected options for bundle items */}
+                                {item.selectedOptions && (
+                                    <Box component="ul" sx={{ pl: 2, my: 0, fontSize: '0.8rem', color: 'text.secondary' }}>
+                                        {item.selectedOptions.map(opt => 
+                                            opt.choices.map((choice, index) => <li key={index}>{choice}</li>)
+                                        )}
+                                    </Box>
+                                )}
                             </ListItem>
                         ))}
                     </List>

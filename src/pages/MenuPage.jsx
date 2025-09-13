@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
+import CustomizeItemModal from '../components/CustomizeItemModal';
 import { useRestaurant } from '../layouts/RestaurantLayout';
 import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -20,6 +21,9 @@ function MenuPage() {
     
     const [categorizedMenu, setCategorizedMenu] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
+
+    const [modalOpen, setModalOpen] = useState(false);
+    const [currentItem, setCurrentItem] = useState(null);
 
     useEffect(() => {
         if (restaurant) {
@@ -47,6 +51,12 @@ function MenuPage() {
         toast.success(t('itemAddedToCart', { itemName: item.name }));
     };
 
+    // This function will open the modal for bundle items
+    const handleCustomizeClick = (item) => {
+        setCurrentItem(item);
+        setModalOpen(true);
+    };
+
     const MenuItemCard = ({ item }) => (
         <Paper elevation={2} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2 }}>
             <Box>
@@ -54,8 +64,14 @@ function MenuPage() {
                 <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
                 <Typography variant="h6" color="primary" fontWeight="bold">${item.price.toFixed(2)}</Typography>
             </Box>
-            <Button variant="outlined" color="secondary" startIcon={<AddShoppingCartIcon />} onClick={() => handleAddToCart(item)} disabled={!item.isAvailable}>
-                {item.isAvailable ? t('add') : t('unavailable')}
+            <Button 
+                variant="outlined" 
+                color="secondary" 
+                startIcon={<AddShoppingCartIcon />} 
+                onClick={() => item.bundle ? handleCustomizeClick(item) : handleAddToCart(item)} 
+                disabled={!item.isAvailable}
+            >
+                {item.isAvailable ? (item.bundle ? t('customize') : t('add')) : t('unavailable')}
             </Button>
         </Paper>
     );
@@ -124,6 +140,12 @@ function MenuPage() {
                     <Cart />
                 </Box>
             </Box>
+            <CustomizeItemModal
+                open={modalOpen}
+                handleClose={() => setModalOpen(false)}
+                menuItem={currentItem}
+                handleAddToCart={handleAddToCart}
+            />
         </Container>
     );
 }

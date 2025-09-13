@@ -33,5 +33,6 @@
   "orderConfirmation_backHome": "Zurück zur Startseite",
   "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
   "noMenuCategoriesYet": "Dieses Restaurant hat noch keine Menükategorien hinzugefügt.",
-  "unavailable": "Nicht verfügbar"
+  "unavailable": "Nicht verfügbar",
+  "customize": "Anpassen"
 }
