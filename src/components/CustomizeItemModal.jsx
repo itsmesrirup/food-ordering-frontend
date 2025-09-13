@@ -7,29 +7,26 @@ const style = {
   position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
   width: '90%', maxWidth: 500, bgcolor: 'background.paper', border: '1px solid #ddd',
   borderRadius: 2, boxShadow: 24, p: 4, maxHeight: '90vh', overflowY: 'auto'
-};
+};{option.minChoices === 1 && option.maxChoices === 1 ? 'Choose 1' : `Choose between ${option.minChoices} and ${option.maxChoices}`}
 
-// This component receives the full menuItem object with all options as a prop.
-function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
+function CustomizeItemModal({ open, handleClose, initialMenuItem, handleAddToCart }) {
     const { t } = useTranslation();
     const [selections, setSelections] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Reset the internal selections state whenever the modal is opened for a new item.
+    // Reset selections when the modal opens for a new item
     useEffect(() => {
         if (open) {
             setSelections({});
         }
     }, [open]);
 
-    // This is the safety guard. If the modal is open but has no item, or the item has no options, don't render.
-    if (!menuItem || !menuItem.options) {
-        return null;
-    }
+    if (!menuItem) return null;
 
     const handleRadioChange = (optionId, choiceId) => {
         setSelections(prev => ({
             ...prev,
-            [optionId]: [parseInt(choiceId)] // Store the selected choice ID
+            [optionId]: [choiceId] // Radio group selection is an array with one item
         }));
     };
 
@@ -44,7 +41,7 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
         });
     };
     
-    // Check if the current selections meet the min/max requirements for all option groups.
+    // Check if the current selections are valid according to the rules (min/max choices)
     const isSelectionValid = () => {
         return menuItem.options.every(option => {
             const selectedCount = selections[option.id]?.length || 0;
@@ -53,21 +50,26 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
     };
 
     const handleSubmit = () => {
+        setIsSubmitting(true);
+        
         const selectedOptionsForCart = menuItem.options.map(option => {
-            const selectedChoiceId = selections[option.id]?.[0]; // Assuming single choice for now
-            const choiceName = menuItem.options
-                .find(opt => opt.id === option.id).choices
-                .find(ch => ch.id === selectedChoiceId)?.name || '';
-            return `${option.name}: ${choiceName}`;
+            const selectedChoices = option.choices.filter(choice => 
+                selections[option.id]?.includes(choice.id)
+            );
+            return {
+                optionName: option.name,
+                choices: selectedChoices.map(c => c.name)
+            };
         });
-        // Create the final item object to be added to the cart.
+
         const itemForCart = {
             ...menuItem,
-            selectedOptions: selectedOptionsForCart
+            selectedOptions: selectedOptionsForCart // Add the selected choices to the item
         };
         
         handleAddToCart(itemForCart);
         handleClose();
+        setIsSubmitting(false);
     };
 
     return (
@@ -77,7 +79,7 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
                 <Typography variant="body2" color="text.secondary" gutterBottom>{menuItem.description}</Typography>
                 <Divider sx={{ my: 2 }} />
 
-                {menuItem.options.map(option => (
+                {menuItem.options?.map(option => (
                     <Box key={option.id} sx={{ my: 2 }}>
                         <Typography variant="h6">{option.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -85,15 +87,17 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
                         </Typography>
                         
                         {option.maxChoices === 1 ? (
+                            // Use Radio buttons for "choose one"
                             <RadioGroup
                                 value={selections[option.id]?.[0] || ''}
-                                onChange={(e) => handleRadioChange(option.id, e.target.value)}
+                                onChange={(e) => handleRadioChange(option.id, parseInt(e.target.value))}
                             >
                                 {option.choices.map(choice => (
                                     <FormControlLabel key={choice.id} value={choice.id} control={<Radio />} label={choice.name} />
                                 ))}
                             </RadioGroup>
                         ) : (
+                            // Use Checkboxes for "choose multiple"
                             <FormGroup>
                                 {option.choices.map(choice => (
                                     <FormControlLabel 
@@ -119,10 +123,10 @@ function CustomizeItemModal({ open, handleClose, menuItem, handleAddToCart }) {
                         variant="contained" 
                         color="secondary"
                         onClick={handleSubmit}
-                        disabled={!isSelectionValid()}
-                        startIcon={<AddShoppingCartIcon />}
+                        disabled={!isSelectionValid() || isSubmitting}
+                        startIcon={isSubmitting ? <CircularProgress size={20}/> : <AddShoppingCartIcon />}
                     >
-                        {t('add')} to Cart
+                        Add to Cart
                     </Button>
                 </Box>
             </Box>
