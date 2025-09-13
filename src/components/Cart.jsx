@@ -6,17 +6,36 @@ import Recommendations from './Recommendations';
 import { Box, Typography, Button, List, ListItem, ListItemText, IconButton, Divider, Modal, Paper } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import EditIcon from '@mui/icons-material/Edit';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import CustomizeItemModal from './CustomizeItemModal'; // <-- Import
 
 // This is the detailed content of the cart, used in both sidebar and modal.
-// It is built from your original component's JSX.
 const CartContent = () => {
     const { t } = useTranslation();
-    const { cartItems, updateQuantity, lastAddedItemId, currentRestaurant } = useCart();
+    const { cartItems, updateQuantity, lastAddedItemId, currentRestaurant, updateCartItem } = useCart();
     const location = useLocation();
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
+    // State for editing
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingItemIndex, setEditingItemIndex] = useState(null);
+
+    // Handler to open edit modal
+    const handleEditClick = (index) => {
+        setEditingItemIndex(index);
+        setEditModalOpen(true);
+    };
+
+    // Handler for saving edited options
+    const handleEditSave = (updatedItem) => {
+        updateCartItem(editingItemIndex, updatedItem);
+        setEditModalOpen(false);
+        setEditingItemIndex(null);
+    };
+
     return (
+        <>
         <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
             <Typography variant="h6" gutterBottom>{t('yourOrder')}</Typography>
             {cartItems.length === 0 ? (
@@ -24,8 +43,8 @@ const CartContent = () => {
             ) : (
                 <>
                     <List>
-                        {cartItems.map(item => (
-                            <ListItem key={item.id} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                        {cartItems.map((item, idx) => (
+                            <ListItem key={item.id + JSON.stringify(item.selectedOptions)} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                 <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
                                     <ListItemText 
                                       primary={item.name} 
@@ -34,12 +53,20 @@ const CartContent = () => {
                                     <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}><RemoveCircleOutlineIcon fontSize="small" /></IconButton>
                                     <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
                                     <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}><AddCircleOutlineIcon fontSize="small" /></IconButton>
+                                    {/* Edit button for customized items */}
+                                    {item.selectedOptions && (
+                                        <IconButton size="small" onClick={() => handleEditClick(idx)} title="Edit Choices">
+                                            <EditIcon fontSize="small" />
+                                        </IconButton>
+                                    )}
                                 </Box>
                                 {/* Display selected options for bundle items */}
                                 {item.selectedOptions && (
                                     <Box component="ul" sx={{ pl: 2, my: 0, fontSize: '0.8rem', color: 'text.secondary' }}>
                                         {item.selectedOptions.map(opt => 
-                                            opt.choices.map((choice, index) => <li key={index}>{choice}</li>)
+                                            <li key={opt.optionName}>
+                                                <strong>{opt.optionName}:</strong> {opt.choices.join(', ')}
+                                            </li>
                                         )}
                                     </Box>
                                 )}
@@ -59,16 +86,26 @@ const CartContent = () => {
                     >
                         {t('proceedToCheckout')}
                     </Button>
-                    
                     {currentRestaurant?.recommendationsEnabled && (
                         <Recommendations lastAddedItemId={lastAddedItemId} />
                     )}
                 </>
             )}
         </Paper>
+        {/* Edit modal for customizing options */}
+        {editModalOpen && editingItemIndex !== null && (
+            <CustomizeItemModal
+                open={editModalOpen}
+                handleClose={() => setEditModalOpen(false)}
+                menuItem={cartItems[editingItemIndex]}
+                initialSelections={cartItems[editingItemIndex].selectedOptions}
+                onSave={handleEditSave}
+                isEditing
+            />
+        )}
+        </>
     );
-};
-
+}
 
 // This is the new main Cart component that handles the responsive logic.
 function Cart() {
@@ -79,7 +116,7 @@ function Cart() {
 
     const handleOpen = () => setIsModalOpen(true);
     const handleClose = () => setIsModalOpen(false);
-    
+
     return (
         <>
             {/* --- Desktop Sidebar View --- */}
@@ -87,7 +124,6 @@ function Cart() {
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <CartContent />
             </Box>
-
             {/* --- Mobile Floating Button View --- */}
             {/* This button only appears on small screens and if there are items in the cart */}
             {cartItems.length > 0 && (
@@ -112,7 +148,6 @@ function Cart() {
                     </Button>
                 </Box>
             )}
-
             {/* --- Mobile Cart Modal --- */}
             <Modal
                 open={isModalOpen}

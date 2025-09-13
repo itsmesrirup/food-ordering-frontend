@@ -17,6 +17,15 @@ export const CartProvider = ({ children }) => {
         setCurrentRestaurant(restaurant);
     };
 
+    // Add or update an item by index (for editing options)
+    const updateCartItem = (index, updatedItem) => {
+        setCartItems(prevItems => {
+            const newItems = [...prevItems];
+            newItems[index] = { ...updatedItem, quantity: prevItems[index].quantity };
+            return newItems;
+        });
+    };
+
     const addToCart = (item) => {
         // The item being added MUST have a restaurantId.
         if (!item.restaurantId) {
@@ -92,7 +101,7 @@ export const CartProvider = ({ children }) => {
     };
 
     // Expose the cartRestaurantId in the context value
-    const value = { cartItems, cartRestaurantId, lastAddedItemId, addToCart, removeFromCart, updateQuantity, clearCart, currentRestaurant, setCartContext };
+    const value = { cartItems, cartRestaurantId, lastAddedItemId, addToCart, removeFromCart, updateQuantity, clearCart, currentRestaurant, setCartContext, updateCartItem };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

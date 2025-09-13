@@ -103,23 +103,32 @@ function CheckoutPage() {
                         fullWidth 
                         margin="normal"
                     />
-                    
                     <Divider sx={{ my: 2 }} />
-                    
                     <Typography variant="h6">{t('orderSummary')}</Typography>
                     {cartItems.map(item => (
-                         <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography>{item.quantity} x {item.name}</Typography>
-                            <Typography>${(item.price * item.quantity).toFixed(2)}</Typography>
+                        <Box key={item.id + JSON.stringify(item.selectedOptions)} sx={{ mb: 2 }}>
+                            <Typography>
+                                {item.quantity} x {item.name}
+                            </Typography>
+                            {item.selectedOptions && (
+                                <Box component="ul" sx={{ pl: 2, my: 0, fontSize: '0.9rem', color: 'text.secondary' }}>
+                                    {item.selectedOptions.map(opt => (
+                                        <li key={opt.optionName}>
+                                            <strong>{opt.optionName}:</strong> {opt.choices.join(', ')}
+                                        </li>
+                                    ))}
+                                </Box>
+                            )}
+                            <Typography>
+                                ${(item.price * item.quantity).toFixed(2)}
+                            </Typography>
                         </Box>
                     ))}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                         <Typography variant="h6">Total:</Typography>
                         <Typography variant="h6" fontWeight="bold">${totalPrice.toFixed(2)}</Typography>
                     </Box>
-
                     {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-                    
                     <Box sx={{ mt: 3, position: 'relative' }}>
                         <Button 
                             type="submit" 
