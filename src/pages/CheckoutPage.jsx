@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider } from '@mui/material';
+import { toast } from 'react-hot-toast';
 
 function CheckoutPage() {
     const { t } = useTranslation(); // Get the 't' function
