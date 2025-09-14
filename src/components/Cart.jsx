@@ -11,7 +11,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CustomizeItemModal from './CustomizeItemModal'; // <-- Import
 
 // This is the detailed content of the cart, used in both sidebar and modal.
-const CartContent = () => {
+const CartContent = ({onEditCartItem}) => {
     const { t } = useTranslation();
     const { cartItems, updateQuantity, lastAddedItemId, currentRestaurant, updateCartItem } = useCart();
     const location = useLocation();
@@ -23,8 +23,12 @@ const CartContent = () => {
 
     // Handler to open edit modal
     const handleEditClick = (index) => {
-        setEditingItemIndex(index);
-        setEditModalOpen(true);
+        if (typeof onEditCartItem === "function") {
+            onEditCartItem(index); // <-- Call parent handler to open modal in MenuPage
+        } else {
+            setEditingItemIndex(index);
+            setEditModalOpen(true);
+        }
     };
 
     // Handler for saving edited options
@@ -108,7 +112,7 @@ const CartContent = () => {
 }
 
 // This is the new main Cart component that handles the responsive logic.
-function Cart() {
+function Cart({ onEditCartItem }) {
     const { cartItems } = useCart();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -122,7 +126,7 @@ function Cart() {
             {/* --- Desktop Sidebar View --- */}
             {/* This is visible only on medium screens and up */}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                <CartContent />
+                <CartContent onEditCartItem={onEditCartItem} />
             </Box>
             {/* --- Mobile Floating Button View --- */}
             {/* This button only appears on small screens and if there are items in the cart */}

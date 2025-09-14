@@ -17,13 +17,16 @@ function MenuPage() {
     const theme = useTheme();
     const { t } = useTranslation();
     const { restaurantId } = useParams();
-    const { addToCart, setCartContext } = useCart();
+    const { addToCart, setCartContext, updateCartItem, cartItems } = useCart();
     
     const [categorizedMenu, setCategorizedMenu] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
 
+    // Modal state
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
     const [currentItem, setCurrentItem] = useState(null);
+    const [editingCartIndex, setEditingCartIndex] = useState(null);
 
     useEffect(() => {
         if (restaurant) {
@@ -49,12 +52,31 @@ function MenuPage() {
     const handleAddToCart = (item) => {
         addToCart(item);
         toast.success(t('itemAddedToCart', { itemName: item.name }));
+        setModalOpen(false);
     };
 
-    // This function will open the modal for bundle items
+    // PATCH: open modal for add
     const handleCustomizeClick = (item) => {
         setCurrentItem(item);
+        setModalMode('add');
+        setEditingCartIndex(null);
         setModalOpen(true);
+    };
+
+    // PATCH: open modal for edit
+    const handleCustomizeEdit = (cartIndex) => {
+        setCurrentItem(cartItems[cartIndex]);
+        setModalMode('edit');
+        setEditingCartIndex(cartIndex);
+        setModalOpen(true);
+    };
+
+    // PATCH: handle edit save
+    const handleEditSave = (item) => {
+        updateCartItem(editingCartIndex, item);
+        toast.success(t('cartItemUpdated', { itemName: item.name }));
+        setModalOpen(false);
+        setEditingCartIndex(null);
     };
 
     const MenuItemCard = ({ item }) => (
@@ -137,14 +159,23 @@ function MenuPage() {
                     top: { md: '20px' },
                     alignSelf: 'flex-start'
                 }}>
-                    <Cart />
+                    <Cart onEditCartItem={handleCustomizeEdit} />
                 </Box>
             </Box>
             <CustomizeItemModal
                 open={modalOpen}
-                handleClose={() => setModalOpen(false)}
+                handleClose={() => {
+                    setModalOpen(false);
+                    setEditingCartIndex(null);
+                }}
                 menuItem={currentItem}
-                handleAddToCart={handleAddToCart}
+                onSave={modalMode === 'edit' ? handleEditSave : handleAddToCart}
+                initialSelections={
+                    modalMode === 'edit' && currentItem?.selectedOptions
+                        ? currentItem.selectedOptions
+                        : null
+                }
+                isEditing={modalMode === 'edit'}
             />
         </Container>
     );

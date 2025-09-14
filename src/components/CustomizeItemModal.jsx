@@ -86,7 +86,11 @@ function CustomizeItemModal({ open, handleClose, menuItem, initialSelections, on
             ...menuItem,
             selectedOptions: selectedOptionsForCart
         };
-        onSave(itemForCart); // <-- PATCH: Use new onSave logic
+        if (typeof onSave === "function") {
+            onSave(itemForCart);
+        } else {
+            console.error("onSave is not a function", onSave);
+        }
     };
 
     return (
