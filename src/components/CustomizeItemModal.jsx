@@ -11,9 +11,13 @@ const style = {
 
 function CustomizeItemModal({ open, handleClose, menuItem, initialSelections, onSave, isEditing }) {
     const { t } = useTranslation();
+
+    // Defensive: always check menuItem and menuItem.options
+    const options = menuItem?.options || [];
+
     // Default: build blank selections for each option group
     const buildDefaultSelections = () =>
-        menuItem.options.reduce((acc, option) => ({ ...acc, [option.id]: [] }), {});
+        options.reduce((acc, option) => ({ ...acc, [option.id]: [] }), {});
 
     // --- PATCH: Initialize with previous selections if editing ---
     const [selections, setSelections] = useState(buildDefaultSelections());
@@ -21,6 +25,7 @@ function CustomizeItemModal({ open, handleClose, menuItem, initialSelections, on
 
     // Reset selections when the modal opens for a new item
     useEffect(() => {
+        if (!menuItem || !options.length) return;
         if (isEditing && initialSelections) {
             // Convert initialSelections to the modal's expected format
             // initialSelections: [{optionName, choices}], menuItem.options: [{id, name, ...}]
