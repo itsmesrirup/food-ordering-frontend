@@ -48,7 +48,7 @@ const CartContent = ({onEditCartItem}) => {
                 <>
                     <List>
                         {cartItems.map((item, idx) => (
-                            <ListItem key={item.id + JSON.stringify(item.selectedOptions)} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                            <ListItem key={`${item.id}-${idx}`} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                 <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
                                     <ListItemText 
                                       primary={item.name} 
