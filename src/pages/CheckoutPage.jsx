@@ -104,7 +104,7 @@ function CheckoutPage() {
                     <Divider sx={{ my: 2 }} />
                     <Typography variant="h6">{t('orderSummary')}</Typography>
                     {cartItems.map(item => (
-                        <Box key={item.id + JSON.stringify(item.selectedOptions)} sx={{ mb: 2 }}>
+                        <Box key={String(item.id) + '-' + JSON.stringify(item.selectedOptions)} sx={{ mb: 2 }}>
                             <Typography>
                                 {item.quantity} x {item.name}
                             </Typography>

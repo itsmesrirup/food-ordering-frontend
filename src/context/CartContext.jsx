@@ -33,6 +33,11 @@ export const CartProvider = ({ children }) => {
             return;
         }
 
+        if (!item.id || isNaN(item.id)) {
+            console.error("Cart item is missing a valid id:", item);
+            return; // Don't add to cart if no valid id
+        }
+
         // ✅ THE CORE LOGIC
         // Check if the new item is from a different restaurant
         if (cartRestaurantId && cartRestaurantId !== item.restaurantId) {
