@@ -113,13 +113,15 @@ function CheckoutPage() {
                             >
                                 Login
                             </Button>
-                            <Button 
-                                component={RouterLink} 
-                                to={restaurantId ? `/signup/${restaurantId}` : '/signup'}
-                                variant="contained"
-                            >
-                                Sign Up
-                            </Button>
+                            {restaurantId && (
+                                <Button 
+                                    component={RouterLink} 
+                                    to={`/signup/${restaurantId}`}
+                                    variant="contained"
+                                >
+                                    Sign Up
+                                </Button>
+                            )}
                         </ButtonGroup>
                     </Alert>
                 )}

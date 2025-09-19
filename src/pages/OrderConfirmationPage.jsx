@@ -46,16 +46,13 @@ function OrderConfirmationPage() {
                     <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
                         <Typography variant="body2" gutterBottom>
                             <strong>Guest Order:</strong> Your order was placed as a guest. 
-                            Create an account to track orders and save preferences!
+                            Visit a restaurant page to create an account and track future orders!
                         </Typography>
                         <ButtonGroup size="small" sx={{ mt: 1 }}>
-                            <Button component={RouterLink} to="/signup" variant="contained">
-                                Create Account
-                            </Button>
                             <Button component={RouterLink} to="/login" variant="outlined">
                                 Login
                             </Button>
-                            <Button component={Link} to="/" variant="text">
+                            <Button component={Link} to="/" variant="contained">
                                 {t('orderConfirmation_backHome')}
                             </Button>
                         </ButtonGroup>

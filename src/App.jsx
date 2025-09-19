@@ -43,7 +43,7 @@ const MainLayout = () => {
                 ) : (
                   <ButtonGroup variant="text" color="inherit">
                     <Button component={RouterLink} to="/login">Login</Button>
-                    <Button component={RouterLink} to="/signup">Sign Up</Button>
+                    {/* Note: Sign Up requires restaurant context - users should go to a restaurant page first */}
                   </ButtonGroup>
                 )}
                 <LanguageSwitcher />
@@ -69,7 +69,7 @@ function App() {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
                 <Route path="/login/:restaurantId?" element={<LoginPage />} />
-                <Route path="/signup/:restaurantId?" element={<SignUpPage />} />
+                <Route path="/signup/:restaurantId" element={<SignUpPage />} />
                 {/* ✅ 3. Add a protected route for the account page */}
                 <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
               </Route>
