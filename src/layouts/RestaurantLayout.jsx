@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Outlet, Link as RouterLink, useOutletContext } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '../theme';
-import { Container, Typography, Box, Link, CircularProgress, CssBaseline } from '@mui/material';
+import { Container, Typography, Box, Link, CircularProgress, CssBaseline, Button, ButtonGroup } from '@mui/material';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 
 function RestaurantLayout() {
+    const { customer } = useCustomerAuth();
     const { restaurantId } = useParams();
     const [theme, setTheme] = useState(null);
     const [restaurantData, setRestaurantData] = useState(null);
@@ -63,7 +65,17 @@ function RestaurantLayout() {
                                 <Typography variant="h6">{restaurantData.name}</Typography>
                             )}
                         </Link>
-                        <LanguageSwitcher />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            {customer ? (
+                                <Button component={RouterLink} to="/account" color="inherit">My Account</Button>
+                            ) : (
+                                <ButtonGroup variant="text" color="inherit">
+                                    <Button component={RouterLink} to={`/login/${restaurantId}`}>Login</Button>
+                                    <Button component={RouterLink} to={`/signup/${restaurantId}`}>Sign Up</Button>
+                                </ButtonGroup>
+                            )}
+                            <LanguageSwitcher />
+                        </Box>
                     </Container>
                 </Box>
             </header>

@@ -37,15 +37,7 @@ const MainLayout = () => {
               <Typography variant="h6" component="div">
                 <Link component={RouterLink} to="/" color="inherit" underline="none">Tablo</Link>
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                 {/* ✅ 2. Add dynamic account links */}
-                {customer ? (
-                    <Button component={RouterLink} to="/account" color="inherit">My Account</Button>
-                ) : (
-                    <Button component={RouterLink} to="/login" color="inherit">Login / Sign Up</Button>
-                )}
-                <LanguageSwitcher />
-              </Box>
+              <LanguageSwitcher />
             </Container>
           </Box>
         </header>
@@ -67,8 +59,8 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/login/:restaurantId?" element={<LoginPage />} />
+                <Route path="/signup/:restaurantId?" element={<SignUpPage />} />
                 {/* ✅ 3. Add a protected route for the account page */}
                 <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
               </Route>

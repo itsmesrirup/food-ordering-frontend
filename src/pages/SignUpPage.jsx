@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Link } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
@@ -9,6 +9,7 @@ function SignUpPage() {
     const { t } = useTranslation();
     const { register } = useCustomerAuth();
     const navigate = useNavigate();
+    const { restaurantId } = useParams();
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -18,10 +19,15 @@ function SignUpPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Safety check if someone lands on this page without a restaurant context
+        if (!restaurantId) {
+            toast.error("Please sign up from a restaurant's page.");
+            return;
+        }
         setIsSubmitting(true);
         try {
-            await register(formData.name, formData.email, formData.password);
-            navigate('/account'); // Redirect to account page on success
+            await register(formData.name, formData.email, formData.password, restaurantId);
+            navigate(`/restaurants/${restaurantId}`); // Redirect to account page on success
         } catch (error) {
             toast.error(error.message);
         } finally {
