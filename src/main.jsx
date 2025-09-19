@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { CartProvider } from './context/CartContext.jsx' // Import
+import { CustomerAuthProvider } from './context/CustomerAuthContext.jsx' // Import
 import './index.css'
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -14,9 +15,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ThemeProvider theme={lightTheme}> {/* Apply the theme */}
       <CssBaseline /> {/* Normalizes CSS across browsers */}
       <BrowserRouter>
-        <CartProvider>
-          <App />
-        </CartProvider>
+        <CustomerAuthProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </CustomerAuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>,

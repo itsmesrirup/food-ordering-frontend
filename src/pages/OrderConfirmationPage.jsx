@@ -1,11 +1,13 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Link as RouterLink } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next'; // 1. Import 'Trans'
-import { Container, Typography, Button, Box } from '@mui/material';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { Container, Typography, Button, Box, Alert, ButtonGroup } from '@mui/material';
 
 function OrderConfirmationPage() {
     const { orderId } = useParams();
     const { t } = useTranslation(); // 2. Get the 't' function
+    const { customer } = useCustomerAuth(); // Get customer auth state
 
     return (
         <Container maxWidth="sm" sx={{ textAlign: 'center', py: 4 }}>
@@ -25,9 +27,46 @@ function OrderConfirmationPage() {
                 <Typography sx={{ mb: 4 }}>
                     {t('orderConfirmation_preparation')}
                 </Typography>
-                <Button component={Link} to="/" variant="contained">
-                    {t('orderConfirmation_backHome')}
-                </Button>
+
+                {/* Show different messaging for guests vs registered users */}
+                {customer ? (
+                    <Alert severity="success" sx={{ mb: 3, textAlign: 'left' }}>
+                        <Typography variant="body2" gutterBottom>
+                            <strong>Account Benefits:</strong> This order is saved to your account. 
+                            You can view your order history anytime!
+                        </Typography>
+                        <Button component={RouterLink} to="/account" variant="outlined" size="small" sx={{ mr: 1 }}>
+                            View Account
+                        </Button>
+                        <Button component={Link} to="/" variant="contained" size="small">
+                            {t('orderConfirmation_backHome')}
+                        </Button>
+                    </Alert>
+                ) : (
+                    <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+                        <Typography variant="body2" gutterBottom>
+                            <strong>Guest Order:</strong> Your order was placed as a guest. 
+                            Create an account to track orders and save preferences!
+                        </Typography>
+                        <ButtonGroup size="small" sx={{ mt: 1 }}>
+                            <Button component={RouterLink} to="/signup" variant="contained">
+                                Create Account
+                            </Button>
+                            <Button component={RouterLink} to="/login" variant="outlined">
+                                Login
+                            </Button>
+                            <Button component={Link} to="/" variant="text">
+                                {t('orderConfirmation_backHome')}
+                            </Button>
+                        </ButtonGroup>
+                    </Alert>
+                )}
+
+                {!customer && (
+                    <Button component={Link} to="/" variant="contained">
+                        {t('orderConfirmation_backHome')}
+                    </Button>
+                )}
             </Box>
         </Container>
     );
