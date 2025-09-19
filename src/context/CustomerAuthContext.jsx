@@ -53,11 +53,11 @@ export const CustomerAuthProvider = ({ children }) => {
         }
     };
     
-    const register = async (name, email, password) => {
+    const register = async (name, email, password, restaurantId) => {
         const response = await fetch(`${API_BASE_URL}/api/customer/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password })
+            body: JSON.stringify({ name, email, password, restaurantId })
         });
         if (!response.ok) throw new Error('Registration failed. Please try again.');
         const data = await response.json();
