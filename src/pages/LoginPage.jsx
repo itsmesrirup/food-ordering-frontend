@@ -47,7 +47,11 @@ function LoginPage() {
                         {isSubmitting && <CircularProgress size={24} />}
                     </Box>
                      <Typography align="center" sx={{ mt: 2 }}>
-                        Don't have an account? <Link component={RouterLink} to={restaurantId ? `/signup/${restaurantId}` : '/signup'}>Sign Up</Link>
+                        {restaurantId ? (
+                            <>Don't have an account? <Link component={RouterLink} to={`/signup/${restaurantId}`}>Sign Up</Link></>
+                        ) : (
+                            <>Don't have an account? Please visit a restaurant page to sign up.</>
+                        )}
                     </Typography>
                 </Box>
             </Paper>
