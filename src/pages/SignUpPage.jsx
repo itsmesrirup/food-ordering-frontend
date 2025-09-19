@@ -50,7 +50,7 @@ function SignUpPage() {
                         {isSubmitting && <CircularProgress size={24} />}
                     </Box>
                     <Typography align="center" sx={{ mt: 2 }}>
-                        Already have an account? <Link component={RouterLink} to="/login">Log In</Link>
+                        Already have an account? <Link component={RouterLink} to={restaurantId ? `/login/${restaurantId}` : '/login'}>Log In</Link>
                     </Typography>
                 </Box>
             </Paper>

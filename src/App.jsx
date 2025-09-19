@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Link as RouterLink, Outlet, Navigate } from 'react-router-dom';
-import { Container, Typography, Box, Link, Button } from '@mui/material';
+import { Container, Typography, Box, Link, Button, ButtonGroup } from '@mui/material';
 import LandingPage from './pages/LandingPage';
 import MenuPage from './pages/MenuPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -37,7 +37,17 @@ const MainLayout = () => {
               <Typography variant="h6" component="div">
                 <Link component={RouterLink} to="/" color="inherit" underline="none">Tablo</Link>
               </Typography>
-              <LanguageSwitcher />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {customer ? (
+                  <Button component={RouterLink} to="/account" color="inherit">My Account</Button>
+                ) : (
+                  <ButtonGroup variant="text" color="inherit">
+                    <Button component={RouterLink} to="/login">Login</Button>
+                    <Button component={RouterLink} to="/signup">Sign Up</Button>
+                  </ButtonGroup>
+                )}
+                <LanguageSwitcher />
+              </Box>
             </Container>
           </Box>
         </header>
@@ -46,10 +56,9 @@ const MainLayout = () => {
     );
 };
 
-// The main App component is now just a wrapper for the provider and the routes
+// The main App component is now just a wrapper for the routes
 function App() {
   return (
-    <CustomerAuthProvider>
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Toaster position="top-center" />
           
@@ -85,7 +94,6 @@ function App() {
             </Typography>
           </Box>
         </Box>
-    </CustomerAuthProvider>
   );
 }
 

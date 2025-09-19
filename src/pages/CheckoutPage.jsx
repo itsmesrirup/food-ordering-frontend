@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider } from '@mui/material';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
+import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ButtonGroup } from '@mui/material';
 import { toast } from 'react-hot-toast';
 
 function CheckoutPage() {
     const { t } = useTranslation(); // Get the 't' function
     const { cartItems, clearCart } = useCart();
+    const { customer, token } = useCustomerAuth(); // Get customer auth state
     const navigate = useNavigate();
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
+    const restaurantId = searchParams.get("restaurantId");
     const handleInputChange = (e) => {
         setCustomerDetails({ ...customerDetails, [e.target.name]: e.target.value });
     };
@@ -30,18 +33,26 @@ function CheckoutPage() {
         }
 
         try {
-            // Step 1: Find or create the customer
-            const customerResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/customers/find-or-create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: customerDetails.email, name: customerDetails.name })
-            });
-            if (!customerResponse.ok) throw new Error('Failed to create customer');
-            const customerData = await customerResponse.json();
+            let customerId;
+            
+            if (customer && token) {
+                // User is authenticated, use their customer ID
+                customerId = customer.id;
+            } else {
+                // Guest checkout - find or create customer
+                const customerResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/customers/find-or-create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: customerDetails.email, name: customerDetails.name })
+                });
+                if (!customerResponse.ok) throw new Error('Failed to create customer');
+                const customerData = await customerResponse.json();
+                customerId = customerData.id;
+            }
 
             // Step 2: Prepare the order payload
             const orderPayload = {
-                customerId: customerData.id,
+                customerId: customerId,
                 tableNumber: tableNumber,
                 items: cartItems.map(item => ({
                     menuItemId: item.id,
@@ -80,28 +91,65 @@ function CheckoutPage() {
         <Container maxWidth="sm" sx={{ mt: 4 }}>
             <Paper elevation={3} sx={{ p: 4 }}>
                 <Typography variant="h4" align="center" gutterBottom>{t('checkoutTitle')}</Typography>
+                
+                {/* Authentication status and guest messaging */}
+                {customer ? (
+                    <Alert severity="success" sx={{ mb: 3 }}>
+                        Ordering as: <strong>{customer.name}</strong> ({customer.email})
+                    </Alert>
+                ) : (
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                        <Typography variant="body2" gutterBottom>
+                            <strong>Guest Checkout:</strong> You're ordering as a guest. 
+                        </Typography>
+                        <Typography variant="body2" gutterBottom>
+                            Want to track your order and save your preferences?
+                        </Typography>
+                        <ButtonGroup size="small" sx={{ mt: 1 }}>
+                            <Button 
+                                component={RouterLink} 
+                                to={restaurantId ? `/login/${restaurantId}` : '/login'}
+                                variant="outlined"
+                            >
+                                Login
+                            </Button>
+                            <Button 
+                                component={RouterLink} 
+                                to={restaurantId ? `/signup/${restaurantId}` : '/signup'}
+                                variant="contained"
+                            >
+                                Sign Up
+                            </Button>
+                        </ButtonGroup>
+                    </Alert>
+                )}
+
                 <Box component="form" onSubmit={handleSubmitOrder}>
-                    <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
-                    <TextField 
-                        label={t('fullNameLabel')}
-                        name="name" 
-                        value={customerDetails.name} 
-                        onChange={handleInputChange} 
-                        required 
-                        fullWidth 
-                        margin="normal"
-                    />
-                    <TextField 
-                        label={t('emailLabel')} 
-                        name="email" 
-                        type="email"
-                        value={customerDetails.email} 
-                        onChange={handleInputChange} 
-                        required 
-                        fullWidth 
-                        margin="normal"
-                    />
-                    <Divider sx={{ my: 2 }} />
+                    {!customer && (
+                        <>
+                            <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
+                            <TextField 
+                                label={t('fullNameLabel')}
+                                name="name" 
+                                value={customerDetails.name} 
+                                onChange={handleInputChange} 
+                                required 
+                                fullWidth 
+                                margin="normal"
+                            />
+                            <TextField 
+                                label={t('emailLabel')} 
+                                name="email" 
+                                type="email"
+                                value={customerDetails.email} 
+                                onChange={handleInputChange} 
+                                required 
+                                fullWidth 
+                                margin="normal"
+                            />
+                            <Divider sx={{ my: 2 }} />
+                        </>
+                    )}
                     <Typography variant="h6">{t('orderSummary')}</Typography>
                     {cartItems.map(item => (
                         <Box key={String(item.id) + '-' + JSON.stringify(item.selectedOptions)} sx={{ mb: 2 }}>

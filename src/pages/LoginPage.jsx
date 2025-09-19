@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Link } from '@mui/material';
 import { toast } from 'react-hot-toast';
 
 function LoginPage() {
     const { login } = useCustomerAuth();
     const navigate = useNavigate();
+    const { restaurantId } = useParams();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -19,7 +20,12 @@ function LoginPage() {
         setIsSubmitting(true);
         try {
             await login(formData.email, formData.password);
-            navigate('/account'); // Redirect to account page on success
+            // Navigate back to restaurant menu if we have a restaurantId, otherwise to account
+            if (restaurantId) {
+                navigate(`/restaurants/${restaurantId}`);
+            } else {
+                navigate('/account');
+            }
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -41,7 +47,7 @@ function LoginPage() {
                         {isSubmitting && <CircularProgress size={24} />}
                     </Box>
                      <Typography align="center" sx={{ mt: 2 }}>
-                        Don't have an account? <Link component={RouterLink} to="/signup">Sign Up</Link>
+                        Don't have an account? <Link component={RouterLink} to={restaurantId ? `/signup/${restaurantId}` : '/signup'}>Sign Up</Link>
                     </Typography>
                 </Box>
             </Paper>
