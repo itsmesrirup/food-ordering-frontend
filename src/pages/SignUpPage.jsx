@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
-import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Link } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
@@ -9,9 +9,17 @@ function SignUpPage() {
     const { t } = useTranslation();
     const { register } = useCustomerAuth();
     const navigate = useNavigate();
-    const { restaurantId } = useParams();
+    const [searchParams] = useSearchParams();
+    const restaurantId  = Number(searchParams.get('restaurantId'));
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    console.log('restaurantId:', restaurantId, 'Type:', typeof restaurantId);
+    
+    if (!restaurantId || isNaN(restaurantId)) {
+        toast.error("Invalid restaurant. Please visit a restaurant page to sign up.");
+        return;
+    }
 
     // Enforce restaurant context requirement
     if (!restaurantId) {

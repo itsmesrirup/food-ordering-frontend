@@ -70,8 +70,8 @@ function RestaurantLayout() {
                                 <Button component={RouterLink} to="/account" color="inherit">My Account</Button>
                             ) : (
                                 <ButtonGroup variant="text" color="inherit">
-                                    <Button component={RouterLink} to={`/login/${restaurantId}`}>Login</Button>
-                                    <Button component={RouterLink} to={`/signup/${restaurantId}`}>Sign Up</Button>
+                                    <Button component={RouterLink} to={`/login?restaurantId=${restaurantId}`}>Login</Button>
+                                    <Button component={RouterLink} to={`/signup?restaurantId=${restaurantId}`}>Sign Up</Button>
                                 </ButtonGroup>
                             )}
                             <LanguageSwitcher />

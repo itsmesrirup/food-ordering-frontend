@@ -69,7 +69,7 @@ function App() {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
                 <Route path="/login/:restaurantId?" element={<LoginPage />} />
-                <Route path="/signup/:restaurantId" element={<SignUpPage />} />
+                <Route path="/signup" element={<SignUpPage />} />
                 {/* ✅ 3. Add a protected route for the account page */}
                 <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
               </Route>

@@ -39,7 +39,7 @@ export const CustomerAuthProvider = ({ children }) => {
     }, [token, API_BASE_URL]);
 
     const login = async (email, password) => {
-        const response = await fetch(`${API_BASE_URL}/api/customer/auth/authenticate`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/customer/authenticate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -54,7 +54,7 @@ export const CustomerAuthProvider = ({ children }) => {
     };
     
     const register = async (name, email, password, restaurantId) => {
-        const response = await fetch(`${API_BASE_URL}/api/customer/auth/register`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/customer/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password, restaurantId })
