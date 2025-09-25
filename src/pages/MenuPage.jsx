@@ -9,6 +9,7 @@ import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divi
 import { useTheme } from '@mui/material/styles';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import SpecialsBoard from '../components/SpecialsBoard';
 import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 
@@ -135,6 +136,8 @@ function MenuPage() {
                     )}
                 </Box>
             </Paper>
+
+            <SpecialsBoard />
 
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
                 {/* --- Main Content: Menu --- */}
