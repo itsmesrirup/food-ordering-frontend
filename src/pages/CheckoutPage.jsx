@@ -4,10 +4,12 @@ import { useCart } from '../context/CartContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider } from '@mui/material';
 import { toast } from 'react-hot-toast';
+import { formatPrice } from '../utils/formatPrice';
+
 
 function CheckoutPage() {
     const { t } = useTranslation(); // Get the 't' function
-    const { cartItems, clearCart } = useCart();
+    const { cartItems, clearCart, currentRestaurant } = useCart();
     const navigate = useNavigate();
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,7 +106,7 @@ function CheckoutPage() {
                     <Divider sx={{ my: 2 }} />
                     <Typography variant="h6">{t('orderSummary')}</Typography>
                     {cartItems.map(item => (
-                        <Box key={item.id + JSON.stringify(item.selectedOptions)} sx={{ mb: 2 }}>
+                        <Box key={item.cartItemId} sx={{ mb: 2 }}>
                             <Typography>
                                 {item.quantity} x {item.name}
                             </Typography>
@@ -118,13 +120,13 @@ function CheckoutPage() {
                                 </Box>
                             )}
                             <Typography>
-                                ${(item.price * item.quantity).toFixed(2)}
+                                {formatPrice(item.price * item.quantity, currentRestaurant?.currency)}
                             </Typography>
                         </Box>
                     ))}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                        <Typography variant="h6">Total:</Typography>
-                        <Typography variant="h6" fontWeight="bold">${totalPrice.toFixed(2)}</Typography>
+                        <Typography variant="h6">{t('total')}</Typography>
+                        <Typography variant="h6" fontWeight="bold">{formatPrice(totalPrice, currentRestaurant?.currency)}</Typography>
                     </Box>
                     {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
                     <Box sx={{ mt: 3, position: 'relative' }}>

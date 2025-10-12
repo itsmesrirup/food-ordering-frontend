@@ -1,107 +1,121 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-    // State to hold the items in the cart
     const [cartItems, setCartItems] = useState([]);
-    
-    // ✅ NEW STATE: Track which restaurant the cart belongs to.
-    // Can be null if the cart is empty.
     const [cartRestaurantId, setCartRestaurantId] = useState(null);
     const [lastAddedItemId, setLastAddedItemId] = useState(null);
     const [currentRestaurant, setCurrentRestaurant] = useState(null);
 
-    // call this function from MenuPage when it loads
-    const setCartContext = (restaurant) => {
+    // Wrapped function in useCallback to prevent it from being recreated on every render
+    const setCartContext = useCallback((restaurant) => {
         setCurrentRestaurant(restaurant);
-    };
+    }, []); // Empty dependency array means this function is created only once.
 
-    // Add or update an item by index (for editing options)
-    const updateCartItem = (index, updatedItem) => {
+    // Wrap function in useCallback
+    const updateCartItem = useCallback((index, updatedItem) => {
         setCartItems(prevItems => {
             const newItems = [...prevItems];
-            newItems[index] = { ...updatedItem, quantity: prevItems[index].quantity };
+            const originalItem = prevItems[index];
+            newItems[index] = { 
+                ...updatedItem, 
+                quantity: originalItem.quantity,
+                cartItemId: originalItem.cartItemId
+            };
             return newItems;
         });
-    };
+    }, []);
 
-    const addToCart = (item) => {
-        // The item being added MUST have a restaurantId.
+    // --- Wrap function in useCallback ---
+    const addToCart = useCallback((item) => {
         if (!item.restaurantId) {
             console.error("Item is missing restaurantId:", item);
             return;
         }
 
-        // ✅ THE CORE LOGIC
-        // Check if the new item is from a different restaurant
         if (cartRestaurantId && cartRestaurantId !== item.restaurantId) {
-            // Ask for confirmation before clearing the cart
             const confirmSwitch = window.confirm(
                 "You have items from another restaurant in your cart. Would you like to clear the cart and add this item?"
             );
 
             if (confirmSwitch) {
-                // Clear the cart and add the new item as the first item
-                setCartItems([{ ...item, quantity: 1 }]);
+                const newItemWithId = { ...item, quantity: 1, cartItemId: `${item.id}-${new Date().getTime()}` };
+                setCartItems([newItemWithId]);
                 setCartRestaurantId(item.restaurantId);
                 setLastAddedItemId(item.id);
             }
-            // If they cancel, do nothing.
             return;
         }
 
-        // If the cart is empty, set the restaurant ID
         if (!cartRestaurantId) {
             setCartRestaurantId(item.restaurantId);
         }
 
-        // Standard logic: add new item or update quantity for the same restaurant
         setCartItems(prevItems => {
-            const existingItem = prevItems.find(i => i.id === item.id && JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions)); // Also check options
+            const existingItem = prevItems.find(i => i.id === item.id && JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions));
             if (existingItem) {
                 return prevItems.map(i => 
                     i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
                 );
             }
-            return [...prevItems, { ...item, quantity: 1 }];
+            const newItemWithId = { ...item, quantity: 1, cartItemId: `${item.id || 'bundle'}-${new Date().getTime()}` };
+            return [...prevItems, newItemWithId];
         });
         setLastAddedItemId(item.id);
-    };
+    }, [cartRestaurantId]); // This function depends on cartRestaurantId, so it's in the dependency array.
 
-    const removeFromCart = (itemId) => {
+    // --- Wrap function in useCallback ---
+    const removeFromCart = useCallback((cartItemId) => {
         setCartItems(prevItems => {
-            const newItems = prevItems.filter(item => item.id !== itemId);
-            // If the cart becomes empty, reset the restaurant ID
+            const newItems = prevItems.filter(item => item.cartItemId !== cartItemId);
             if (newItems.length === 0) {
                 setCartRestaurantId(null);
                 setLastAddedItemId(null);
             }
             return newItems;
         });
-    };
+    }, []);
 
-    const updateQuantity = (itemId, quantity) => {
+    // --- Wrap function in useCallback ---
+    const updateQuantity = useCallback((cartItemId, quantity) => {
         if (quantity <= 0) {
-            removeFromCart(itemId);
+            // We can call removeFromCart directly since it's also memoized
+            removeFromCart(cartItemId);
         } else {
             setCartItems(prevItems => 
                 prevItems.map(item => 
-                    item.id === itemId ? { ...item, quantity } : item
+                    item.cartItemId === cartItemId ? { ...item, quantity } : item
                 )
             );
         }
-    };
-    
-    const clearCart = () => {
+    }, [removeFromCart]); // Depends on the memoized removeFromCart
+
+    // --- Wrap function in useCallback ---
+    const clearCart = useCallback(() => {
         setCartItems([]);
-        // Also reset the restaurant ID
         setCartRestaurantId(null);
         setLastAddedItemId(null);
-    };
-
-    // Expose the cartRestaurantId in the context value
-    const value = { cartItems, cartRestaurantId, lastAddedItemId, addToCart, removeFromCart, updateQuantity, clearCart, currentRestaurant, setCartContext, updateCartItem };
+    }, []);
+    
+    // --- Memoize the entire context value object with useMemo ---
+    // This ensures that consumers of the context only re-render
+    // when the specific values they use have actually changed.
+    const value = useMemo(() => ({
+        cartItems, 
+        cartRestaurantId, 
+        lastAddedItemId, 
+        addToCart, 
+        removeFromCart, 
+        updateQuantity, 
+        clearCart, 
+        currentRestaurant, 
+        setCartContext, 
+        updateCartItem
+    }), [
+        cartItems, cartRestaurantId, lastAddedItemId, currentRestaurant, 
+        addToCart, removeFromCart, updateQuantity, clearCart, setCartContext, updateCartItem
+    ]);
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

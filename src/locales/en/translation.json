@@ -12,7 +12,9 @@
   "cartIsEmptyError": "Your cart is empty.",
   "orderingForTable": "Ordering for Table",
   "add": "Add",
+  "added": "Added!",
   "itemAddedToCart": "{{itemName}} added to cart!",
+  "cartItemUpdated": "{{itemName}} updated in cart.",
   "proceedToCheckout": "Proceed to Checkout",
   "checkoutTitle": "Checkout",
   "yourDetails": "Your Details",
@@ -25,6 +27,7 @@
   "requestReservation": "Request Reservation",
   "sendingRequest": "Sending Request...",
   "orderSummary": "Order Summary",
+  "total": "Total:",
   "placeOrder": "Place Order",
   "orderConfirmation_thankYou": "Thank you for your order!",
   "orderConfirmation_success": "Your order has been placed successfully.",
@@ -34,5 +37,8 @@
   "unexpectedError": "An unexpected error occurred. Please try again.",
   "noMenuCategoriesYet": "This restaurant has not added any menu categories yet.",
   "unavailable": "Unavailable",
-  "customize": "Customize"
+  "customize": "Customize",
+  "dateRangeFromTo": "From {{startDate}} to {{endDate}}",
+  "viewCartItems_one": "{{count}} item - View Cart ({{price}})",
+  "viewCartItems_other": "{{count}} items - View Cart ({{price}})"
 }

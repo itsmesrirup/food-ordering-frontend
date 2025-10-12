@@ -12,7 +12,9 @@
   "cartIsEmptyError": "Ihr Warenkorb ist leer.",
   "orderingForTable": "Bestellung für Tisch",
   "add": "Hinzufügen",
+  "added": "Hinzugefügt!",
   "itemAddedToCart": "{{itemName}} wurde zum Warenkorb hinzugefügt!",
+  "cartItemUpdated": "{{itemName}} im Warenkorb aktualisiert.",
   "proceedToCheckout": "Zur Kasse gehen",
   "checkoutTitle": "Kasse",
   "yourDetails": "Ihre Daten",
@@ -25,6 +27,7 @@
   "requestReservation": "Reservierung anfragen",
   "sendingRequest": "Anfrage wird gesendet...",
   "orderSummary": "Bestellübersicht",
+  "total": "Gesamt:",
   "placeOrder": "Bestellung aufgeben",
   "orderConfirmation_thankYou": "Vielen Dank für Ihre Bestellung!",
   "orderConfirmation_success": "Ihre Bestellung wurde erfolgreich aufgegeben.",
@@ -34,5 +37,8 @@
   "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
   "noMenuCategoriesYet": "Dieses Restaurant hat noch keine Menükategorien hinzugefügt.",
   "unavailable": "Nicht verfügbar",
-  "customize": "Anpassen"
+  "customize": "Anpassen",
+  "dateRangeFromTo": "Vom {{startDate}} bis {{endDate}}",
+  "viewCartItems_one": "{{count}} Artikel - Warenkorb ansehen ({{price}})",
+  "viewCartItems_other": "{{count}} Artikel - Warenkorb ansehen ({{price}})"
 }

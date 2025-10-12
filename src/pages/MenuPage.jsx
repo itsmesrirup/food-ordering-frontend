@@ -5,13 +5,91 @@ import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
 import CustomizeItemModal from '../components/CustomizeItemModal';
 import { useRestaurant } from '../layouts/RestaurantLayout';
-import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert } from '@mui/material';
+import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert, Card, CardMedia } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import SpecialsBoard from '../components/SpecialsBoard';
 import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
+import { formatPrice } from '../utils/formatPrice';
+
+// --- ADDED: MenuItemCard is now defined OUTSIDE MenuPage ---
+// This prevents it from being redefined on every render, allowing React.memo to work correctly.
+const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCart, onCustomizeClick, t, theme }) => {
+    const isJustAdded = justAddedItemId === item.id;
+
+    return (
+        <Card elevation={2} sx={{ 
+            mb: 2, 
+            display: 'flex', 
+            borderRadius: 2,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+                transform: 'scale(1.02)',
+                boxShadow: theme.shadows[4]
+            }
+        }}>
+            {item.imageUrl && (
+                <CardMedia
+                    component="img"
+                    sx={{ width: 120, height: 'auto', objectFit: 'cover', flexShrink: 0 }}
+                    image={item.imageUrl}
+                    alt={item.name}
+                />
+            )}
+            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6">{item.name}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ my: 0.5 }}>{item.description}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                    <Typography variant="h6" color="primary" fontWeight="bold">
+                        {formatPrice(item.price, restaurant?.currency)}
+                    </Typography>
+                    <Button 
+                        variant={isJustAdded ? "contained" : "outlined"}
+                        color={isJustAdded ? "success" : "secondary"}
+                        startIcon={isJustAdded ? <CheckCircleOutlineIcon /> : <AddShoppingCartIcon />} 
+                        onClick={() => !isJustAdded && (item.bundle ? onCustomizeClick(item) : onAddToCart(item))} 
+                        disabled={!item.isAvailable || isJustAdded}
+                        sx={{ ml: 2, flexShrink: 0, minWidth: '110px' }}
+                    >
+                        {isJustAdded ? t('added') : (item.isAvailable ? (item.bundle ? t('customize') : t('add')) : t('unavailable'))}
+                    </Button>
+                </Box>
+            </Box>
+        </Card>
+    );
+});
+
+// --- ADDED: MenuCategory is also defined OUTSIDE MenuPage ---
+// It accepts all the props for MenuItemCard and passes them down.
+const MenuCategory = React.memo(({ category, ...menuItemCardProps }) => (
+    <Box sx={{ mb: 5 }}>
+        <Typography 
+            variant="h4" 
+            gutterBottom 
+            sx={{ 
+                fontWeight: 'bold', 
+                color: 'primary.main',
+                textTransform: 'uppercase',
+                borderBottom: `2px solid ${menuItemCardProps.theme.palette.secondary.light}`,
+                pb: 1,
+                mb: 3,
+            }}
+        >
+            {category.name}
+        </Typography>
+        {category.menuItems?.map(item => <MenuItemCard key={item.id} item={item} {...menuItemCardProps} />)}
+        {category.subCategories?.length > 0 && (
+            <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
+                {category.subCategories.map(subCategory => <MenuCategory key={subCategory.id} category={subCategory} {...menuItemCardProps} />)}
+            </Box>
+        )}
+    </Box>
+));
 
 function MenuPage() {
     const { restaurant } = useRestaurant();
@@ -22,6 +100,9 @@ function MenuPage() {
     
     const [categorizedMenu, setCategorizedMenu] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
+
+    // --- ADDED: State to track the ID of the item just added for UI feedback ---
+    const [justAddedItemId, setJustAddedItemId] = useState(null);
 
     // Modal state
     const [modalOpen, setModalOpen] = useState(false);
@@ -52,6 +133,13 @@ function MenuPage() {
 
     const handleAddToCart = (item) => {
         addToCart(item);
+
+        // --- ADDED: Set state for the micro-interaction and reset it after a delay ---
+        setJustAddedItemId(item.id);
+        setTimeout(() => {
+            setJustAddedItemId(null);
+        }, 1500); // 1.5 seconds
+
         toast.success(t('itemAddedToCart', { itemName: item.name }));
         setModalOpen(false);
     };
@@ -79,38 +167,6 @@ function MenuPage() {
         setModalOpen(false);
         setEditingCartIndex(null);
     };
-
-    const MenuItemCard = ({ item }) => (
-        <Paper elevation={2} sx={{ p: 2, mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2 }}>
-            <Box>
-                <Typography variant="h6">{item.name}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>{item.description}</Typography>
-                <Typography variant="h6" color="primary" fontWeight="bold">${item.price.toFixed(2)}</Typography>
-            </Box>
-            <Button 
-                variant="outlined" 
-                color="secondary" 
-                startIcon={<AddShoppingCartIcon />} 
-                onClick={() => item.bundle ? handleCustomizeClick(item) : handleAddToCart(item)} 
-                disabled={!item.isAvailable}
-            >
-                {item.isAvailable ? (item.bundle ? t('customize') : t('add')) : t('unavailable')}
-            </Button>
-        </Paper>
-    );
-
-    const MenuCategory = ({ category }) => (
-        <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" gutterBottom>{category.name}</Typography>
-            <Divider sx={{ mb: 2 }} />
-            {category.menuItems?.map(item => <MenuItemCard key={item.id} item={item} />)}
-            {category.subCategories?.length > 0 && (
-                <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
-                    {category.subCategories.map(subCategory => <MenuCategory key={subCategory.id} category={subCategory} />)}
-                </Box>
-            )}
-        </Box>
-    );
 
     if (!restaurant) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
@@ -147,7 +203,20 @@ function MenuPage() {
                     </Typography>
                     {isLoadingMenu ? <CircularProgress /> : (
                         categorizedMenu.length > 0 ? (
-                            categorizedMenu.map(category => <MenuCategory key={category.id} category={category} />)
+                            categorizedMenu.map(category => (
+                                // --- CHANGED: Pass all the necessary props to the memoized MenuCategory component ---
+                                <MenuCategory 
+                                    key={category.id} 
+                                    category={category}
+                                    // Pass down all props needed by MenuItemCard
+                                    restaurant={restaurant}
+                                    justAddedItemId={justAddedItemId}
+                                    onAddToCart={handleAddToCart}
+                                    onCustomizeClick={handleCustomizeClick}
+                                    t={t}
+                                    theme={theme}
+                                />
+                            ))
                         ) : (
                             <Typography>{t('noMenuCategoriesYet')}</Typography>
                         )

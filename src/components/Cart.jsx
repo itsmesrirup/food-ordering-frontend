@@ -8,7 +8,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import CustomizeItemModal from './CustomizeItemModal'; // <-- Import
+import CustomizeItemModal from './CustomizeItemModal'; 
+import { formatPrice } from '../utils/formatPrice';
 
 // This is the detailed content of the cart, used in both sidebar and modal.
 const CartContent = ({onEditCartItem}) => {
@@ -48,23 +49,23 @@ const CartContent = ({onEditCartItem}) => {
                 <>
                     <List>
                         {cartItems.map((item, idx) => (
-                            <ListItem key={item.id + JSON.stringify(item.selectedOptions)} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                            <ListItem key={item.cartItemId} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                                 <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
                                     <ListItemText 
-                                      primary={item.name} 
-                                      secondary={`$${(item.price * item.quantity).toFixed(2)}`} 
+                                      // --- CHANGED: Combined quantity and name for clarity ---
+                                      primary={`${item.quantity} x ${item.name}`} 
+                                      // --- CHANGED: Use formatPrice for currency ---
+                                      secondary={formatPrice(item.price, currentRestaurant?.currency)} 
                                     />
-                                    <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)}><RemoveCircleOutlineIcon fontSize="small" /></IconButton>
+                                    <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}><RemoveCircleOutlineIcon fontSize="small" /></IconButton>
                                     <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
-                                    <IconButton size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}><AddCircleOutlineIcon fontSize="small" /></IconButton>
-                                    {/* Edit button for customized items */}
+                                    <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}><AddCircleOutlineIcon fontSize="small" /></IconButton>
                                     {item.selectedOptions && (
                                         <IconButton size="small" onClick={() => handleEditClick(idx)} title="Edit Choices">
                                             <EditIcon fontSize="small" />
                                         </IconButton>
                                     )}
                                 </Box>
-                                {/* Display selected options for bundle items */}
                                 {item.selectedOptions && (
                                     <Box component="ul" sx={{ pl: 2, my: 0, fontSize: '0.8rem', color: 'text.secondary' }}>
                                         {item.selectedOptions.map(opt => 
@@ -79,15 +80,13 @@ const CartContent = ({onEditCartItem}) => {
                     </List>
                     <Divider sx={{ my: 2 }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="h6">Total:</Typography>
-                        <Typography variant="h6" fontWeight="bold">${totalPrice.toFixed(2)}</Typography>
+                        <Typography variant="h6">{t('total')}</Typography>
+                        {/* --- CHANGED: Use formatPrice for total --- */}
+                        <Typography variant="h6" fontWeight="bold">
+                            {formatPrice(totalPrice, currentRestaurant?.currency)}
+                        </Typography>
                     </Box>
-                    <Button 
-                        component={Link} 
-                        to={`/checkout${location.search}`}
-                        variant="contained" 
-                        fullWidth
-                    >
+                    <Button component={Link} to={`/checkout${location.search}`} variant="contained" fullWidth>
                         {t('proceedToCheckout')}
                     </Button>
                     {currentRestaurant?.recommendationsEnabled && (
@@ -96,7 +95,6 @@ const CartContent = ({onEditCartItem}) => {
                 </>
             )}
         </Paper>
-        {/* Edit modal for customizing options */}
         {editModalOpen && editingItemIndex !== null && (
             <CustomizeItemModal
                 open={editModalOpen}
@@ -113,7 +111,8 @@ const CartContent = ({onEditCartItem}) => {
 
 // This is the new main Cart component that handles the responsive logic.
 function Cart({ onEditCartItem }) {
-    const { cartItems } = useCart();
+    const { t } = useTranslation();
+    const { cartItems, currentRestaurant } = useCart();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -148,7 +147,10 @@ function Cart({ onEditCartItem }) {
                         startIcon={<ShoppingCartIcon />}
                         onClick={handleOpen}
                     >
-                        {totalItems} item(s) - View Cart (${totalPrice.toFixed(2)})
+                        {t('viewCartItems', { 
+                            count: totalItems, 
+                            price: formatPrice(totalPrice, currentRestaurant?.currency) 
+                        })}
                     </Button>
                 </Box>
             )}

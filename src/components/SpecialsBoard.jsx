@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { Paper, Typography, Box, CircularProgress, Grid, Divider } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { format, getDay } from 'date-fns'; // Import getDay
-import { fr } from 'date-fns/locale';
+import { fr, de, enUS } from 'date-fns/locale';
 import StarIcon from '@mui/icons-material/Star';
+
+// --- ADDED: A map to easily get the correct date-fns locale object ---
+const localeMap = { en: enUS, fr: fr, de: de };
 
 // Helper to get today's day key. Note: Sunday is 0 in JS, Lundi is 1.
 // We'll align with a Monday=1 standard for clarity.
@@ -14,6 +18,7 @@ const getTodayKey = () => {
 };
 
 function SpecialsBoard() {
+    const { t, i18n } = useTranslation();
     const theme = useTheme();
     const { restaurantId } = useParams();
     const [activeMenu, setActiveMenu] = useState(null);
@@ -50,12 +55,21 @@ function SpecialsBoard() {
         fetchActiveSpecialMenu();
     }, [restaurantId]);
 
+    // This function now uses i18next for translation and date formatting ---
     const formatDateRange = (start, end) => {
         try {
-            const startDate = new Date(start + 'T00:00:00'); // Add time to avoid timezone issues
+            const currentLocale = localeMap[i18n.language] || enUS;
+            const startDate = new Date(start + 'T00:00:00');
             const endDate = new Date(end + 'T00:00:00');
-            return `Du ${format(startDate, 'dd')} au ${format(endDate, 'dd MMMM yyyy', { locale: fr })}`;
-        } catch (e) { return null; }
+
+            const formattedStart = format(startDate, 'dd');
+            const formattedEnd = format(endDate, 'dd MMMM yyyy', { locale: currentLocale });
+
+            return t('dateRangeFromTo', { startDate: formattedStart, endDate: formattedEnd });
+        } catch (e) { 
+            console.error("Date formatting failed:", e);
+            return null; 
+        }
     };
 
     if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}><CircularProgress size={24} /></Box>;
@@ -77,29 +91,30 @@ function SpecialsBoard() {
                 )}
             </Box>
             <Divider sx={{ my: 3 }} />
-            <Grid container spacing={3} justifyContent="center">
+            <Grid container spacing={3} justifyContent="flex-start">
                 {activeMenu.items.map(item => {
                     const isToday = item.dayTitle.toUpperCase() === todayKey;
                     return (
                         <Grid item xs={12} sm={6} md={4} key={item.id}>
-                            <Paper 
-                                elevation={isToday ? 8 : 2}
-                                sx={{ 
-                                    p: 3, height: '100%',
-                                    border: 2,
-                                    borderColor: isToday ? 'secondary.main' : 'transparent',
-                                    transform: isToday ? 'scale(1.03)' : 'none',
-                                    transition: 'all 0.3s'
-                                }}
-                            >
-                                <Typography variant="h6" component="h3" fontWeight="bold" sx={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center' }}>
-                                    {isToday && <StarIcon fontSize="small" sx={{ mr: 1, color: 'secondary.main' }} />}
+                            <Box sx={{
+                                p: 2,
+                                height: '100%',
+                                // ADDED: A prominent left border to highlight today's special
+                                borderLeft: 4,
+                                borderColor: isToday ? 'secondary.main' : 'transparent',
+                                // ADDED: A subtle scale effect to make today's special pop
+                                transform: isToday ? 'scale(1.02)' : 'none',
+                                transition: 'all 0.2s ease-in-out',
+                            }}>
+                                <Typography variant="h6" component="h3" fontWeight="bold" sx={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    {isToday && <StarIcon fontSize="small" sx={{ color: 'secondary.main' }} />}
                                     {item.dayTitle?.toLowerCase()}
                                 </Typography>
                                 <Divider sx={{ my: 1 }} />
-                                <Typography variant="h6" gutterBottom>{item.name}</Typography>
+                                {/* ADDED: Slightly bolder font for the dish name to improve hierarchy */}
+                                <Typography variant="body1" fontWeight={500} gutterBottom>{item.name}</Typography>
                                 <Typography variant="body2" color="text.secondary">{item.description}</Typography>
-                            </Paper>
+                            </Box>
                         </Grid>
                     );
                 })}

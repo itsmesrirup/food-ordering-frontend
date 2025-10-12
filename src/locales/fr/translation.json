@@ -12,7 +12,9 @@
   "cartIsEmptyError": "Votre panier est vide.",
   "orderingForTable": "Commande pour la table",
   "add": "Ajouter",
+  "added": "Ajouté !",
   "itemAddedToCart": "{{itemName}} a été ajouté au panier !",
+  "cartItemUpdated": "{{itemName}} mis à jour dans le panier.",
   "proceedToCheckout": "Finaliser la commande",
   "checkoutTitle": "Paiement",
   "yourDetails": "Vos Coordonnées",
@@ -24,7 +26,8 @@
   "dateAndTimeLabel": "Date et heure",
   "requestReservation": "Demander une réservation",
   "sendingRequest": "Envoi de la demande...",
-  "orderSummary": "Récapitulatif de la command",
+  "orderSummary": "Récapitulatif de la commande",
+  "total": "Total :",
   "placeOrder": "Passer la commande",
   "orderConfirmation_thankYou": "Merci pour votre commande !",
   "orderConfirmation_success": "Votre commande a été passée avec succès.",
@@ -34,5 +37,8 @@
   "unexpectedError": "Une erreur inattendue est survenue. Veuillez réessayer.",
   "noMenuCategoriesYet": "Ce restaurant n'a pas encore ajouté de catégories de menu.",
   "unavailable": "Indisponible",
-  "customize": "Personnaliser"
+  "customize": "Personnaliser",
+  "dateRangeFromTo": "Du {{startDate}} au {{endDate}}",
+  "viewCartItems_one": "{{count}} article - Voir le panier ({{price}})",
+  "viewCartItems_other": "{{count}} articles - Voir le panier ({{price}})"
 }
