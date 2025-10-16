@@ -40,5 +40,11 @@
   "customize": "Personnaliser",
   "dateRangeFromTo": "Du {{startDate}} au {{endDate}}",
   "viewCartItems_one": "{{count}} article - Voir le panier ({{price}})",
-  "viewCartItems_other": "{{count}} articles - Voir le panier ({{price}})"
+  "viewCartItems_other": "{{count}} articles - Voir le panier ({{price}})",
+  "orderOnline": "Commander en Ligne",
+  "aboutUs": "À Propos de Nous",
+  "contactAndHours": "Contact & Horaires",
+  "phoneLabel": "Téléphone :",
+  "hoursLabel": "Horaires :",
+  "findUs": "Nous Trouver"
 }

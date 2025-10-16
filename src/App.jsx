@@ -8,6 +8,7 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ReservationPage from './pages/ReservationPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import RestaurantLayout from './layouts/RestaurantLayout';
+import RestaurantWebsitePage from './pages/RestaurantWebsitePage';
 import { Toaster } from 'react-hot-toast';
 
 // Layout for non-restaurant pages
@@ -44,6 +45,8 @@ function App() {
             <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
             <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
           </Route>
+
+          <Route path="/r/:slug" element={<RestaurantWebsitePage />} />
           
           <Route path="*" element={
             <Container sx={{ textAlign: 'center', mt: 4 }}>

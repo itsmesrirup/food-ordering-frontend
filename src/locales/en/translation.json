@@ -40,5 +40,11 @@
   "customize": "Customize",
   "dateRangeFromTo": "From {{startDate}} to {{endDate}}",
   "viewCartItems_one": "{{count}} item - View Cart ({{price}})",
-  "viewCartItems_other": "{{count}} items - View Cart ({{price}})"
+  "viewCartItems_other": "{{count}} items - View Cart ({{price}})",
+  "orderOnline": "Order Online",
+  "aboutUs": "About Us",
+  "contactAndHours": "Contact & Hours",
+  "phoneLabel": "Phone:",
+  "hoursLabel": "Hours:",
+  "findUs": "Find Us"
 }
