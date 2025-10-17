@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useParams, useNavigate, Link as RouterLink, Navigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useRestaurant } from '../layouts/RestaurantLayout';
 import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Grid } from '@mui/material';
@@ -40,6 +40,12 @@ function ReservationPage() {
 
     if (!restaurant) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+    }
+
+    // If the feature is disabled for this restaurant, redirect the user back to the main menu page.
+    if (!restaurant.reservationsEnabled) {
+        // The `Navigate` component from react-router-dom is the cleanest way to redirect.
+        return <Navigate to={`/restaurants/${restaurantId}`} replace />;
     }
 
     return (

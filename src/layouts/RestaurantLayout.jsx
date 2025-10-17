@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Outlet, Link as RouterLink, useOutletContext } from 'react-router-dom';
+import { useParams, Outlet, Link as RouterLink, useOutletContext, useSearchParams, Navigate } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '../theme';
-import { Container, Typography, Box, Link, CircularProgress, CssBaseline, Button } from '@mui/material';
+import { Container, Typography, Box, Link, CircularProgress, CssBaseline, Button, Alert } from '@mui/material';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 function RestaurantLayout() {
     const { restaurantId } = useParams();
+    const [searchParams] = useSearchParams();
+    const tableNumber = searchParams.get('table');
     const [theme, setTheme] = useState(null);
     const [restaurantData, setRestaurantData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -72,6 +74,20 @@ function RestaurantLayout() {
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <CircularProgress />
             </Box>
+        );
+    }
+
+    // Check if a table number is present in the URL BUT QR ordering is disabled.
+    if (tableNumber && restaurantData && !restaurantData.qrCodeOrderingEnabled) {
+        // If the feature is disabled, show a clear error message instead of the page.
+        return (
+            <Container sx={{ textAlign: 'center', mt: 4 }}>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    <Typography variant="h6">QR Code Ordering Not Available</Typography>
+                    This restaurant is not currently accepting orders via QR code.
+                </Alert>
+                <Button component={RouterLink} to="/" variant="contained">Go to Homepage</Button>
+            </Container>
         );
     }
 
