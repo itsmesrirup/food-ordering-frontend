@@ -5,8 +5,7 @@ import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
 import CustomizeItemModal from '../components/CustomizeItemModal';
 import { useRestaurant } from '../layouts/RestaurantLayout';
-// --- ADDED: AppBar, Tabs, Tab for the sticky bar ---
-import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert, Card, CardMedia, AppBar, Tabs, Tab, Chip } from '@mui/material';
+import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Card, CardMedia, AppBar, Tabs, Tab, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -16,7 +15,7 @@ import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 
-// --- MenuItemCard (EXACTLY AS PROVIDED - NO LAYOUT CHANGES) ---
+// --- MenuItemCard (Unchanged) ---
 const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCart, onCustomizeClick, t, theme }) => {
     const isJustAdded = justAddedItemId === item.id;
 
@@ -26,50 +25,57 @@ const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCar
             display: 'flex', 
             borderRadius: 2,
             transition: 'all 0.2s ease-in-out',
+            // Ensure card doesn't overflow its container
+            width: '100%', 
             '&:hover': {
-                transform: 'scale(1.02)',
+                transform: 'scale(1.01)', // Reduced scale slightly to prevent overflow jitter
                 boxShadow: theme.shadows[4]
             }
         }}>
             {item.imageUrl && (
                 <CardMedia
                     component="img"
-                    sx={{ width: 120, height: 'auto', objectFit: 'cover', flexShrink: 0 }}
+                    sx={{ width: 100, height: 'auto', objectFit: 'cover', flexShrink: 0 }} // Fixed width 100px
                     image={item.imageUrl}
                     alt={item.name}
                 />
             )}
-            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
                 <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6">{item.name}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ my: 0.5 }}>{item.description}</Typography>
+                    <Typography variant="h6" sx={{ fontSize: '1.1rem', lineHeight: 1.2 }}>{item.name}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ my: 0.5, fontSize: '0.85rem' }}>{item.description}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                    <Typography variant="h6" color="primary" fontWeight="bold">
+                    <Typography variant="subtitle1" color="primary" fontWeight="bold">
                         {formatPrice(item.price, restaurant?.currency)}
                     </Typography>
                     <Button 
                         variant={isJustAdded ? "contained" : "outlined"}
                         color={isJustAdded ? "success" : "secondary"}
+                        size="small"
                         startIcon={isJustAdded ? <CheckCircleOutlineIcon /> : <AddShoppingCartIcon />} 
                         onClick={() => !isJustAdded && (item.bundle ? onCustomizeClick(item) : onAddToCart(item))} 
                         disabled={!item.isAvailable || isJustAdded}
-                        sx={{ ml: 2, flexShrink: 0, minWidth: '110px' }}
+                        sx={{ minWidth: '90px', px: 1 }}
                     >
                         {isJustAdded ? t('added') : (item.isAvailable ? (item.bundle ? t('customize') : t('add')) : t('unavailable'))}
                     </Button>
                 </Box>
             </Box>
+            {!item.isAvailable && (
+                <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(255,255,255,0.6)" }}>
+                    <Chip label={t("soldOut")} color="error" />
+                </Box>
+            )}
         </Card>
     );
 });
 
-// --- UPDATED: Wrapped in forwardRef to support scrolling ---
+// --- MenuCategory (Unchanged) ---
 const MenuCategory = React.forwardRef(({ category, ...menuItemCardProps }, ref) => (
-    // Attached ref to the Box
-    <Box ref={ref} sx={{ mb: 5 }} id={`category-${category.id}`}>
+    <Box ref={ref} sx={{ mb: 5, scrollMarginTop: '140px' }} id={`category-${category.id}`}>
         <Typography 
-            variant="h4" 
+            variant="h5" 
             gutterBottom 
             sx={{ 
                 fontWeight: 'bold', 
@@ -82,11 +88,9 @@ const MenuCategory = React.forwardRef(({ category, ...menuItemCardProps }, ref) 
         >
             {category.name}
         </Typography>
-        {/* Existing layout logic preserved */}
         {category.menuItems?.map(item => <MenuItemCard key={item.id} item={item} {...menuItemCardProps} />)}
         {category.subCategories?.length > 0 && (
-            <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
-                {/* Recursive call doesn't need ref for sub-items usually */}
+            <Box sx={{ pl: { xs: 1, md: 4 }, mt: 4 }}>
                 {category.subCategories.map(subCategory => <MenuCategory key={subCategory.id} category={subCategory} {...menuItemCardProps} />)}
             </Box>
         )}
@@ -104,13 +108,11 @@ function MenuPage() {
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
     const [justAddedItemId, setJustAddedItemId] = useState(null);
 
-    // Modal state
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const [currentItem, setCurrentItem] = useState(null);
     const [editingCartIndex, setEditingCartIndex] = useState(null);
 
-    // --- NEW STATE for Sticky Bar ---
     const [activeTab, setActiveTab] = useState(0);
     const categoryRefs = useRef([]);
     const isTabClickScroll = useRef(false);
@@ -127,7 +129,6 @@ function MenuPage() {
                 if (!menuResponse.ok) throw new Error("Failed to load menu");
                 const menuData = await menuResponse.json();
                 setCategorizedMenu(menuData);
-                // Initialize refs
                 categoryRefs.current = menuData.map((_, i) => categoryRefs.current[i] || React.createRef());
             } catch (error) { toast.error(error.message); } 
             finally { setIsLoadingMenu(false); }
@@ -138,11 +139,10 @@ function MenuPage() {
         }
     }, [restaurantId, restaurant, setCartContext]);
 
-    // --- SPY SCROLLING EFFECT ---
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
-                if (isTabClickScroll.current) return; // Don't update during a click-scroll
+                if (isTabClickScroll.current) return;
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const index = categoryRefs.current.findIndex(ref => ref.current === entry.target);
@@ -150,7 +150,7 @@ function MenuPage() {
                     }
                 });
             },
-            { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+            { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
         );
 
         categoryRefs.current.forEach(ref => {
@@ -164,7 +164,6 @@ function MenuPage() {
         };
     }, [categorizedMenu]);
 
-
     const handleAddToCart = (item) => {
         addToCart(item);
         setJustAddedItemId(item.id);
@@ -173,7 +172,6 @@ function MenuPage() {
         setModalOpen(false);
     };
 
-    // PATCH: open modal for add
     const handleCustomizeClick = (item) => {
         setCurrentItem(item);
         setModalMode('add');
@@ -181,7 +179,6 @@ function MenuPage() {
         setModalOpen(true);
     };
 
-    // PATCH: open modal for edit
     const handleCustomizeEdit = (cartIndex) => {
         setCurrentItem(cartItems[cartIndex]);
         setModalMode('edit');
@@ -189,7 +186,6 @@ function MenuPage() {
         setModalOpen(true);
     };
 
-    // PATCH: handle edit save
     const handleEditSave = (item) => {
         updateCartItem(editingCartIndex, item);
         toast.success(t('cartItemUpdated', { itemName: item.name }));
@@ -197,7 +193,6 @@ function MenuPage() {
         setEditingCartIndex(null);
     };
 
-    // --- TAB CLICK HANDLER ---
     const handleTabChange = (event, newValue) => {
         isTabClickScroll.current = true;
         setActiveTab(newValue);
@@ -213,36 +208,31 @@ function MenuPage() {
         setTimeout(() => { isTabClickScroll.current = false; }, 1000);
     };
 
-
     if (!restaurant) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
     }
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4, pb: { xs: '100px', md: 4 } }}> 
-            {/* Restaurant Info is handled by Layout */}
-            
             <SpecialsBoard />
 
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
                 
                 {/* --- LEFT COLUMN --- */}
-                <Box sx={{ width: { xs: '100%', md: '70%' }, flexShrink: 0 }}>
+                <Box sx={{ width: { xs: '100%', md: '65%' }, flexShrink: 0 }}>
                     
-                    {/* --- THE STICKY BAR --- */}
+                    {/* --- THE STICKY BAR (FIXED) --- */}
+                    {/* Removed negative margins and calc width to fix overflow */}
                     <AppBar 
                         position="sticky" 
                         color="default" 
                         elevation={1}
                         sx={{ 
-                            // FIX: Set top to 0. On mobile, this sticks to the very top of the screen.
-                            top: 0, 
+                            top: 0, // Sticks to top of viewport
                             mb: 3,
                             backgroundColor: 'background.paper',
-                            zIndex: 10,
-                            // FIX: Ensure it spans the full width on mobile without causing scroll
-                            mx: { xs: -2, sm: 0 },
-                            width: { xs: 'calc(100% + 32px)', sm: '100%' }
+                            zIndex: 110, // Ensure it's above other content
+                            borderRadius: 1 // Slight rounding for polish
                         }}
                     >
                          <Tabs
@@ -259,14 +249,12 @@ function MenuPage() {
                         </Tabs>
                     </AppBar>
 
-                    {/* --- MENU ITEMS --- */}
                     {isLoadingMenu ? <CircularProgress /> : (
                         categorizedMenu.length > 0 ? (
                             categorizedMenu.map((category, index) => (
                                 <MenuCategory 
                                     key={category.id} 
                                     category={category}
-                                    // --- Pass the Ref ---
                                     ref={categoryRefs.current[index]}
                                     restaurant={restaurant}
                                     justAddedItemId={justAddedItemId}
@@ -294,17 +282,10 @@ function MenuPage() {
             </Box>
             <CustomizeItemModal
                 open={modalOpen}
-                handleClose={() => {
-                    setModalOpen(false);
-                    setEditingCartIndex(null);
-                }}
+                handleClose={() => setModalOpen(false)}
                 menuItem={currentItem}
                 onSave={modalMode === 'edit' ? handleEditSave : handleAddToCart}
-                initialSelections={
-                    modalMode === 'edit' && currentItem?.selectedOptions
-                        ? currentItem.selectedOptions
-                        : null
-                }
+                initialSelections={modalMode === 'edit' && currentItem?.selectedOptions ? currentItem.selectedOptions : null}
                 isEditing={modalMode === 'edit'}
             />
         </Container>

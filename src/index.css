@@ -24,6 +24,9 @@ a:hover {
 
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden; /* Prevents horizontal scrollbar globally */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -71,4 +74,5 @@ button:focus-visible {
 
 html {
   scroll-padding-top: 120px; /* A safe value for your tallest sticky header */
+  scroll-behavior: smooth;
 }
