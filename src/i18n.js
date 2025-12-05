@@ -15,7 +15,9 @@ i18n
   // Initialize i18next
   .init({
     debug: true, // Set to false in production
-    fallbackLng: 'en', // Use English if the detected language is not available
+    supportedLngs: ['en', 'fr', 'de'], // Ensure 'de' is here
+    fallbackLng: 'fr', // --- Fallback to French if language not detected ---
+    lng: 'fr', // --- Force start in French (optional, usually detection is better) ---
     interpolation: {
       escapeValue: false, // React already safes from XSS
     },

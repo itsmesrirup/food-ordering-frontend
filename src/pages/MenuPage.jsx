@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
 import CustomizeItemModal from '../components/CustomizeItemModal';
 import { useRestaurant } from '../layouts/RestaurantLayout';
-import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert, Card, CardMedia } from '@mui/material';
+// --- ADDED: AppBar, Tabs, Tab for the sticky bar ---
+import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Alert, Card, CardMedia, AppBar, Tabs, Tab, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -15,8 +16,7 @@ import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 
-// --- ADDED: MenuItemCard is now defined OUTSIDE MenuPage ---
-// This prevents it from being redefined on every render, allowing React.memo to work correctly.
+// --- MenuItemCard (EXACTLY AS PROVIDED - NO LAYOUT CHANGES) ---
 const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCart, onCustomizeClick, t, theme }) => {
     const isJustAdded = justAddedItemId === item.id;
 
@@ -64,10 +64,10 @@ const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCar
     );
 });
 
-// --- ADDED: MenuCategory is also defined OUTSIDE MenuPage ---
-// It accepts all the props for MenuItemCard and passes them down.
-const MenuCategory = React.memo(({ category, ...menuItemCardProps }) => (
-    <Box sx={{ mb: 5 }}>
+// --- UPDATED: Wrapped in forwardRef to support scrolling ---
+const MenuCategory = React.forwardRef(({ category, ...menuItemCardProps }, ref) => (
+    // Attached ref to the Box
+    <Box ref={ref} sx={{ mb: 5 }} id={`category-${category.id}`}>
         <Typography 
             variant="h4" 
             gutterBottom 
@@ -82,9 +82,11 @@ const MenuCategory = React.memo(({ category, ...menuItemCardProps }) => (
         >
             {category.name}
         </Typography>
+        {/* Existing layout logic preserved */}
         {category.menuItems?.map(item => <MenuItemCard key={item.id} item={item} {...menuItemCardProps} />)}
         {category.subCategories?.length > 0 && (
             <Box sx={{ pl: { xs: 2, md: 4 }, mt: category.menuItems?.length > 0 ? 4 : 0 }}>
+                {/* Recursive call doesn't need ref for sub-items usually */}
                 {category.subCategories.map(subCategory => <MenuCategory key={subCategory.id} category={subCategory} {...menuItemCardProps} />)}
             </Box>
         )}
@@ -100,15 +102,18 @@ function MenuPage() {
     
     const [categorizedMenu, setCategorizedMenu] = useState([]);
     const [isLoadingMenu, setIsLoadingMenu] = useState(true);
-
-    // --- ADDED: State to track the ID of the item just added for UI feedback ---
     const [justAddedItemId, setJustAddedItemId] = useState(null);
 
     // Modal state
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
+    const [modalMode, setModalMode] = useState('add');
     const [currentItem, setCurrentItem] = useState(null);
     const [editingCartIndex, setEditingCartIndex] = useState(null);
+
+    // --- NEW STATE for Sticky Bar ---
+    const [activeTab, setActiveTab] = useState(0);
+    const categoryRefs = useRef([]);
+    const isTabClickScroll = useRef(false);
 
     useEffect(() => {
         if (restaurant) {
@@ -122,6 +127,8 @@ function MenuPage() {
                 if (!menuResponse.ok) throw new Error("Failed to load menu");
                 const menuData = await menuResponse.json();
                 setCategorizedMenu(menuData);
+                // Initialize refs
+                categoryRefs.current = menuData.map((_, i) => categoryRefs.current[i] || React.createRef());
             } catch (error) { toast.error(error.message); } 
             finally { setIsLoadingMenu(false); }
         };
@@ -131,15 +138,37 @@ function MenuPage() {
         }
     }, [restaurantId, restaurant, setCartContext]);
 
+    // --- SPY SCROLLING EFFECT ---
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (isTabClickScroll.current) return; // Don't update during a click-scroll
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const index = categoryRefs.current.findIndex(ref => ref.current === entry.target);
+                        if (index !== -1) setActiveTab(index);
+                    }
+                });
+            },
+            { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+        );
+
+        categoryRefs.current.forEach(ref => {
+            if (ref.current) observer.observe(ref.current);
+        });
+
+        return () => {
+            categoryRefs.current.forEach(ref => {
+                if (ref.current) observer.unobserve(ref.current);
+            });
+        };
+    }, [categorizedMenu]);
+
+
     const handleAddToCart = (item) => {
         addToCart(item);
-
-        // --- ADDED: Set state for the micro-interaction and reset it after a delay ---
         setJustAddedItemId(item.id);
-        setTimeout(() => {
-            setJustAddedItemId(null);
-        }, 1500); // 1.5 seconds
-
+        setTimeout(() => { setJustAddedItemId(null); }, 1500);
         toast.success(t('itemAddedToCart', { itemName: item.name }));
         setModalOpen(false);
     };
@@ -168,47 +197,77 @@ function MenuPage() {
         setEditingCartIndex(null);
     };
 
+    // --- TAB CLICK HANDLER ---
+    const handleTabChange = (event, newValue) => {
+        isTabClickScroll.current = true;
+        setActiveTab(newValue);
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
+        const targetRef = categoryRefs.current[newValue];
+        if (targetRef && targetRef.current) {
+            targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        setTimeout(() => { isTabClickScroll.current = false; }, 1000);
+    };
+
+
     if (!restaurant) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
     }
 
     return (
-        // Added pb (padding-bottom) to account for the floating mobile button
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, pb: { xs: 10, md: 0 } }}> 
-            {restaurant.heroImageUrl && (
-                <Box sx={{ height: '300px', mb: 4, borderRadius: 4, backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${restaurant.heroImageUrl})` }} />
-            )}
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, pb: { xs: '100px', md: 4 } }}> 
+            {/* Restaurant Info is handled by Layout */}
             
-            <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: 4, borderRadius: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 3 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h4" component="h1" gutterBottom>{restaurant.name}</Typography>
-                        <Typography variant="subtitle1" color="text.secondary">{restaurant.address}</Typography>
-                    </Box>
-                    {restaurant.reservationsEnabled && (
-                        <Button component={Link} to={`/restaurants/${restaurantId}/reserve`} variant="outlined" color="secondary" startIcon={<EventIcon />}>
-                            {t('bookTable')}
-                        </Button>
-                    )}
-                </Box>
-            </Paper>
-
             <SpecialsBoard />
 
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-                {/* --- Main Content: Menu --- */}
-                <Box sx={{ width: { xs: '100%', md: '65%' }, flexShrink: 0 }}>
-                    <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <RestaurantMenuIcon sx={{ mr: 1 }} /> {t('menu')}
-                    </Typography>
+                
+                {/* --- LEFT COLUMN --- */}
+                <Box sx={{ width: { xs: '100%', md: '70%' }, flexShrink: 0 }}>
+                    
+                    {/* --- THE STICKY BAR --- */}
+                    <AppBar 
+                        position="sticky" 
+                        color="default" 
+                        elevation={1}
+                        sx={{ 
+                            // FIX: Set top to 0. On mobile, this sticks to the very top of the screen.
+                            top: 0, 
+                            mb: 3,
+                            backgroundColor: 'background.paper',
+                            zIndex: 10,
+                            // FIX: Ensure it spans the full width on mobile without causing scroll
+                            mx: { xs: -2, sm: 0 },
+                            width: { xs: 'calc(100% + 32px)', sm: '100%' }
+                        }}
+                    >
+                         <Tabs
+                            value={activeTab}
+                            onChange={handleTabChange}
+                            variant="scrollable"
+                            scrollButtons="auto"
+                            allowScrollButtonsMobile
+                            aria-label="menu categories"
+                        >
+                            {categorizedMenu.map((category) => (
+                                <Tab label={category.name} key={category.id} />
+                            ))}
+                        </Tabs>
+                    </AppBar>
+
+                    {/* --- MENU ITEMS --- */}
                     {isLoadingMenu ? <CircularProgress /> : (
                         categorizedMenu.length > 0 ? (
-                            categorizedMenu.map(category => (
-                                // --- CHANGED: Pass all the necessary props to the memoized MenuCategory component ---
+                            categorizedMenu.map((category, index) => (
                                 <MenuCategory 
                                     key={category.id} 
                                     category={category}
-                                    // Pass down all props needed by MenuItemCard
+                                    // --- Pass the Ref ---
+                                    ref={categoryRefs.current[index]}
                                     restaurant={restaurant}
                                     justAddedItemId={justAddedItemId}
                                     onAddToCart={handleAddToCart}
@@ -223,8 +282,7 @@ function MenuPage() {
                     )}
                 </Box>
 
-                {/* --- Sidebar: Cart --- */}
-                {/* The Cart component itself now handles being a sidebar or a modal */}
+                {/* --- RIGHT COLUMN (CART) --- */}
                 <Box sx={{ 
                     width: { xs: '100%', md: '35%' },
                     position: { md: 'sticky' },

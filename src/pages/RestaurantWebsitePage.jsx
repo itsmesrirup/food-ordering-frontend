@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Container, Box, Typography, Button, Paper, CircularProgress, Grid, Divider } from '@mui/material';
-import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
-import EventSeatIcon from '@mui/icons-material/EventSeat';
+import { useParams } from 'react-router-dom';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+
+// --- Import ALL Blocks ---
+import HeroBlock from '../components/website/HeroBlock';
+import StoryBlock from '../components/website/StoryBlock';
+import MenuPreviewBlock from '../components/website/MenuPreviewBlock';
+import QrPromoBlock from '../components/website/QrPromoBlock';
+import ReservationBlock from '../components/website/ReservationBlock';
+import InfoBlock from '../components/website/InfoBlock';
+import SocialMediaBlock from '../components/website/SocialMediaBlock';
+import WebsiteNavigation from '../components/website/WebsiteNavigation';
 
 function RestaurantWebsitePage() {
     const { t } = useTranslation();
@@ -28,87 +36,69 @@ function RestaurantWebsitePage() {
         fetchRestaurantData();
     }, [slug, t]);
 
-    if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>;
+    if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
     if (error) return <Typography variant="h5" align="center" sx={{ p: 5 }}>{error}</Typography>;
     if (!restaurant) return null;
 
     return (
-        // --- ADDED: A React Fragment <> to wrap the JSX and the new meta tags ---
         <>
-            {/* --- THIS IS THE NEW REACT 19 WAY --- */}
-            {/* You can now use title and meta tags directly in your component's return statement. */}
-            {/* React is smart enough to manage them in the document head. */}
             <title>{restaurant.metaTitle || restaurant.name}</title>
             <meta name="description" content={restaurant.metaDescription || `Order online from ${restaurant.name}.`} />
             <meta property="og:title" content={restaurant.metaTitle || restaurant.name} />
             <meta property="og:description" content={restaurant.metaDescription || `Order online from ${restaurant.name}.`} />
             <meta property="og:image" content={restaurant.heroImageUrl || restaurant.logoUrl} />
-            <Box>
-                {/* Hero Section */}
-                <Box sx={{
-                    height: '50vh',
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${restaurant.heroImageUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    color: 'white',
-                    textAlign: 'center',
-                    p: 2
-                }}>
-                    {restaurant.logoUrl && <img src={restaurant.logoUrl} alt={`${restaurant.name} logo`} style={{ maxHeight: '100px', marginBottom: '16px' }} />}
-                    <Typography variant="h2" component="h1" fontWeight="bold">{restaurant.name}</Typography>
-                    <Typography variant="h5">{restaurant.address}</Typography>
-                </Box>
 
-                <Container maxWidth="md" sx={{ py: 4 }}>
-                    {/* Action Buttons */}
-                    <Paper elevation={3} sx={{ p: 2, display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}>
-                        <Button component={Link} to={`/restaurants/${restaurant.id}`} variant="contained" size="large" startIcon={<RestaurantMenuIcon />}>
-                            {t('orderOnline')}
-                        </Button>
-                        {restaurant.reservationsEnabled && (
-                            <Button component={Link} to={`/restaurants/${restaurant.id}/reserve`} variant="outlined" size="large" startIcon={<EventSeatIcon />}>
-                                {t('bookTable')}
-                            </Button>
-                        )}
-                    </Paper>
+            {/* 1. THE NAVIGATION BAR */}
+            <WebsiteNavigation restaurantName={restaurant.name} />
+            
+            <Box sx={{ backgroundColor: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
+                
+                {/* 2. Hero */}
+                <div id="home"><HeroBlock restaurant={restaurant} /></div>
 
-                    <Grid container spacing={4}>
-                        {/* About Us Section */}
-                        <Grid item xs={12} md={8}>
-                            <Typography variant="h4" gutterBottom>{t('aboutUs')}</Typography>
-                            <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{restaurant.aboutUsText}</Typography>
-                        </Grid>
+                {/* 3. Story */}
+                <div id="about">
+                    <StoryBlock 
+                        title={t('aboutUs')} 
+                        text={restaurant.aboutUsText} 
+                        image={restaurant.heroImageUrl}
+                        // --- ADD THIS ---
+                        galleryImages={restaurant.galleryImageUrls} 
+                    />
+                </div>
 
-                        {/* Contact & Hours Section */}
-                        <Grid item xs={12} md={4}>
-                            <Typography variant="h5" gutterBottom>{t('contactAndHours')}</Typography>
-                            <Typography variant="body1"><strong>{t('phoneLabel')}</strong> {restaurant.phoneNumber}</Typography>
-                            <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}><strong>{t('hoursLabel')}</strong><br/>{restaurant.openingHours}</Typography>
-                        </Grid>
+                {/* 4. Menu Preview (New) */}
+                <div id="menu"><MenuPreviewBlock restaurant={restaurant} /></div>
 
-                        {/* Map Section */}
-                        {restaurant.googleMapsUrl && (
-                            <Grid item xs={12}>
-                                <Typography variant="h5" gutterBottom>{t('findUs')}</Typography>
-                                <Box sx={{ height: 400, width: '100%', border: '1px solid #ccc', borderRadius: 1, overflow: 'hidden' }}>
-                                    <iframe
-                                        src={restaurant.googleMapsUrl}
-                                        width="100%"
-                                        height="100%"
-                                        style={{ border: 0 }}
-                                        allowFullScreen=""
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                    ></iframe>
-                                </Box>
-                            </Grid>
-                        )}
-                    </Grid>
-                </Container>
+                {/* 5. QR Code Promo (New) */}
+                <div id="qrcode"><QrPromoBlock restaurant={restaurant} /></div>
+
+                {/* 6. Reservation CTA (New) */}
+                <div id="reservation"><ReservationBlock restaurant={restaurant} /></div>
+
+                {/* 7. Social Media Block (NEW) */}
+                <div id="social"><SocialMediaBlock restaurant={restaurant} /></div>
+
+                {/* 8. Info (Hours/Contact) */}
+                <div id="contact"><InfoBlock restaurant={restaurant} /></div>
+
+                {/* 9. Map */}
+                <div id="maps">
+                    {restaurant.googleMapsUrl && (
+                        <Box sx={{ height: '450px', width: '100%', filter: 'grayscale(20%)' }}>
+                            <iframe
+                                src={restaurant.googleMapsUrl}
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                allowFullScreen=""
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title="Restaurant Location"
+                            ></iframe>
+                        </Box>
+                    )}
+                </div>
             </Box>
         </>
     );

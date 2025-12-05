@@ -68,3 +68,7 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+html {
+  scroll-padding-top: 120px; /* A safe value for your tallest sticky header */
+}

@@ -1,39 +1,60 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Box } from '@mui/material';
-import { useTheme } from '@mui/material/styles'; // Import useTheme
 
-const LanguageSwitcher = () => {
+// Accepts a 'mode' prop: 'light' (default, for dark backgrounds) or 'dark' (for light backgrounds)
+const LanguageSwitcher = ({ mode = 'light' }) => {
   const { i18n } = useTranslation();
-  const theme = useTheme(); // Get the current theme
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
 
-  // ✅ NEW: Dynamic button styling
-  const buttonStyle = (isActive) => {
-    // Check if the current theme mode is dark
-    const isDark = theme.palette.mode === 'dark';
+  // Helper function for dynamic styling
+  const getButtonStyle = (isActive) => {
+    const isLightMode = mode === 'light'; // White text (for dark headers like RestaurantLayout)
     
     return {
-      // Use the theme's primary text color (white on dark, dark on light)
-      color: theme.palette.getContrastText(theme.palette.primary.main),
-      backgroundColor: isActive ? 'rgba(0, 0, 0, 0.2)' : 'transparent',
-      // Use a border color that contrasts with the header
-      borderColor: isActive ? 'transparent' : 'rgba(255, 255, 255, 0.5)',
+      color: isLightMode ? 'white' : '#333',
+      borderColor: isLightMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.23)',
+      fontWeight: isActive ? 'bold' : 'normal',
+      backgroundColor: isActive 
+        ? (isLightMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)') 
+        : 'transparent',
+      borderWidth: isActive ? '2px' : '1px',
       '&:hover': {
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        borderColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: isLightMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+        borderColor: isLightMode ? 'white' : 'black',
       }
     };
   };
 
   return (
     <Box>
-      <Button variant="outlined" onClick={() => changeLanguage('en')} size="small" sx={{ ...buttonStyle(i18n.language.startsWith('en')), mr: 1 }}>EN</Button>
-      <Button variant="outlined" onClick={() => changeLanguage('fr')} size="small" sx={{ ...buttonStyle(i18n.language.startsWith('fr')), mr: 1 }}>FR</Button>
-      <Button variant="outlined" onClick={() => changeLanguage('de')} size="small" sx={buttonStyle(i18n.language.startsWith('de'))}>DE</Button>
+      <Button 
+        variant="outlined" 
+        onClick={() => changeLanguage('en')} 
+        size="small" 
+        sx={{ ...getButtonStyle(i18n.language.startsWith('en')), mr: 1 }}
+      >
+        EN
+      </Button>
+      <Button 
+        variant="outlined" 
+        onClick={() => changeLanguage('fr')} 
+        size="small" 
+        sx={{ ...getButtonStyle(i18n.language.startsWith('fr')), mr: 1 }}
+      >
+        FR
+      </Button>
+      <Button 
+        variant="outlined" 
+        onClick={() => changeLanguage('de')} 
+        size="small" 
+        sx={getButtonStyle(i18n.language.startsWith('de'))}
+      >
+        DE
+      </Button>
     </Box>
   );
 };

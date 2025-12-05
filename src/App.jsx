@@ -1,32 +1,15 @@
 import React from 'react';
-import { Routes, Route, Link as RouterLink, Outlet } from 'react-router-dom';
-import { Container, Typography, Box, Link, Button } from '@mui/material';
+import { Routes, Route, Link as RouterLink } from 'react-router-dom';
+import { Container, Typography, Box, Button, Link } from '@mui/material';
 import LandingPage from './pages/LandingPage';
 import MenuPage from './pages/MenuPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ReservationPage from './pages/ReservationPage';
-import LanguageSwitcher from './components/LanguageSwitcher';
 import RestaurantLayout from './layouts/RestaurantLayout';
 import RestaurantWebsitePage from './pages/RestaurantWebsitePage';
 import { Toaster } from 'react-hot-toast';
-
-// Layout for non-restaurant pages
-const MainLayout = () => (
-  <>
-    <header>
-      <Box sx={{ p: 2, backgroundColor: 'primary.main', color: 'white' }}>
-        <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" component="div">
-            <Link component={RouterLink} to="/" color="inherit" underline="none">Tablo</Link>
-          </Typography>
-          <LanguageSwitcher />
-        </Container>
-      </Box>
-    </header>
-    <main><Outlet /></main>
-  </>
-);
+import MainLayout from './layouts/MainLayout';
 
 function App() {
   return (
@@ -57,9 +40,18 @@ function App() {
         </Routes>
       </Box>
 
-      <Box component="footer" sx={{ py: 2, px: 2, backgroundColor: '#f5f5f5', textAlign: 'center' }}>
+      {/* --- UPDATED FOOTER --- */}
+      <Box component="footer" sx={{ py: 3, px: 2, backgroundColor: '#fafafa', textAlign: 'center', borderTop: '1px solid #eee' }}>
         <Typography variant="body2" color="text.secondary">
-          Online ordering powered by <strong>Tablo</strong>
+          Online ordering seamlessly powered by{' '}
+          <Link 
+            component={RouterLink} 
+            to="/" 
+            color="inherit" 
+            sx={{ fontWeight: 'bold', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+          >
+            Tablo
+          </Link>
         </Typography>
       </Box>
     </Box>
