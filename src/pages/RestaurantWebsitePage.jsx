@@ -51,7 +51,7 @@ function RestaurantWebsitePage() {
             {/* 1. THE NAVIGATION BAR */}
             <WebsiteNavigation restaurantName={restaurant.name} />
             
-            <Box sx={{ backgroundColor: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
+            <Box sx={{ backgroundColor: '#fff', minHeight: '100vh' }}>
                 
                 {/* 2. Hero */}
                 <div id="home"><HeroBlock restaurant={restaurant} /></div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, Outlet, Link as RouterLink, useOutletContext, useSearchParams, useLocation } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { lightTheme, darkTheme } from '../theme';
@@ -7,6 +8,7 @@ import EventSeatIcon from '@mui/icons-material/EventSeat';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 function RestaurantLayout() {
+    const { t } = useTranslation();
     const { restaurantId } = useParams();
     const location = useLocation();
     const isReservationPage = location.pathname.endsWith('/reserve');
@@ -167,7 +169,7 @@ function RestaurantLayout() {
                                 startIcon={<EventSeatIcon />}
                                 sx={{ fontWeight: 'bold', px: 4, py: 1.2, borderRadius: '50px', boxShadow: 4 }}
                             >
-                                Book a Table
+                                {t('bookTable')}
                             </Button>
                         )}
                     </Box>
@@ -188,7 +190,7 @@ function RestaurantLayout() {
                                         color="secondary" 
                                         startIcon={<EventSeatIcon />}
                                     >
-                                        Book a Table
+                                        {t('bookTable')}
                                     </Button>
                                 )}
                             </Box>

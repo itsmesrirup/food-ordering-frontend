@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Tabs, Tab, Grid, CircularProgress, Button } from '@mui/material';
+import { Box, Container, Typography, Tabs, Tab, Grid, CircularProgress, Button, AppBar } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion'; // --- IMPORT ANIMATION ---
@@ -79,7 +79,7 @@ const MenuPreviewBlock = ({ restaurant }) => {
     const currentCategory = menuData[activeTab];
 
     return (
-        <Box sx={{ py: 10, backgroundColor: '#fff', minHeight: '600px' }}>
+        <Box sx={{ py: 10, backgroundColor: '#fff', minHeight: '600px', position: 'relative' }}>
             <Container maxWidth="md">
                 {/* Header */}
                 <motion.div 
@@ -96,7 +96,20 @@ const MenuPreviewBlock = ({ restaurant }) => {
                 </motion.div>
 
                 {/* Tabs */}
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 6, display: 'flex', justifyContent: 'center' }}>
+                <AppBar 
+                    position="sticky" 
+                    color="default" 
+                    elevation={0} // Flat look to blend in
+                    sx={{ 
+                        // Stick 60px from the top to account for the main website navigation bar
+                        top: '56px', 
+                        mb: 6, 
+                        backgroundColor: '#fff', // Match page background
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                        zIndex: 10 // Ensure it sits above content but below main nav (which is usually zIndex 1100+)
+                    }}
+                >
                     <Tabs 
                         value={activeTab} 
                         onChange={handleTabChange} 
@@ -104,38 +117,44 @@ const MenuPreviewBlock = ({ restaurant }) => {
                         scrollButtons="auto"
                         textColor="primary"
                         indicatorColor="primary"
-                        sx={{ '& .MuiTab-root': { fontFamily: '"Lato", sans-serif', fontWeight: 700, fontSize: '1rem' } }}
+                        sx={{ 
+                            '& .MuiTab-root': { fontFamily: '"Lato", sans-serif', fontWeight: 700, fontSize: '1rem' },
+                            // Center the tabs container
+                            '& .MuiTabs-flexContainer': { justifyContent: { sm: 'center' } }
+                        }}
                     >
                         {menuData.map((cat, index) => (
                             <Tab key={cat.id} label={cat.name} />
                         ))}
                     </Tabs>
-                </Box>
+                </AppBar>
 
                 {/* Animated Content Area */}
-                <AnimatePresence mode='wait'>
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                    >
-                        {/* Direct Items of Top Category */}
-                        {currentCategory.menuItems && currentCategory.menuItems.length > 0 && (
-                             <Box sx={{ mb: 4 }}>
-                                {currentCategory.menuItems.map(item => (
-                                    <PublicMenuItemCard key={item.id} item={item} currency={restaurant.currency} />
-                                ))}
-                            </Box>
-                        )}
+                <Box sx={{ maxWidth: '100%', overflow: 'visible' }}>
+                    <AnimatePresence mode='wait'>
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                        >
+                            {/* Direct Items of Top Category */}
+                            {currentCategory.menuItems && currentCategory.menuItems.length > 0 && (
+                                <Box sx={{ mb: 4 }}>
+                                    {currentCategory.menuItems.map(item => (
+                                        <PublicMenuItemCard key={item.id} item={item} currency={restaurant.currency} />
+                                    ))}
+                                </Box>
+                            )}
 
-                        {/* Subcategories */}
-                        {currentCategory.subCategories?.map(subCat => (
-                            <CategoryRenderer key={subCat.id} category={subCat} currency={restaurant.currency} />
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
+                            {/* Subcategories */}
+                            {currentCategory.subCategories?.map(subCat => (
+                                <CategoryRenderer key={subCat.id} category={subCat} currency={restaurant.currency} />
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
+                </Box>
 
                 {/* Footer Button */}
                 <Box sx={{ textAlign: 'center', mt: 8 }}>

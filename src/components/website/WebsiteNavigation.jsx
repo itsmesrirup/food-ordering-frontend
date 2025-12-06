@@ -58,7 +58,11 @@ const WebsiteNavigation = ({ restaurantName }) => {
           color: isScrolled ? '#333' : 'white',
           transition: 'all 0.3s ease',
           borderBottom: isScrolled ? '1px solid #eee' : 'none',
-          zIndex: 1200 
+          zIndex: 1200,
+          width: '100%',         // Ensure it doesn't exceed container
+          maxWidth: '100vw',     // Hard cap at viewport width
+          left: 0,               // Force anchor to left edge
+          right: 0               // Force anchor to right edge
         }}
       >
         <Container maxWidth="lg">
