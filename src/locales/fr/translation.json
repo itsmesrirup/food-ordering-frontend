@@ -86,5 +86,21 @@
   "formRestaurant": "Nom du Restaurant",
   "formMessage": "Message",
   "sendMessage": "Envoyer le message",
-  "messageSent": "Message envoyé ! Nous vous contacterons sous peu."
+  "messageSent": "Message envoyé ! Nous vous contacterons sous peu.",
+  "pickupTimeTitle": "Heure de retrait",
+  "asap": "Dès que possible",
+  "scheduleForLater": "Planifier pour plus tard",
+  "selectPickupTime": "Sélectionnez l'heure",
+  "pickupTimeRequired": "Veuillez sélectionner une heure de retrait.",
+  "restaurantClosedAtTime": "Le restaurant est fermé à l’heure sélectionnée. Veuillez choisir une autre heure.",
+  "closed": "Fermé",
+  "days": {
+    "MONDAY": "Lundi",
+    "TUESDAY": "Mardi",
+    "WEDNESDAY": "Mercredi",
+    "THURSDAY": "Jeudi",
+    "FRIDAY": "Vendredi",
+    "SATURDAY": "Samedi",
+    "SUNDAY": "Dimanche"
+  }
 }

@@ -86,5 +86,23 @@
   "formRestaurant": "Name des Restaurants",
   "formMessage": "Nachricht",
   "sendMessage": "Nachricht senden",
-  "messageSent": "Nachricht gesendet! Wir werden uns in Kürze bei Ihnen melden."
+  "messageSent": "Nachricht gesendet! Wir werden uns in Kürze bei Ihnen melden.",
+  "pickupTimeTitle": "Abholzeit",
+  "asap": "So schnell wie möglich",
+  "scheduleForLater": "Für später planen",
+  "selectPickupTime": "Abholzeit wählen",
+  "pickupTimeRequired": "Bitte wählen Sie eine Abholzeit.",
+  "scheduledFilter": "Geplant",
+  "pickupAsap": "Abholung: Sofort",
+  "restaurantClosedAtTime": "Das Restaurant ist zu der ausgewählten Zeit geschlossen. Bitte wählen Sie eine andere Uhrzeit.",
+  "closed": "Geschlossen",
+  "days": {
+    "MONDAY": "Montag",
+    "TUESDAY": "Dienstag",
+    "WEDNESDAY": "Mittwoch",
+    "THURSDAY": "Donnerstag",
+    "FRIDAY": "Freitag",
+    "SATURDAY": "Samstag",
+    "SUNDAY": "Sonntag"
+  }
 }

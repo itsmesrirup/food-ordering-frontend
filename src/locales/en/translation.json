@@ -86,5 +86,21 @@
   "formRestaurant": "Restaurant Name",
   "formMessage": "Message",
   "sendMessage": "Send Message",
-  "messageSent": "Message sent! We'll be in touch shortly."
+  "messageSent": "Message sent! We'll be in touch shortly.",
+  "pickupTimeTitle": "Pickup Time",
+  "asap": "As Soon As Possible",
+  "scheduleForLater": "Schedule for Later",
+  "selectPickupTime": "Select Pickup Time",
+  "pickupTimeRequired": "Please select a pickup time.",
+  "restaurantClosedAtTime": "The restaurant is closed at this selected time. Please choose another time.",
+  "closed": "Closed",
+  "days": {
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
+  }
 }
