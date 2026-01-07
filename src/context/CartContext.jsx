@@ -1,12 +1,50 @@
-import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
+import React, { createContext, useState, useContext, useCallback, useMemo, useEffect } from 'react';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState([]);
-    const [cartRestaurantId, setCartRestaurantId] = useState(null);
+    // 1. Initialize from LocalStorage
+    const [cartItems, setCartItems] = useState(() => {
+        try {
+            const saved = localStorage.getItem('cartItems');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) { return []; }
+    });
+    // Also persist restaurant ID so we don't lose context
+    const [cartRestaurantId, setCartRestaurantId] = useState(() => {
+        return localStorage.getItem('cartRestaurantId') || null;
+    });
     const [lastAddedItemId, setLastAddedItemId] = useState(null);
     const [currentRestaurant, setCurrentRestaurant] = useState(null);
+
+    // --- Hydrate Restaurant Data on Refresh ---
+    useEffect(() => {
+        // If we have an ID stored, but no data in memory (e.g. after refresh), fetch it.
+        if (cartRestaurantId && !currentRestaurant) {
+            const fetchRestaurantData = async () => {
+                try {
+                    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${cartRestaurantId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCurrentRestaurant(data);
+                    }
+                } catch (error) {
+                    console.error("Failed to re-hydrate restaurant data", error);
+                }
+            };
+            fetchRestaurantData();
+        }
+    }, [cartRestaurantId, currentRestaurant]);
+
+    // 2. Save to LocalStorage whenever cart changes
+    useEffect(() => {
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        if (cartRestaurantId) {
+            localStorage.setItem('cartRestaurantId', cartRestaurantId);
+        } else {
+            localStorage.removeItem('cartRestaurantId');
+        }
+    }, [cartItems, cartRestaurantId]);
 
     // Wrapped function in useCallback to prevent it from being recreated on every render
     const setCartContext = useCallback((restaurant) => {
@@ -96,6 +134,7 @@ export const CartProvider = ({ children }) => {
         setCartItems([]);
         setCartRestaurantId(null);
         setLastAddedItemId(null);
+        setCurrentRestaurant(null);
     }, []);
     
     // --- Memoize the entire context value object with useMemo ---

@@ -104,5 +104,11 @@
     "FRIDAY": "Freitag",
     "SATURDAY": "Samstag",
     "SUNDAY": "Sonntag"
-  }
+  },
+  "ticketRestaurantLimitWarning": "Zahlen Sie mit Essensgutscheinen? Das Tageslimit beträgt 25 €. Für Bestellungen über diesem Betrag wählen Sie bitte 'Im Restaurant bezahlen', um die Zahlung aufzuteilen.",
+  "paymentMethodTitle": "Zahlungsmethode",
+  "payOnline": "Online bezahlen (Karte)",
+  "payAtCounter": "Im Restaurant bezahlen",
+  "payButton": "Bezahlen {{amount}}",
+  "placeOrderCounter": "Bestellen (Bezahlung vor Ort)"
 }

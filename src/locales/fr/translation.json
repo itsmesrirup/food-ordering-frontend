@@ -102,5 +102,11 @@
     "FRIDAY": "Vendredi",
     "SATURDAY": "Samedi",
     "SUNDAY": "Dimanche"
-  }
+  },
+  "ticketRestaurantLimitWarning": "Vous payez en Ticket Restaurant ? La limite journalière est de 25 €. Pour les commandes supérieures à ce montant, veuillez choisir 'Payer au comptoir' pour compléter le paiement.",
+  "paymentMethodTitle": "Moyen de Paiement",
+  "payOnline": "Payer en Ligne (Carte)",
+  "payAtCounter": "Payer au Comptoir",
+  "payButton": "Payer {{amount}}",
+  "placeOrderCounter": "Commander (Paiement sur place)"
 }

@@ -55,8 +55,8 @@ function OrderConfirmationPage() {
                 
                 <Box sx={{ bgcolor: '#f5f5f5', p: 2, borderRadius: 2, mb: 4, display: 'inline-block' }}>
                     <Typography variant="h6">
-                        <Trans i18nKey="orderConfirmation_orderNumber" values={{ orderId }}>
-                            Order #: <strong>{{orderId}}</strong>
+                        <Trans i18nKey="orderConfirmation_orderNumber" values={{ orderId: order.orderNumber }}>
+                            Order #: <strong>{{orderId: order.orderNumber}}</strong>
                         </Trans>
                     </Typography>
                 </Box>

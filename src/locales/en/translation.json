@@ -102,5 +102,11 @@
     "FRIDAY": "Friday",
     "SATURDAY": "Saturday",
     "SUNDAY": "Sunday"
-  }
+  },
+  "ticketRestaurantLimitWarning": "Paying with Ticket Restaurant? The daily limit is €25. For orders over this amount, please select 'Pay at Counter' to split the payment.",
+  "paymentMethodTitle": "Payment Method",
+  "payOnline": "Pay Online (Card)",
+  "payAtCounter": "Pay at Counter",
+  "payButton": "Pay {{amount}}",
+  "placeOrderCounter": "Place Order (Pay at Counter)"
 }
