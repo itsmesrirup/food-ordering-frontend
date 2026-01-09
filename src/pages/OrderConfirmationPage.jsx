@@ -3,11 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { Container, Typography, Button, Box, CircularProgress, Paper } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import usePageTitle from '../hooks/usePageTitle';
 
 function OrderConfirmationPage() {
     const { orderId } = useParams();
     const { t } = useTranslation();
-    
+    usePageTitle(t('orderConfirmationTitle'));
     // State to hold the order data so we know which restaurant to go back to
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);

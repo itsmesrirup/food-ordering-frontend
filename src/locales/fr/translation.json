@@ -29,6 +29,7 @@
   "orderSummary": "Récapitulatif de la commande",
   "total": "Total :",
   "placeOrder": "Passer la commande",
+  "orderConfirmationTitle": "Confirmation de commande",
   "orderConfirmation_thankYou": "Merci pour votre commande !",
   "orderConfirmation_success": "Votre commande a été passée avec succès.",
   "orderConfirmation_orderNumber": "Votre numéro de commande est : <1>#{{orderId}}</1>",

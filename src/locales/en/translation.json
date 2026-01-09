@@ -29,6 +29,7 @@
   "orderSummary": "Order Summary",
   "total": "Total:",
   "placeOrder": "Place Order",
+  "orderConfirmationTitle": "Order Confirmation",
   "orderConfirmation_thankYou": "Thank you for your order!",
   "orderConfirmation_success": "Your order has been placed successfully.",
   "orderConfirmation_orderNumber": "Your order number is: <1>#{{orderId}}</1>",

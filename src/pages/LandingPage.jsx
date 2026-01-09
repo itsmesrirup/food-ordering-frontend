@@ -8,9 +8,11 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import EventSeatIcon from '@mui/icons-material/EventSeat';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ContactForm from '../components/landing/ContactForm'; // Import the form
+import usePageTitle from '../hooks/usePageTitle';
 
 function LandingPage() {
     const { t } = useTranslation();
+    usePageTitle('Home'); // "Home | Tablo"
     const { setCartContext } = useCart();
     
     useEffect(() => {

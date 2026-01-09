@@ -29,6 +29,7 @@
   "orderSummary": "Bestellübersicht",
   "total": "Gesamt:",
   "placeOrder": "Bestellung aufgeben",
+  "orderConfirmationTitle": "Bestellbestätigung",
   "orderConfirmation_thankYou": "Vielen Dank für Ihre Bestellung!",
   "orderConfirmation_success": "Ihre Bestellung wurde erfolgreich aufgegeben.",
   "orderConfirmation_orderNumber": "Ihre Bestellnummer lautet: <1>#{{orderId}}</1>",

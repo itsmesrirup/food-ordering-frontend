@@ -8,6 +8,7 @@ import { formatPrice } from '../utils/formatPrice';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { isRestaurantOpen, isRestaurantOpenOnDay, getFirstOpenSlot } from '../utils/timeValidation';
+import usePageTitle from '../hooks/usePageTitle';
 
 // --- STRIPE IMPORTS ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -146,6 +147,7 @@ const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, c
 // --- MAIN COMPONENT: CheckoutPage ---
 function CheckoutPage() {
     const { t } = useTranslation(); 
+    usePageTitle(t('checkoutTitle')); // "Checkout | Tablo"
     const { cartItems, clearCart, currentRestaurant } = useCart();
     const navigate = useNavigate();
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });

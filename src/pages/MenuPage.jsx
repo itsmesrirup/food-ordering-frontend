@@ -14,6 +14,7 @@ import SpecialsBoard from '../components/SpecialsBoard';
 import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
+import usePageTitle from '../hooks/usePageTitle';
 
 // --- MenuItemCard (Unchanged) ---
 const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCart, onCustomizeClick, t, theme }) => {
@@ -101,6 +102,7 @@ function MenuPage() {
     const { restaurant } = useRestaurant();
     const theme = useTheme();
     const { t } = useTranslation();
+    usePageTitle(restaurant ? restaurant.name : 'Menu'); // "Au Punjab | Tablo"
     const { restaurantId } = useParams();
     const { addToCart, setCartContext, updateCartItem, cartItems } = useCart();
     
@@ -117,6 +119,10 @@ function MenuPage() {
     const categoryRefs = useRef([]);
     const isTabClickScroll = useRef(false);
 
+    // --- CHECK THE FEATURE ---
+    // Assuming restaurant.availableFeatures is an array of strings
+    const showSpecials = restaurant.availableFeatures?.includes('SPECIALS');
+    
     useEffect(() => {
         if (restaurant) {
             setCartContext(restaurant);
@@ -214,7 +220,8 @@ function MenuPage() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4, pb: { xs: '100px', md: 4 } }}> 
-            <SpecialsBoard />
+            {/* Only render if they pay for it */}
+            {showSpecials && <SpecialsBoard />}
 
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
                 
