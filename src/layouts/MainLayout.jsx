@@ -26,28 +26,17 @@ function MainLayout() {
                     <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         
                         {/* Logo / Brand Link */}
-                        <Link component={RouterLink} to="/" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Link component={RouterLink} to="/" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
                             {/* If you have a platform logo, uncomment this: */}
-                            {/* <img src="/tablo-logo.png" alt="Tablo Logo" style={{ height: '32px' }} /> */}
+                            <img 
+                                src="/tablo-logo.png" 
+                                alt="Tablo" 
+                                style={{ height: '40px', marginRight: '10px' }} // Adjust height as needed
+                            />
                             
                             {/* --- THIS IS THE FIX --- */}
                             {/* Hide the text on Mobile (xs), Show on Tablet+ (sm) */}
-                            <Typography 
-                                variant="h5" 
-                                fontWeight="bold" 
-                                sx={{ display: { xs: 'none', sm: 'block' } }}
-                            >
-                                Tablo
-                            </Typography>
                             
-                            {/* Optional: Show a shorter name or icon on mobile if you don't have an image logo */}
-                            <Typography 
-                                variant="h5" 
-                                fontWeight="bold" 
-                                sx={{ display: { xs: 'block', sm: 'none' } }}
-                            >
-                                T {/* Or an Icon */}
-                            </Typography>
                         </Link>
 
                         {/* Language Switcher */}

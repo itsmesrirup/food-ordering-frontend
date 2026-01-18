@@ -160,7 +160,7 @@ const MenuPreviewBlock = ({ restaurant }) => {
                 <Box sx={{ textAlign: 'center', mt: 8 }}>
                      <Button 
                         component={Link} 
-                        to={`/restaurants/${restaurant.id}`}
+                        to={`/order/${restaurant.slug}`}
                         variant="contained" 
                         size="large"
                         sx={{ 

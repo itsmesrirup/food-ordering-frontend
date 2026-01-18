@@ -10,7 +10,7 @@ import EventSeatIcon from '@mui/icons-material/EventSeat';
 function ReservationPage() {
     const { restaurant } = useRestaurant();
     const { t } = useTranslation();
-    const { restaurantId } = useParams();
+    const { slug } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ customerName: '', customerEmail: '', customerPhone: '', partySize: 2, reservationTime: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,8 +21,12 @@ function ReservationPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Safety check
+        if (!restaurant) return;
+
         setIsSubmitting(true);
-        const payload = { ...formData, restaurantId: parseInt(restaurantId) };
+        const payload = { ...formData, restaurantId: parseInt(restaurant.id) };
         try {
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reservations`, {
                 method: 'POST',
@@ -31,7 +35,7 @@ function ReservationPage() {
             });
             if (!response.ok) throw new Error('Could not submit reservation. Please try again.');
             toast.success('Your reservation request has been sent!');
-            navigate(`/restaurants/${restaurantId}`);
+            navigate(`/order/${slug}`);
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -39,12 +43,20 @@ function ReservationPage() {
         }
     };
 
-    if (!restaurant) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-    if (!restaurant.reservationsEnabled) return <Navigate to={`/restaurants/${restaurantId}`} replace />;
+    // --- Loading State ---
+    if (!restaurant) {
+        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+    }
+    
+    // --- Guard Clause ---
+    if (!restaurant.reservationsEnabled) {
+        // --- CHANGED: Redirect to slug-based menu ---
+        return <Navigate to={`/order/${slug}`} replace />;
+    }
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-            <Button component={RouterLink} to={`/restaurants/${restaurantId}`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
+            <Button component={RouterLink} to={`/order/${slug}`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
                 {t('backToMenu')}
             </Button>
             
@@ -105,26 +117,31 @@ function ReservationPage() {
                 <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
                     <Box sx={{ 
                         height: '100%', 
-                        minHeight: '400px',
+                        minHeight: '600px',
                         backgroundImage: `url(${restaurant.heroImageUrl})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         borderRadius: 4,
                         position: 'relative',
-                        boxShadow: 3
+                        boxShadow: 3,
+                        overflow: 'hidden'
                     }}>
                         <Box sx={{
                             position: 'absolute',
                             bottom: 0,
                             left: 0,
-                            right: 0,
-                            p: 3,
-                            background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-                            borderRadius: '0 0 16px 16px',
+                            width: '100%',
+                            p: 4,
+                            background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)',
+                            textAlign: 'left',
                             color: 'white'
                         }}>
-                            <Typography variant="h5" fontWeight="bold">{restaurant.name}</Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>{restaurant.address}</Typography>
+                            <Typography variant="h4" fontWeight="bold" gutterBottom>
+                                {restaurant.name}
+                            </Typography>
+                            <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 'normal' }}>
+                                {restaurant.address}
+                            </Typography>
                         </Box>
                     </Box>
                 </Grid>

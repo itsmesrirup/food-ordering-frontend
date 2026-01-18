@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
 import CustomizeItemModal from '../components/CustomizeItemModal';
@@ -103,7 +103,6 @@ function MenuPage() {
     const theme = useTheme();
     const { t } = useTranslation();
     usePageTitle(restaurant ? restaurant.name : 'Menu'); // "Au Punjab | Tablo"
-    const { restaurantId } = useParams();
     const { addToCart, setCartContext, updateCartItem, cartItems } = useCart();
     
     const [categorizedMenu, setCategorizedMenu] = useState([]);
@@ -124,14 +123,13 @@ function MenuPage() {
     const showSpecials = restaurant.availableFeatures?.includes('SPECIALS');
     
     useEffect(() => {
-        if (restaurant) {
+        if (restaurant && restaurant.id) {
             setCartContext(restaurant);
-        }
         
         const fetchMenu = async () => {
             setIsLoadingMenu(true);
             try {
-                const menuResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}/menu`);
+                const menuResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurant.id}/menu`);
                 if (!menuResponse.ok) throw new Error("Failed to load menu");
                 const menuData = await menuResponse.json();
                 setCategorizedMenu(menuData);
@@ -139,11 +137,10 @@ function MenuPage() {
             } catch (error) { toast.error(error.message); } 
             finally { setIsLoadingMenu(false); }
         };
-
-        if (restaurant) {
+        
             fetchMenu();
         }
-    }, [restaurantId, restaurant, setCartContext]);
+    }, [restaurant, setCartContext]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -171,11 +168,15 @@ function MenuPage() {
     }, [categorizedMenu]);
 
     const handleAddToCart = (item) => {
-        addToCart(item);
-        setJustAddedItemId(item.id);
-        setTimeout(() => { setJustAddedItemId(null); }, 1500);
-        toast.success(t('itemAddedToCart', { itemName: item.name }));
-        setModalOpen(false);
+        // --- Check the result ---
+        const wasAdded = addToCart(item);
+        if (wasAdded) {
+            toast.success(t('itemAddedToCart', { itemName: item.name }));
+            setJustAddedItemId(item.id);
+            setTimeout(() => { setJustAddedItemId(null); }, 1500);
+        }
+        return wasAdded;
+        //setModalOpen(false);
     };
 
     const handleCustomizeClick = (item) => {
@@ -284,7 +285,7 @@ function MenuPage() {
                     top: { md: '20px' },
                     alignSelf: 'flex-start'
                 }}>
-                    <Cart onEditCartItem={handleCustomizeEdit} />
+                    <Cart onEditCartItem={handleCustomizeEdit} pageRestaurant={restaurant} />
                 </Box>
             </Box>
             <CustomizeItemModal

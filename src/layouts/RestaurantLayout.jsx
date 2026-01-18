@@ -9,7 +9,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 
 function RestaurantLayout() {
     const { t } = useTranslation();
-    const { restaurantId } = useParams();
+    const { slug } = useParams();
     const location = useLocation();
     const isReservationPage = location.pathname.endsWith('/reserve');
     const [searchParams] = useSearchParams();
@@ -22,11 +22,11 @@ function RestaurantLayout() {
 
     useEffect(() => {
         const fetchRestaurantAndTheme = async () => {
-            if (!restaurantId) return;
+            if (!slug) return;
             setIsLoading(true);
             setError(null);
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurantId}`);
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/by-slug-full/${slug}`);
                 if (response.status === 404) throw new Error("Restaurant not found");
                 if (!response.ok) throw new Error("Restaurant data not found");
 
@@ -53,14 +53,14 @@ function RestaurantLayout() {
             }
         };
         fetchRestaurantAndTheme();
-    }, [restaurantId]);
+    }, [slug]);
 
     if (error) {
         return (
             <Container sx={{ textAlign: 'center', mt: 4 }}>
                 <Typography variant="h4">Oops! Page Not Found</Typography>
                 <Typography>The restaurant you are looking for is not available.</Typography>
-                <Button component={Link} to="/" variant="contained" sx={{ mt: 2 }}>Go to Homepage</Button>
+                <Button component={RouterLink} to="/" variant="contained" sx={{ mt: 2 }}>Go to Homepage</Button>
             </Container>
         );
     }
@@ -106,7 +106,7 @@ function RestaurantLayout() {
                 <Box sx={{ p: 1, backgroundColor: '#fff', borderBottom: '1px solid #eaeaea' }}>
                     <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         
-                        <Link component={RouterLink} to={`/restaurants/${restaurantId}`} color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Link component={RouterLink} to={`/order/${slug}`} color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             {restaurantData.logoUrl && (
                                 <img 
                                     src={restaurantData.logoUrl} 
@@ -162,7 +162,7 @@ function RestaurantLayout() {
                         {restaurantData.reservationsEnabled && !isReservationPage && (
                             <Button 
                                 component={RouterLink} 
-                                to={`/restaurants/${restaurantId}/reserve`} 
+                                to={`/order/${slug}/reserve`} 
                                 variant="contained" 
                                 color="secondary" 
                                 size="large"
@@ -185,7 +185,7 @@ function RestaurantLayout() {
                                 {restaurantData.reservationsEnabled && !isReservationPage && (
                                     <Button 
                                         component={RouterLink} 
-                                        to={`/restaurants/${restaurantId}/reserve`} 
+                                        to={`/order/${slug}/reserve`} 
                                         variant="contained" 
                                         color="secondary" 
                                         startIcon={<EventSeatIcon />}

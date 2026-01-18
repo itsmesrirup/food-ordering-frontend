@@ -1,8 +1,11 @@
 import React, { createContext, useState, useContext, useCallback, useMemo, useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
+    const { t } = useTranslation();
     // 1. Initialize from LocalStorage
     const [cartItems, setCartItems] = useState(() => {
         try {
@@ -16,6 +19,10 @@ export const CartProvider = ({ children }) => {
     });
     const [lastAddedItemId, setLastAddedItemId] = useState(null);
     const [currentRestaurant, setCurrentRestaurant] = useState(null);
+
+    // --- NEW STATE: For the Conflict Modal ---
+    const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
+    const [pendingItem, setPendingItem] = useState(null);
 
     // --- Hydrate Restaurant Data on Refresh ---
     useEffect(() => {
@@ -67,41 +74,59 @@ export const CartProvider = ({ children }) => {
 
     // --- Wrap function in useCallback ---
     const addToCart = useCallback((item) => {
-        if (!item.restaurantId) {
-            console.error("Item is missing restaurantId:", item);
-            return;
+        if (!item.restaurantId) { console.error("Item is missing restaurantId:", item); return false; }
+
+        // Check for conflict
+        if (cartRestaurantId && cartRestaurantId != item.restaurantId) { 
+            // Instead of window.confirm, we save the item and open the custom dialog
+            setPendingItem(item);
+            setConflictDialogOpen(true);
+            return false;
         }
 
-        if (cartRestaurantId && cartRestaurantId !== item.restaurantId) {
-            const confirmSwitch = window.confirm(
-                "You have items from another restaurant in your cart. Would you like to clear the cart and add this item?"
-            );
+        // Normal Add Logic (extracted to reuse)
+        executeAddItem(item);
+        return true;
+    }, [cartRestaurantId]); // Depend on cartRestaurantId
 
-            if (confirmSwitch) {
-                const newItemWithId = { ...item, quantity: 1, cartItemId: `${item.id}-${new Date().getTime()}` };
-                setCartItems([newItemWithId]);
-                setCartRestaurantId(item.restaurantId);
-                setLastAddedItemId(item.id);
-            }
-            return;
-        }
-
-        if (!cartRestaurantId) {
-            setCartRestaurantId(item.restaurantId);
-        }
+    // Helper to actually add the item (used by addToCart and the Modal)
+    const executeAddItem = (item) => {
+        if (!cartRestaurantId) setCartRestaurantId(item.restaurantId);
 
         setCartItems(prevItems => {
             const existingItem = prevItems.find(i => i.id === item.id && JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions));
             if (existingItem) {
-                return prevItems.map(i => 
-                    i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-                );
+                return prevItems.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
             }
             const newItemWithId = { ...item, quantity: 1, cartItemId: `${item.id || 'bundle'}-${new Date().getTime()}` };
             return [...prevItems, newItemWithId];
         });
         setLastAddedItemId(item.id);
-    }, [cartRestaurantId]); // This function depends on cartRestaurantId, so it's in the dependency array.
+    };
+
+    // --- NEW: Handle Confirming the Clear ---
+    const handleClearAndAdd = () => {
+        if (pendingItem) {
+            setCartItems([]); // Clear old items
+            setCartRestaurantId(pendingItem.restaurantId); // Set new ID
+            // We need to wait a tick or just set state directly. 
+            // Setting state is batched, so calling executeAddItem right away works 
+            // because we are passing the item explicitly, but we need to ensure setCartItems([]) 
+            // doesn't get overwritten.
+            
+            // Safer approach: Set directly here
+            const newItemWithId = { ...pendingItem, quantity: 1, cartItemId: `${pendingItem.id || 'bundle'}-${new Date().getTime()}` };
+            setCartItems([newItemWithId]);
+            setLastAddedItemId(pendingItem.id);
+        }
+        setConflictDialogOpen(false);
+        setPendingItem(null);
+    };
+
+    const handleCancelAdd = () => {
+        setConflictDialogOpen(false);
+        setPendingItem(null);
+    };
 
     // --- Wrap function in useCallback ---
     const removeFromCart = useCallback((cartItemId) => {
@@ -156,7 +181,36 @@ export const CartProvider = ({ children }) => {
         addToCart, removeFromCart, updateQuantity, clearCart, setCartContext, updateCartItem
     ]);
 
-    return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+    return (
+        <CartContext.Provider value={value}>
+            {children}
+            
+            {/* --- ADDED: The Global Dialog --- */}
+            <Dialog
+                open={conflictDialogOpen}
+                onClose={handleCancelAdd}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {t('startNewOrder', 'Start a new order?')}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        {t('cartConflictMessage', 'You have items from another restaurant in your cart. Adding this item will clear your current cart. Do you want to proceed?')}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelAdd} color="inherit">
+                        {t('cancel', 'Cancel')}
+                    </Button>
+                    <Button onClick={handleClearAndAdd} variant="contained" color="primary" autoFocus>
+                        {t('newOrder', 'Start New Order')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </CartContext.Provider>
+    );
 };
 
 export const useCart = () => {

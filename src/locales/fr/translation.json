@@ -109,5 +109,10 @@
   "payOnline": "Payer en Ligne (Carte)",
   "payAtCounter": "Payer au Comptoir",
   "payButton": "Payer {{amount}}",
-  "placeOrderCounter": "Commander (Paiement sur place)"
+  "placeOrderCounter": "Commander (Paiement sur place)",
+  "startNewOrder": "Commencer une nouvelle commande ?",
+  "cartConflictMessage": "Vous avez des articles d'un autre restaurant dans votre panier. L'ajout de cet article effacera votre panier actuel. Voulez-vous continuer ?",
+  "newOrder": "Nouvelle commande",
+  "cancel": "Annuler",
+  "clearCart": "Vider le panier"
 }

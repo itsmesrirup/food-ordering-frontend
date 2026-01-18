@@ -148,7 +148,7 @@ const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, c
 function CheckoutPage() {
     const { t } = useTranslation(); 
     usePageTitle(t('checkoutTitle')); // "Checkout | Tablo"
-    const { cartItems, clearCart, currentRestaurant } = useCart();
+    const { cartItems, clearCart, currentRestaurant, cartRestaurantId } = useCart();
     const navigate = useNavigate();
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -167,13 +167,16 @@ function CheckoutPage() {
 
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-    // 1. Fetch Payment Intent Logic
+    // --- FIX 2: Payment Intent Logic (Safe) ---
     useEffect(() => {
-        // Only fetch intent if restaurant supports payments AND user has selected 'online'
-        // But to be responsive, we can fetch it eagerly if supported
+        // Guard: Don't run if there's a mismatch (wait for the redirect above)
+        if (currentRestaurant && cartRestaurantId && String(currentRestaurant.id) !== String(cartRestaurantId)) {
+            return; 
+        }
+
         const paymentsSupported = currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled;
 
-        if (cartItems.length > 0 && currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled) {
+        if (cartItems.length > 0 && paymentsSupported) {
             const amountInCents = Math.round(totalPrice * 100);
             fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
                 method: "POST",
@@ -187,11 +190,10 @@ function CheckoutPage() {
             .then((res) => res.json())
             .then((data) => setClientSecret(data.clientSecret))
             .catch((err) => console.error("Error creating payment intent:", err));
-        }else {
-            // If payments not supported, force method to counter
+        } else {
             setPaymentMethod('counter');
         }
-    }, [cartItems, currentRestaurant, totalPrice]);
+    }, [cartItems, currentRestaurant, totalPrice, cartRestaurantId]);
 
     const handleInputChange = (e) => setCustomerDetails({ ...customerDetails, [e.target.name]: e.target.value });
 

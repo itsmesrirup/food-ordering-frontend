@@ -38,9 +38,7 @@ function OrderConfirmationPage() {
     // 1. Try order.restaurantId (Flat DTO)
     // 2. Try order.restaurant.id (Nested Entity)
     // 3. Default to "/" if neither exists
-    const backLink = order?.restaurantId 
-        ? `/restaurants/${order.restaurantId}` 
-        : (order?.restaurant?.id ? `/restaurants/${order.restaurant.id}` : "/");
+    const backLink = order?.restaurantSlug ? `/order/${order.restaurantSlug}` : '/';
 
     return (
         <Container maxWidth="sm" sx={{ textAlign: 'center', py: 8 }}>

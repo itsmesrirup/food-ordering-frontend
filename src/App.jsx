@@ -25,8 +25,8 @@ function App() {
           </Route>
 
           <Route element={<RestaurantLayout />}>
-            <Route path="/restaurants/:restaurantId" element={<MenuPage />} />
-            <Route path="/restaurants/:restaurantId/reserve" element={<ReservationPage />} />
+            <Route path="/order/:slug" element={<MenuPage />} />
+            <Route path="/order/:slug/reserve" element={<ReservationPage />} />
           </Route>
 
           <Route path="/r/:slug" element={<RestaurantWebsitePage />} />

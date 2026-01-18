@@ -43,7 +43,7 @@ const HeroBlock = ({ restaurant }) => {
           
           <Button 
               component={Link}
-              to={`/restaurants/${restaurant.id}`}
+              to={`/order/${restaurant.slug}`}
               variant="contained" 
               size="large"
               sx={{ 

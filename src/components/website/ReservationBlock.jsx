@@ -25,7 +25,7 @@ const ReservationBlock = ({ restaurant }) => {
                 </Typography>
                 <Button 
                     component={Link} 
-                    to={`/restaurants/${restaurant.id}/reserve`}
+                    to={`/order/${restaurant.slug}/reserve`}
                     variant="contained" 
                     size="large"
                     color="primary"

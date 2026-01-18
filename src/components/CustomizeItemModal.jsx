@@ -86,8 +86,19 @@ function CustomizeItemModal({ open, handleClose, menuItem, initialSelections, on
             ...menuItem,
             selectedOptions: selectedOptionsForCart
         };
+        
         if (typeof onSave === "function") {
-            onSave(itemForCart);
+            // Call onSave and capture the boolean result (true = success, false = blocked)
+            const wasAdded = onSave(itemForCart);
+            
+            // Only close this modal if the item was successfully added.
+            // If wasAdded is false, it means the Cart Conflict Dialog has opened, so we close this
+            // customization modal to let the user deal with the conflict dialog.
+            if (wasAdded) {
+                handleClose();
+            } else {
+                handleClose(); // Close this modal so the Conflict Dialog is visible
+            }
         } else {
             console.error("onSave is not a function", onSave);
         }

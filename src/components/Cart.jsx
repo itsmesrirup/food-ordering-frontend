@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Recommendations from './Recommendations';
 import { Box, Typography, Button, List, ListItem, ListItemText, IconButton, Divider, Modal, Paper } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -10,9 +10,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CustomizeItemModal from './CustomizeItemModal'; 
 import { formatPrice } from '../utils/formatPrice';
+import { toast } from 'react-hot-toast';
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 
 // This is the detailed content of the cart, used in both sidebar and modal.
-const CartContent = ({onEditCartItem}) => {
+const CartContent = ({onEditCartItem, onCheckout}) => {
     const { t } = useTranslation();
     const { cartItems, updateQuantity, lastAddedItemId, currentRestaurant, updateCartItem } = useCart();
     const location = useLocation();
@@ -86,7 +88,12 @@ const CartContent = ({onEditCartItem}) => {
                             {formatPrice(totalPrice, currentRestaurant?.currency)}
                         </Typography>
                     </Box>
-                    <Button component={Link} to={`/checkout${location.search}`} variant="contained" fullWidth>
+                    <Button 
+                        onClick={onCheckout} 
+                        variant="contained" 
+                        fullWidth
+                        disabled={!currentRestaurant}
+                    >
                         {t('proceedToCheckout')}
                     </Button>
                     {currentRestaurant?.recommendationsEnabled && (
@@ -110,22 +117,59 @@ const CartContent = ({onEditCartItem}) => {
 }
 
 // This is the new main Cart component that handles the responsive logic.
-function Cart({ onEditCartItem }) {
+function Cart({ onEditCartItem, pageRestaurant }) {
     const { t } = useTranslation();
-    const { cartItems, currentRestaurant } = useCart();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { cartItems, currentRestaurant, cartRestaurantId, clearCart } = useCart();
     const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
+    // --- ADDED: Hooks for navigation ---
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    // --- NEW STATE ---
+    const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
+
     const handleOpen = () => setIsModalOpen(true);
     const handleClose = () => setIsModalOpen(false);
+
+    // --- ADDED: The Validation Handler ---
+    const handleCheckoutClick = () => {
+        // 1. Use the explicit Page Restaurant, fallback to Context if missing
+        const activeRestaurant = pageRestaurant || currentRestaurant;
+
+        if (!activeRestaurant) {
+            console.warn("Restaurant data loading...");
+            return;
+        }
+
+        // 2. The Robust Check
+        // Compare the PAGE'S ID (activeRestaurant) against the CART'S ID (cartRestaurantId)
+        if (cartRestaurantId && String(activeRestaurant.id) !== String(cartRestaurantId)) {
+            // Open the Dialog instead of Toast
+            setConflictDialogOpen(true); 
+            return; // BLOCK
+        }
+
+        navigate(`/checkout${location.search}`);
+        handleClose();
+    };
+
+    // --- NEW: Handle User Choice ---
+    const handleClearAndStay = () => {
+        clearCart();
+        setConflictDialogOpen(false);
+        toast.success("Cart cleared. You can now order from this restaurant.");
+        // We stay on the current page so they can add items
+    };
 
     return (
         <>
             {/* --- Desktop Sidebar View --- */}
             {/* This is visible only on medium screens and up */}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                <CartContent onEditCartItem={onEditCartItem} />
+                <CartContent onEditCartItem={onEditCartItem} onCheckout={handleCheckoutClick} />
             </Box>
             {/* --- Mobile Floating Button View --- */}
             {/* This button only appears on small screens and if there are items in the cart */}
@@ -162,9 +206,31 @@ function Cart({ onEditCartItem }) {
                 sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
                 <Box sx={{ width: '90%', maxWidth: 400 }}>
-                    <CartContent />
+                    <CartContent onEditCartItem={onEditCartItem} 
+                        onCheckout={handleCheckoutClick} />
                 </Box>
             </Modal>
+
+            <Dialog
+                open={conflictDialogOpen}
+                onClose={() => setConflictDialogOpen(false)}
+            >
+                <DialogTitle>{t('startNewOrder')}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        {t('cartConflictMessage')} 
+                        {/* Or specific message: "Your cart has items from another restaurant. Clear it to order here?" */}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setConflictDialogOpen(false)} color="inherit">
+                        {t('cancel')}
+                    </Button>
+                    <Button onClick={handleClearAndStay} variant="contained" color="error" autoFocus>
+                        {t('clearCart', 'Clear Cart')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }

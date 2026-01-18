@@ -109,5 +109,10 @@
   "payOnline": "Pay Online (Card)",
   "payAtCounter": "Pay at Counter",
   "payButton": "Pay {{amount}}",
-  "placeOrderCounter": "Place Order (Pay at Counter)"
+  "placeOrderCounter": "Place Order (Pay at Counter)",
+  "startNewOrder": "Start a new order?",
+  "cartConflictMessage": "You have items from another restaurant in your cart. Adding this item will clear your current cart. Do you want to proceed?",
+  "newOrder": "Start New Order",
+  "cancel": "Cancel",
+  "clearCart": "Clear Cart"
 }

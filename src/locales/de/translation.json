@@ -111,5 +111,9 @@
   "payOnline": "Online bezahlen (Karte)",
   "payAtCounter": "Im Restaurant bezahlen",
   "payButton": "Bezahlen {{amount}}",
-  "placeOrderCounter": "Bestellen (Bezahlung vor Ort)"
+  "placeOrderCounter": "Bestellen (Bezahlung vor Ort)",
+  "startNewOrder": "Neue Bestellung beginnen?",
+  "cartConflictMessage": "Sie haben Artikel von einem anderen Restaurant in Ihrem Warenkorb. Wenn Sie diesen Artikel hinzufügen, wird Ihr aktueller Warenkorb geleert. Möchten Sie fortfahren?",
+  "newOrder": "Neue Bestellung",
+  "cancel": "Abbrechen"
 }

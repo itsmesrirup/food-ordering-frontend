@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useRestaurant } from '../layouts/RestaurantLayout';
 import { Paper, Typography, Box, CircularProgress, Grid, Divider } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { format, getDay } from 'date-fns'; // Import getDay
@@ -20,17 +20,17 @@ const getTodayKey = () => {
 function SpecialsBoard() {
     const { t, i18n } = useTranslation();
     const theme = useTheme();
-    const { restaurantId } = useParams();
+    const { restaurant } = useRestaurant();
     const [activeMenu, setActiveMenu] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const todayKey = getTodayKey();
 
     useEffect(() => {
         const fetchActiveSpecialMenu = async () => {
-            if (!restaurantId) return;
+            if (!restaurant || !restaurant.id) return;
             setIsLoading(true);
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/special-menus/restaurant/${restaurantId}/active`);
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/special-menus/restaurant/${restaurant.id}/active`);
                 if (response.ok) {
                     const data = await response.json();
                     
@@ -53,7 +53,7 @@ function SpecialsBoard() {
             }
         };
         fetchActiveSpecialMenu();
-    }, [restaurantId]);
+    }, [restaurant]);
 
     // This function now uses i18next for translation and date formatting ---
     const formatDateRange = (start, end) => {
