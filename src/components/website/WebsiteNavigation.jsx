@@ -54,8 +54,8 @@ const WebsiteNavigation = ({ restaurantName }) => {
         position="fixed" 
         elevation={isScrolled ? 4 : 0}
         sx={{ 
-          backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent', 
-          color: isScrolled ? '#333' : 'white',
+           backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
+          color: isScrolled ? '#333' : (restaurantName.includes('Minimalist') ? '#333' : 'white'),
           transition: 'all 0.3s ease',
           borderBottom: isScrolled ? '1px solid #eee' : 'none',
           zIndex: 1200,

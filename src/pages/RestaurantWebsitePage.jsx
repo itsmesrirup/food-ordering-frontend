@@ -12,6 +12,7 @@ import ReservationBlock from '../components/website/ReservationBlock';
 import InfoBlock from '../components/website/InfoBlock';
 import SocialMediaBlock from '../components/website/SocialMediaBlock';
 import WebsiteNavigation from '../components/website/WebsiteNavigation';
+import SpecialOccasionBanner from '../components/website/SpecialOccasionBanner';
 
 function RestaurantWebsitePage() {
     const { t } = useTranslation();
@@ -55,6 +56,8 @@ function RestaurantWebsitePage() {
                 
                 {/* 2. Hero */}
                 <div id="home"><HeroBlock restaurant={restaurant} /></div>
+
+                <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} />
 
                 {/* 3. Story */}
                 <div id="about">
