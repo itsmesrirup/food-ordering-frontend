@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Outlet, Link as RouterLink, useOutletContext, useSearchParams, useLocation } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -6,6 +6,9 @@ import { lightTheme, darkTheme } from '../theme';
 import { Container, Typography, Box, Link, CircularProgress, CssBaseline, Button, Alert, Paper } from '@mui/material';
 import EventSeatIcon from '@mui/icons-material/EventSeat'; 
 import LanguageSwitcher from '../components/LanguageSwitcher';
+
+// ✅ IMPORT VIDEO HELPERS
+import { isVideoUrl, getPosterUrl } from '../utils/mediaUtils';
 
 function RestaurantLayout() {
     const { t } = useTranslation();
@@ -19,6 +22,10 @@ function RestaurantLayout() {
     const [restaurantData, setRestaurantData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // ✅ ADDED: Video detection and ref
+    const hasVideoHero = restaurantData ? isVideoUrl(restaurantData.heroImageUrl) : false;
+    const videoRef = useRef(null);
 
     useEffect(() => {
         const fetchRestaurantAndTheme = async () => {
@@ -55,6 +62,18 @@ function RestaurantLayout() {
         fetchRestaurantAndTheme();
     }, [slug]);
 
+    // ✅ ADDED: Force play video to prevent mobile blocking
+    useEffect(() => {
+        if (hasVideoHero && videoRef.current) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Autoplay blocked to save data. Displaying fallback poster image.", error);
+                });
+            }
+        }
+    }, [hasVideoHero, restaurantData?.heroImageUrl]);
+
     if (error) {
         return (
             <Container sx={{ textAlign: 'center', mt: 4 }}>
@@ -81,22 +100,6 @@ function RestaurantLayout() {
             </Container>
         );
     }
-
-    const heroHeaderStyle = {
-        color: '#fff',
-        position: 'relative',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${restaurantData.heroImageUrl})`,
-        height: '350px', 
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        textAlign: 'center',
-        p: 2
-    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -135,43 +138,92 @@ function RestaurantLayout() {
 
                 {/* Hero Section */}
                 {restaurantData.heroImageUrl ? (
-                    <Box sx={heroHeaderStyle}>
-                        {restaurantData.logoUrl && (
-                             <Box
-                                component="img"
-                                src={restaurantData.logoUrl}
-                                alt={`${restaurantData.name} logo`}
-                                sx={{ 
-                                    maxHeight: '80px', 
-                                    maxWidth: '200px',
-                                    mb: 2,
-                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                    p: 1,
-                                    borderRadius: 3,
-                                    boxShadow: 3
+                    <Box sx={{
+                        position: 'relative',
+                        height: { xs: '100svh', md: '350px' }, // ✅ ADDED: Mobile svh fix
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        textAlign: 'center',
+                        p: 2,
+                        overflow: 'hidden', // Keeps video contained
+                        backgroundColor: '#000', // Fallback color
+                        transform: 'translateZ(0)', // ✅ ADDED: GPU Acceleration for scroll bug
+                        WebkitTransform: 'translateZ(0)'
+                    }}>
+                        
+                        {/* ✅ LAYER 1: VIDEO OR IMAGE BACKGROUND */}
+                        {hasVideoHero ? (
+                            <video 
+                                ref={videoRef}
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline 
+                                preload="auto" // ✅ ADDED
+                                poster={getPosterUrl(restaurantData.heroImageUrl)} // ✅ ADDED
+                                style={{ 
+                                    position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+                                    objectFit: 'cover', zIndex: 0, 
+                                    transform: 'translate3d(0, 0, 0)', WebkitTransform: 'translate3d(0, 0, 0)' 
                                 }}
-                            />
-                        )}
-                        <Typography component="h1" variant="h3" color="inherit" fontWeight="bold" gutterBottom sx={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-                            {restaurantData.name}
-                        </Typography>
-                        <Typography variant="h6" color="inherit" sx={{ opacity: 0.95, mb: 3, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
-                            {restaurantData.address}
-                        </Typography>
-
-                        {restaurantData.reservationsEnabled && !isReservationPage && (
-                            <Button 
-                                component={RouterLink} 
-                                to={`/order/${slug}/reserve`} 
-                                variant="contained" 
-                                color="secondary" 
-                                size="large"
-                                startIcon={<EventSeatIcon />}
-                                sx={{ fontWeight: 'bold', px: 4, py: 1.2, borderRadius: '50px', boxShadow: 4 }}
                             >
-                                {t('bookTable')}
-                            </Button>
+                                <source src={restaurantData.heroImageUrl} type="video/mp4" />
+                            </video>
+                        ) : (
+                            <Box sx={{ 
+                                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, 
+                                backgroundImage: `url('${restaurantData.heroImageUrl}')`, 
+                                backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' 
+                            }} />
                         )}
+
+                        {/* ✅ LAYER 2: DARK OVERLAY */}
+                        <Box sx={{
+                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, 
+                            background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))', pointerEvents: 'none'
+                        }} />
+
+                        {/* ✅ LAYER 3: TEXT & BUTTON CONTENT */}
+                        <Box sx={{ zIndex: 2, position: 'relative' }}>
+                            {restaurantData.logoUrl && (
+                                 <Box
+                                    component="img"
+                                    src={restaurantData.logoUrl}
+                                    alt={`${restaurantData.name} logo`}
+                                    sx={{ 
+                                        maxHeight: '80px', 
+                                        maxWidth: '200px',
+                                        mb: 2,
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        p: 1,
+                                        borderRadius: 3,
+                                        boxShadow: 3
+                                    }}
+                                />
+                            )}
+                            <Typography component="h1" variant="h3" color="inherit" fontWeight="bold" gutterBottom sx={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                                {restaurantData.name}
+                            </Typography>
+                            <Typography variant="h6" color="inherit" sx={{ opacity: 0.95, mb: 3, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                                {restaurantData.address}
+                            </Typography>
+
+                            {restaurantData.reservationsEnabled && !isReservationPage && (
+                                <Button 
+                                    component={RouterLink} 
+                                    to={`/order/${slug}/reserve`} 
+                                    variant="contained" 
+                                    color="secondary" 
+                                    size="large"
+                                    startIcon={<EventSeatIcon />}
+                                    sx={{ fontWeight: 'bold', px: 4, py: 1.2, borderRadius: '50px', boxShadow: 4 }}
+                                >
+                                    {t('bookTable')}
+                                </Button>
+                            )}
+                        </Box>
                     </Box>
                 ) : (
                     <Container sx={{ my: 4 }}>

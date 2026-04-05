@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Container, Typography, Button, Grid } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-import { isVideoUrl } from '../../utils/mediaUtils';
+import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
 
 export default function DarkEleganceTemplate({ restaurant, menuData }) {
     const { t } = useTranslation();
     const gold = "#d4af37";
     const hasVideoHero = isVideoUrl(restaurant.heroImageUrl);
+
+    const videoRef = useRef(null);
+    useEffect(() => {
+        if (hasVideoHero && videoRef.current) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => console.warn("Autoplay blocked", e));
+            }
+        }
+    }, [hasVideoHero, restaurant.heroImageUrl]);
 
     return (
         <Box sx={{ backgroundColor: '#0a0a0a', color: '#e0e0e0', minHeight: '100vh', fontFamily: '"Playfair Display", serif' }}>
@@ -22,42 +32,35 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
 
             {/* HERO */}
             <Box id="home" sx={{ 
-                height: '90vh', 
-                position: 'relative', 
+                height: { xs: '100svh', md: '90vh' }, // Mobile fix
+                position: 'relative',
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                overflow: 'hidden' 
+                overflow: 'hidden',
+                backgroundColor: '#000',
+                transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' // GPU fix
             }}>
-                {/* Background Layer */}
                 {hasVideoHero ? (
                     <video 
-                        autoPlay loop muted playsInline 
-                        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.3)' }}
+                        ref={videoRef}
+                        autoPlay loop muted playsInline preload="auto"
+                        poster={getPosterUrl(restaurant.heroImageUrl)}
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, filter: 'brightness(0.3)', transform: 'translate3d(0,0,0)' }}
                     >
                         <source src={restaurant.heroImageUrl} type="video/mp4" />
                     </video>
                 ) : (
-                    <Box sx={{ 
-                        position: 'absolute', width: '100%', height: '100%', zIndex: 0,
-                        backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('${restaurant.heroImageUrl}')`, 
-                        backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' 
-                    }} />
+                    <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('${restaurant.heroImageUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
                 )}
 
-                {/* Content Layer */}
-                <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }} 
-                    animate={{ opacity: 1, scale: 1 }} 
-                    transition={{ duration: 1.5, ease: "easeOut" }} // Smoother ease
-                    style={{ zIndex: 1, position: 'relative' }}
-                >
-                    <Box sx={{ border: `1px solid ${gold}`, p: { xs: 4, md: 8 }, textAlign: 'center', backdropFilter: 'blur(4px)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                        {restaurant.logoUrl && <img src={restaurant.logoUrl} alt="logo" style={{ height: '90px', mb: 3 }} />}
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.5 }} style={{ zIndex: 2, position: 'relative' }}>
+                    <Box sx={{ border: `1px solid ${gold}`, p: { xs: 4, md: 8 }, textAlign: 'center', backdropFilter: 'blur(3px)' }}>
+                        {restaurant.logoUrl && <img src={restaurant.logoUrl} alt="logo" style={{ height: '90px', marginBottom: '30px' }} />}
                         <Typography variant="h1" sx={{ color: gold, textTransform: 'uppercase', letterSpacing: '6px', fontSize: { xs: '2.5rem', md: '4rem' }, mb: 2 }}>
                             {restaurant.name}
                         </Typography>
-                        <Button component={Link} to={`/order/${restaurant.slug}`} variant="outlined" sx={{ mt: 4, borderColor: gold, color: gold, px: 5, py: 1.5, letterSpacing: '2px', transition: 'all 0.4s ease', '&:hover': { backgroundColor: gold, color: '#000', transform: 'translateY(-3px)', boxShadow: `0 10px 20px rgba(212, 175, 55, 0.3)` } }}>
+                        <Button component={Link} to={`/order/${restaurant.slug}`} variant="outlined" sx={{ mt: 4, borderColor: gold, color: gold, px: 5, py: 1.5, letterSpacing: '2px', fontFamily: '"Lato", sans-serif', '&:hover': { backgroundColor: gold, color: '#000' } }}>
                             {t('viewMenu')}
                         </Button>
                     </Box>

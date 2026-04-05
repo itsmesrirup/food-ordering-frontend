@@ -1,17 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Container, Typography, Button, Grid } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-import { isVideoUrl } from '../../utils/mediaUtils';
+// ✅ IMPORTED getPosterUrl
+import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils'; 
 
 export default function MinimalistTemplate({ restaurant }) {
     const { t } = useTranslation();
     const [menuData, setMenuData] = useState([]);
     const hasVideoHero = isVideoUrl(restaurant.heroImageUrl);
     
+    // ✅ ADDED: Video Reference and Error Catcher for Mobile Data Saving
+    const videoRef = useRef(null);
+
+    useEffect(() => {
+        if (hasVideoHero && videoRef.current) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Autoplay blocked to save data. Displaying fallback poster image.", error);
+                });
+            }
+        }
+    }, [hasVideoHero, restaurant.heroImageUrl]);
+
     useEffect(() => {
         fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurant.id}/menu`)
             .then(res => res.json()).then(setMenuData).catch(console.error);
@@ -57,14 +72,33 @@ export default function MinimalistTemplate({ restaurant }) {
                     </Grid>
                     
                     {/* ✅ FIXED RIGHT SIDE (VIDEO OR IMAGE) */}
-                    <Grid item xs={12} md={7} sx={{ position: 'relative', height: { xs: '40vh', md: '70vh' } }}>
+                    <Grid item xs={12} md={7} sx={{ 
+                        position: 'relative', 
+                        height: { xs: '40svh', md: '70vh' }, // ✅ svh for mobile
+                        overflow: 'hidden', 
+                        transform: 'translateZ(0)', // ✅ GPU Acceleration
+                        WebkitTransform: 'translateZ(0)' 
+                    }}>
                         {hasVideoHero ? (
                             <motion.video 
+                                ref={videoRef} // ✅ Attach Ref
                                 initial={{ opacity: 0, scale: 0.98 }} 
                                 animate={{ opacity: 1, scale: 1 }} 
                                 transition={{ duration: 1.5 }}
-                                autoPlay loop muted playsInline 
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline 
+                                preload="auto" // ✅ Force load
+                                poster={getPosterUrl(restaurant.heroImageUrl)} // ✅ Fallback image
+                                style={{ 
+                                    width: '100%', 
+                                    height: '100%', 
+                                    objectFit: 'cover', 
+                                    borderRadius: '8px',
+                                    transform: 'translate3d(0,0,0)', // ✅ GPU Acceleration
+                                    WebkitTransform: 'translate3d(0,0,0)'
+                                }}
                             >
                                 <source src={restaurant.heroImageUrl} type="video/mp4" />
                             </motion.video>

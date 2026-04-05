@@ -1,17 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Container, Typography, Button, Grid, Paper } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-import { isVideoUrl } from '../../utils/mediaUtils';
+import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
 
 export default function VibrantTemplate({ restaurant, menuData }) {
     const { t } = useTranslation();
     const primary = "#FF3366"; 
     const dark = "#111";
     const hasVideoHero = isVideoUrl(restaurant.heroImageUrl);
+
+    const videoRef = useRef(null);
+    useEffect(() => {
+        if (hasVideoHero && videoRef.current) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => console.warn("Autoplay blocked", e));
+            }
+        }
+    }, [hasVideoHero, restaurant.heroImageUrl]);
 
     return (
         <Box sx={{ backgroundColor: '#fff', color: dark, minHeight: '100vh', fontFamily: '"Montserrat", sans-serif' }}>
@@ -35,20 +45,18 @@ export default function VibrantTemplate({ restaurant, menuData }) {
                 </Grid>
                 
                 {/* ✅ FIXED RIGHT SIDE (VIDEO OR IMAGE) */}
-                <Grid item xs={12} md={6} sx={{ position: 'relative', minHeight: { xs: '50vh', md: 'auto' }, overflow: 'hidden' }}>
+                <Grid item xs={12} md={6} sx={{ position: 'relative', minHeight: { xs: '50vh', md: 'auto' }, overflow: 'hidden', backgroundColor: '#000', transform: 'translateZ(0)' }}>
                     {hasVideoHero ? (
                         <video 
-                            autoPlay loop muted playsInline 
-                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                            ref={videoRef}
+                            autoPlay loop muted playsInline preload="auto"
+                            poster={getPosterUrl(restaurant.heroImageUrl)}
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'translate3d(0,0,0)' }}
                         >
                             <source src={restaurant.heroImageUrl} type="video/mp4" />
                         </video>
                     ) : (
-                        <Box sx={{ 
-                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
-                            backgroundImage: `url('${restaurant.heroImageUrl}')`, 
-                            backgroundSize: 'cover', backgroundPosition: 'center' 
-                        }} />
+                        <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundImage: `url('${restaurant.heroImageUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                     )}
                 </Grid>
             </Grid>

@@ -14,8 +14,14 @@ export default function ClassicTemplate({ restaurant }) {
     return (
         <Box sx={{ backgroundColor: '#fff', minHeight: '100vh' }}>
             <WebsiteNavigation restaurantName={restaurant.name} />
+            
+            {/* ✅ MOVED BANNER TO THE TOP (Just below the Navbar) */}
+            <Box sx={{ pt: 8 }}> 
+                <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} />
+            </Box>
+
             <div id="home"><HeroBlock restaurant={restaurant} /></div>
-            <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} />
+            
             <div id="about">
                 <StoryBlock title="About Us" text={restaurant.aboutUsText} galleryImages={restaurant.galleryImageUrls} />
             </div>

@@ -1,19 +1,37 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { isVideoUrl } from '../../utils/mediaUtils';
+import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
 
 const HeroBlock = ({ restaurant }) => {
     const { t } = useTranslation();
     const hasVideoHero = isVideoUrl(restaurant.heroImageUrl);
+    
+    // ✅ ADDED: Reference to the video element
+    const videoRef = useRef(null);
+
+    // ✅ ADDED: Catch the mobile data block error
+    useEffect(() => {
+        if (hasVideoHero && videoRef.current) {
+            const playPromise = videoRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // If Mobile Data or Battery Saver blocks the video, this prevents the app from breaking.
+                    // The 'poster' image will remain visible instead of a black screen!
+                    console.warn("Autoplay blocked to save data. Displaying fallback poster image.", error);
+                });
+            }
+        }
+    }, [hasVideoHero, restaurant.heroImageUrl]);
 
     return (
         <Box sx={{ 
-            height: '90vh', 
+            // ✅ ADDED: height '100svh' for mobile to prevent scroll glitches, and translateZ for GPU acceleration
+            height: { xs: '100svh', md: '90vh' }, 
             width: '100%', 
-            position: 'relative', // The parent must be relative for absolute children
+            position: 'relative', 
             display: 'flex', 
             flexDirection: 'column', 
             justifyContent: 'center', 
@@ -21,17 +39,22 @@ const HeroBlock = ({ restaurant }) => {
             color: 'white', 
             textAlign: 'center', 
             px: 2,
-            overflow: 'hidden', // Prevents the video from breaking the layout
-            backgroundColor: '#000' // Fallback color while loading
+            overflow: 'hidden', 
+            backgroundColor: '#000',
+            transform: 'translateZ(0)', 
+            WebkitTransform: 'translateZ(0)'
         }}>
             
             {/* LAYER 1: THE MEDIA (VIDEO OR IMAGE) */}
             {hasVideoHero ? (
                 <video 
+                    ref={videoRef} // ✅ ADDED
                     autoPlay 
                     loop 
                     muted 
                     playsInline 
+                    preload="auto" // ✅ ADDED
+                    poster={getPosterUrl(restaurant.heroImageUrl)} // ✅ ADDED: Displays image if video is blocked
                     style={{ 
                         position: 'absolute', 
                         top: 0,
@@ -39,7 +62,9 @@ const HeroBlock = ({ restaurant }) => {
                         width: '100%', 
                         height: '100%', 
                         objectFit: 'cover', 
-                        zIndex: 0 // Bottom layer
+                        zIndex: 0,
+                        transform: 'translate3d(0, 0, 0)', // ✅ ADDED: GPU Acceleration
+                        WebkitTransform: 'translate3d(0, 0, 0)'
                     }}
                 >
                     <source src={restaurant.heroImageUrl} type="video/mp4" />
@@ -51,7 +76,7 @@ const HeroBlock = ({ restaurant }) => {
                     left: 0,
                     width: '100%', 
                     height: '100%', 
-                    zIndex: 0, // Bottom layer
+                    zIndex: 0, 
                     backgroundImage: `url('${restaurant.heroImageUrl}')`, 
                     backgroundSize: 'cover', 
                     backgroundPosition: 'center', 
@@ -60,15 +85,15 @@ const HeroBlock = ({ restaurant }) => {
             )}
 
             {/* LAYER 2: THE DARK GRADIENT OVERLAY */}
-            {/* This ensures the white text is always readable, regardless of how bright the video/image is */}
             <Box sx={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 width: '100%',
                 height: '100%',
-                zIndex: 1, // Middle layer
-                background: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7))'
+                zIndex: 1, 
+                background: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7))',
+                pointerEvents: 'none' // ✅ ADDED: Allows clicks to pass through
             }} />
 
             {/* LAYER 3: THE CONTENT (TEXT & BUTTONS) */}
@@ -76,7 +101,7 @@ const HeroBlock = ({ restaurant }) => {
                 initial={{ opacity: 0, y: 30 }} 
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ duration: 1 }}
-                style={{ zIndex: 2, position: 'relative' }} // Top layer
+                style={{ zIndex: 2, position: 'relative' }} 
             >
                 {restaurant.logoUrl && (
                     <Box 
