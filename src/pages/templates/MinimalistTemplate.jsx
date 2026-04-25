@@ -5,16 +5,14 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-// ✅ IMPORTED getPosterUrl
 import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils'; 
+import FullMenuModal from '../../components/website/FullMenuModal'; // ✅ IMPORT MODAL
 
-export default function MinimalistTemplate({ restaurant }) {
+export default function MinimalistTemplate({ restaurant, menuData }) {
     const { t } = useTranslation();
-    const [menuData, setMenuData] = useState([]);
     const hasVideoHero = isVideoUrl(restaurant.heroImageUrl);
-    
-    // ✅ ADDED: Video Reference and Error Catcher for Mobile Data Saving
     const videoRef = useRef(null);
+    const [menuOpen, setMenuOpen] = useState(false); // ✅ MODAL STATE
 
     useEffect(() => {
         if (hasVideoHero && videoRef.current) {
@@ -27,19 +25,29 @@ export default function MinimalistTemplate({ restaurant }) {
         }
     }, [hasVideoHero, restaurant.heroImageUrl]);
 
-    useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/restaurants/${restaurant.id}/menu`)
-            .then(res => res.json()).then(setMenuData).catch(console.error);
-    }, [restaurant.id]);
+    // ✅ SMART TEASER ALGORITHM
+    // Flatten all items across categories and subcategories, then take the first 10
+    const teaserItems = [];
+    if (menuData) {
+        menuData.forEach(cat => {
+            if (cat.menuItems) teaserItems.push(...cat.menuItems);
+            if (cat.subCategories) {
+                cat.subCategories.forEach(sub => {
+                    if (sub.menuItems) teaserItems.push(...sub.menuItems);
+                });
+            }
+        });
+    }
+    const displayTeasers = teaserItems.slice(0, 10);
 
     return (
         <Box sx={{ backgroundColor: '#FCFCFC', color: '#1A1A1A', minHeight: '100vh', fontFamily: '"Space Grotesk", sans-serif' }}>
             
             <WebsiteNavigation 
                 restaurantName={restaurant.name} 
-                textColor="#1A1A1A"
-                scrolledBgColor="#FCFCFC"
-                scrolledTextColor="#1A1A1A"
+                textColor="#1A1A1A" 
+                scrolledBgColor="#FCFCFC" 
+                scrolledTextColor="#1A1A1A" 
             />
 
             <Box sx={{ pt: 8 }}> 
@@ -54,8 +62,8 @@ export default function MinimalistTemplate({ restaurant }) {
                     ) : (
                         <Typography variant="h5" sx={{ fontWeight: 600, letterSpacing: '-1px' }}>{restaurant.name}</Typography>
                     )}
-                    <Button component={Link} to={`/order/${restaurant.slug}`} variant="text" sx={{ color: '#1A1A1A', fontWeight: 600, borderBottom: '1px solid #1A1A1A', borderRadius: 0, px: 0 }}>
-                        {t('orderOnline')}
+                    <Button onClick={() => setMenuOpen(true)} variant="text" sx={{ color: '#1A1A1A', fontWeight: 600, borderBottom: '1px solid #1A1A1A', borderRadius: 0, px: 0 }}>
+                        {t('viewMenu')} {/* ✅ TRANSLATED */}
                     </Button>
                 </Box>
 
@@ -76,42 +84,21 @@ export default function MinimalistTemplate({ restaurant }) {
                         </motion.div>
                     </Grid>
                     
-                    {/* ✅ FIXED RIGHT SIDE (VIDEO OR IMAGE) */}
-                    <Grid item xs={12} md={7} sx={{ 
-                        position: 'relative', 
-                        height: { xs: '40svh', md: '70vh' }, // ✅ svh for mobile
-                        overflow: 'hidden', 
-                        transform: 'translateZ(0)', // ✅ GPU Acceleration
-                        WebkitTransform: 'translateZ(0)' 
-                    }}>
+                    {/* MEDIA BLOCK (Video/Image) */}
+                    <Grid item xs={12} md={7} sx={{ position: 'relative', height: { xs: '40svh', md: '70vh' }, overflow: 'hidden', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}>
                         {hasVideoHero ? (
                             <motion.video 
-                                ref={videoRef} // ✅ Attach Ref
-                                initial={{ opacity: 0, scale: 0.98 }} 
-                                animate={{ opacity: 1, scale: 1 }} 
-                                transition={{ duration: 1.5 }}
-                                autoPlay 
-                                loop 
-                                muted 
-                                playsInline 
-                                preload="auto" // ✅ Force load
-                                poster={getPosterUrl(restaurant.heroImageUrl)} // ✅ Fallback image
-                                style={{ 
-                                    width: '100%', 
-                                    height: '100%', 
-                                    objectFit: 'cover', 
-                                    borderRadius: '8px',
-                                    transform: 'translate3d(0,0,0)', // ✅ GPU Acceleration
-                                    WebkitTransform: 'translate3d(0,0,0)'
-                                }}
+                                ref={videoRef}
+                                initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.5 }}
+                                autoPlay loop muted playsInline preload="auto"
+                                poster={getPosterUrl(restaurant.heroImageUrl)}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', transform: 'translate3d(0,0,0)', WebkitTransform: 'translate3d(0,0,0)' }}
                             >
                                 <source src={restaurant.heroImageUrl} type="video/mp4" />
                             </motion.video>
                         ) : (
                             <motion.img 
-                                initial={{ opacity: 0, scale: 0.98 }} 
-                                animate={{ opacity: 1, scale: 1 }} 
-                                transition={{ duration: 1.5 }}
+                                initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.5 }}
                                 src={restaurant.heroImageUrl} 
                                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} 
                             />
@@ -121,22 +108,27 @@ export default function MinimalistTemplate({ restaurant }) {
             </Container>
 
             {/* MINIMALIST MENU */}
-            <Container maxWidth="md" sx={{ py: 15 }}>
-                <Typography variant="h4" sx={{ fontWeight: 400, mb: 8, textAlign: 'center', letterSpacing: '-1px' }}>Curated Menu</Typography>
+            <Container id="menu" maxWidth="md" sx={{ py: 15 }}>
+                <Typography variant="h4" sx={{ fontWeight: 400, mb: 8, textAlign: 'center', letterSpacing: '-1px' }}>
+                    {t('ourMenu')} {/* ✅ TRANSLATED */}
+                </Typography>
+                
                 <Box sx={{ columnCount: { xs: 1, md: 2 }, columnGap: '60px' }}>
-                    {menuData.flatMap(cat => cat.menuItems || []).slice(0, 10).map((item) => (
+                    {displayTeasers.map((item) => (
                         <Box key={item.id} sx={{ mb: 5, breakInside: 'avoid' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                 <Typography sx={{ fontWeight: 600, fontSize: '1.1rem' }}>{item.name}</Typography>
-                                <Typography sx={{ fontWeight: 400 }}>{item.price.toFixed(2)}</Typography>
+                                <Typography sx={{ fontWeight: 400 }}>€{item.price.toFixed(2)}</Typography>
                             </Box>
                             <Typography variant="body2" sx={{ color: '#888', lineHeight: 1.6 }}>{item.description}</Typography>
                         </Box>
                     ))}
                 </Box>
+
+                {/* ✅ MODAL TRIGGER BUTTON */}
                 <Box textAlign="center" mt={6}>
-                    <Button component={Link} to={`/order/${restaurant.slug}`} variant="outlined" sx={{ color: '#1A1A1A', borderColor: '#E0E0E0', px: 4, py: 1, borderRadius: '4px', textTransform: 'none', '&:hover': { borderColor: '#1A1A1A', backgroundColor: 'transparent' } }}>
-                        See Everything
+                    <Button onClick={() => setMenuOpen(true)} variant="outlined" sx={{ color: '#1A1A1A', borderColor: '#E0E0E0', px: 4, py: 1, borderRadius: '4px', textTransform: 'none', '&:hover': { borderColor: '#1A1A1A', backgroundColor: 'transparent' } }}>
+                        {t('viewFullMenu')} {/* ✅ TRANSLATED */}
                     </Button>
                 </Box>
             </Container>
@@ -153,20 +145,37 @@ export default function MinimalistTemplate({ restaurant }) {
             </Container>
 
             {/* FOOTER */}
-            <Box sx={{ borderTop: '1px solid #EAEAEA', py: 8 }}>
+            <Box id="contact" sx={{ borderTop: '1px solid #EAEAEA', py: 8 }}>
                 <Container maxWidth="lg">
                     <Grid container spacing={4} justifyContent="space-between">
                         <Grid item xs={12} md={4}>
-                            <Typography sx={{ fontWeight: 600, mb: 2 }}>Location</Typography>
+                            <Typography sx={{ fontWeight: 600, mb: 2 }}>{t('findUs')}</Typography> {/* ✅ TRANSLATED */}
                             <Typography sx={{ color: '#666', lineHeight: 1.8 }}>{restaurant.address}</Typography>
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <Typography sx={{ fontWeight: 600, mb: 2 }}>Contact</Typography>
+                            <Typography sx={{ fontWeight: 600, mb: 2 }}>{t('contactTitle')}</Typography> {/* ✅ TRANSLATED */}
                             <Typography sx={{ color: '#666', lineHeight: 1.8 }}>{restaurant.phoneNumber}<br/>{restaurant.email}</Typography>
                         </Grid>
                     </Grid>
                 </Container>
             </Box>
+
+            {/* ✅ ADDED: THE MENU MODAL */}
+            <FullMenuModal 
+                open={menuOpen} 
+                onClose={() => setMenuOpen(false)} 
+                menuData={menuData} 
+                restaurantName={restaurant.name}
+                currency={restaurant.currency}
+                themeConfig={{
+                    fontHeader: '"Space Grotesk", sans-serif',
+                    fontBody: '"Space Grotesk", sans-serif',
+                    accentColor: '#1A1A1A', // Minimalist Black
+                    bgColor: '#FCFCFC',
+                    textColor: '#1A1A1A',
+                    mutedTextColor: '#666'
+                }}
+            />
         </Box>
     );
 }
