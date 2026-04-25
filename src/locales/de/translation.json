@@ -115,5 +115,10 @@
   "startNewOrder": "Neue Bestellung beginnen?",
   "cartConflictMessage": "Sie haben Artikel von einem anderen Restaurant in Ihrem Warenkorb. Wenn Sie diesen Artikel hinzufügen, wird Ihr aktueller Warenkorb geleert. Möchten Sie fortfahren?",
   "newOrder": "Neue Bestellung",
-  "cancel": "Abbrechen"
+  "cancel": "Abbrechen",
+  "popularHits": "BELIEBTE KLASSIKER",
+  "theVibe": "DIE ATMOSPHÄRE",
+  "readyToEat": "Bereit zum Essen?",
+  "startOnlineOrder": "Online-Bestellung starten",
+  "vibrantHeroSubtitle": "Frisch. Schnell. Unvergesslich."
 }

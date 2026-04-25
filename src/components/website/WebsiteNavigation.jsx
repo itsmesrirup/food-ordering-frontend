@@ -4,7 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 
-const WebsiteNavigation = ({ restaurantName }) => {
+const WebsiteNavigation = ({ restaurantName, textColor = 'white', scrolledBgColor = 'rgba(255, 255, 255, 0.95)', scrolledTextColor = '#333' }) => {
   const { t, i18n } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -48,14 +48,18 @@ const WebsiteNavigation = ({ restaurantName }) => {
     { id: 'contact', label: t('contactAndHours') }
 ];
 
+// ✅ DYNAMIC COLOR LOGIC
+  const currentTextColor = isScrolled ? scrolledTextColor : textColor;
+  const currentBgColor = isScrolled ? scrolledBgColor : 'transparent';
+
   return (
     <>
       <AppBar 
         position="fixed" 
         elevation={isScrolled ? 4 : 0}
         sx={{ 
-           backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
-          color: isScrolled ? '#333' : (restaurantName.includes('Minimalist') ? '#333' : 'white'),
+           backgroundColor: currentBgColor,
+          color: currentTextColor,
           transition: 'all 0.3s ease',
           borderBottom: isScrolled ? '1px solid #eee' : 'none',
           zIndex: 1200,

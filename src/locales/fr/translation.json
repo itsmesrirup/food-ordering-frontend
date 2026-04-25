@@ -114,5 +114,10 @@
   "cartConflictMessage": "Vous avez des articles d'un autre restaurant dans votre panier. L'ajout de cet article effacera votre panier actuel. Voulez-vous continuer ?",
   "newOrder": "Nouvelle commande",
   "cancel": "Annuler",
-  "clearCart": "Vider le panier"
+  "clearCart": "Vider le panier",
+  "popularHits": "NOS INCONTOURNABLES",
+  "theVibe": "L'AMBIANCE",
+  "readyToEat": "Prêt à déguster ?",
+  "startOnlineOrder": "Commencer votre commande en ligne",
+  "vibrantHeroSubtitle": "Frais. Rapide. Inoubliable."
 }

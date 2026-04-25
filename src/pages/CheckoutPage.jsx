@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
+import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { isRestaurantOpen, isRestaurantOpenOnDay, getFirstOpenSlot } from '../utils/timeValidation';
 import usePageTitle from '../hooks/usePageTitle';
+
+// ✅ NEW IMPORTS FOR CART EDITING AND NAVIGATION
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 // --- STRIPE IMPORTS ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -17,11 +22,11 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
-// --- COMPONENT 1: Pure UI for Inputs & Summary (No Stripe Hooks here) ---
+// --- COMPONENT 1: Pure UI for Inputs & Summary ---
 const CheckoutUI = ({ 
     t, customerDetails, handleInputChange, orderType, setOrderType, 
     selectedDate, handleDateChange, filterPassedTime, currentRestaurant, 
-    cartItems, totalPrice 
+    cartItems, totalPrice, updateQuantity // ✅ ADDED updateQuantity prop
 }) => {
     return (
         <Box>
@@ -58,66 +63,78 @@ const CheckoutUI = ({
 
             {orderType === 'scheduled' && (
                 <Box sx={{ mb: 2, '& .react-datepicker-wrapper': { width: '100%' } }}>
-                    {/* --- Date Picker Integration --- */}
-                            <DatePicker
-                                selected={selectedDate}
-                                onChange={handleDateChange}
-                                showTimeSelect
-                                timeFormat="HH:mm"
-                                timeIntervals={15}
-                                dateFormat="MMMM d, yyyy h:mm aa"
-                                placeholderText={t('selectPickupTime')}
-                                
-                                // 1. Filter Times: Greys out 10:15 PM if closed
-                                filterTime={filterPassedTime} 
-                                
-                                // 2. Filter Days: Greys out Sunday if closed all day
-                                filterDate={(date) => {
-                                    if (!currentRestaurant?.openingHoursJson) return true;
-                                    // Use the helper we discussed to check if the day has ANY slots
-                                    return isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson);
-                                }}
-
-                                minDate={new Date()} // Can't pick yesterday
-                                
-                                // Visuals
-                                customInput={
-                                    <TextField 
-                                        fullWidth 
-                                        label={t('selectPickupTime')}
-                                        InputLabelProps={{ shrink: true }}
-                                        // This helps with the "text cut off" issue on mobile
-                                        sx={{ '& input': { textOverflow: 'ellipsis' } }}
-                                    />
-                                }
+                    <DatePicker
+                        selected={selectedDate}
+                        onChange={handleDateChange}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={15}
+                        dateFormat="MMMM d, yyyy h:mm aa"
+                        placeholderText={t('selectPickupTime')}
+                        filterTime={filterPassedTime} 
+                        filterDate={(date) => {
+                            if (!currentRestaurant?.openingHoursJson) return true;
+                            return isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson);
+                        }}
+                        minDate={new Date()}
+                        customInput={
+                            <TextField 
+                                fullWidth 
+                                label={t('selectPickupTime')}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ '& input': { textOverflow: 'ellipsis' } }}
                             />
+                        }
+                    />
                 </Box>
             )}
 
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6">{t('orderSummary')}</Typography>
-            {cartItems.map(item => (
-                <Box key={item.cartItemId} sx={{ mb: 2 }}>
-                    <Typography>{item.quantity} x {item.name}</Typography>
-                    {item.selectedOptions && (
-                        <Box component="ul" sx={{ pl: 2, my: 0, fontSize: '0.9rem', color: 'text.secondary' }}>
-                            {item.selectedOptions.map(opt => (
-                                <li key={opt.optionName}><strong>{opt.optionName}:</strong> {opt.choices.join(', ')}</li>
-                            ))}
+            <Divider sx={{ my: 3 }} />
+            
+            {/* ✅ UPDATED ORDER SUMMARY WITH EDIT CONTROLS */}
+            <Typography variant="h6" gutterBottom>{t('orderSummary')}</Typography>
+            <Box sx={{ bgcolor: '#fafafa', p: 2, borderRadius: 2, mb: 3 }}>
+                {cartItems.map(item => (
+                    <Box key={item.cartItemId} sx={{ mb: 2, pb: 2, borderBottom: '1px dashed #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ flex: 1, pr: 2 }}>
+                            <Typography fontWeight="bold">{item.name}</Typography>
+                            {item.selectedOptions && (
+                                <Box component="ul" sx={{ pl: 2, my: 0.5, fontSize: '0.85rem', color: 'text.secondary' }}>
+                                    {item.selectedOptions.map(opt => (
+                                        <li key={opt.optionName}><strong>{opt.optionName}:</strong> {opt.choices.join(', ')}</li>
+                                    ))}
+                                </Box>
+                            )}
+                            <Typography variant="body2" color="text.secondary">
+                                {formatPrice(item.price, currentRestaurant?.currency)} / ea
+                            </Typography>
                         </Box>
-                    )}
-                    <Typography>{formatPrice(item.price * item.quantity, currentRestaurant?.currency)}</Typography>
+                        
+                        {/* +/- Controls directly in Checkout */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                            <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} color="error">
+                                <RemoveCircleOutlineIcon />
+                            </IconButton>
+                            <Typography sx={{ mx: 1, fontWeight: 'bold' }}>{item.quantity}</Typography>
+                            <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} color="primary">
+                                <AddCircleOutlineIcon />
+                            </IconButton>
+                        </Box>
+                    </Box>
+                ))}
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '2px solid #ddd' }}>
+                    <Typography variant="h6">{t('total')}</Typography>
+                    <Typography variant="h6" fontWeight="bold" color="primary.main">
+                        {formatPrice(totalPrice, currentRestaurant?.currency)}
+                    </Typography>
                 </Box>
-            ))}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                <Typography variant="h6">{t('total')}</Typography>
-                <Typography variant="h6" fontWeight="bold">{formatPrice(totalPrice, currentRestaurant?.currency)}</Typography>
             </Box>
         </Box>
     );
 };
 
-// --- COMPONENT 2: Stripe Specific Section (Must be inside <Elements>) ---
+// --- COMPONENT 2: Stripe Specific Section ---
 const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, currency }) => {
     const stripe = useStripe();
     const elements = useElements();
@@ -125,8 +142,6 @@ const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, c
     const handlePayClick = async (e) => {
         e.preventDefault();
         if (!stripe || !elements) return;
-
-        // This triggers the actual payment
         await onConfirmPayment(stripe, elements);
     };
 
@@ -136,19 +151,19 @@ const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, c
                 <Typography variant="subtitle1" gutterBottom>{t('paymentMethodTitle')}</Typography>
                 <PaymentElement />
             </Box>
-            <Button type="submit" variant="contained" fullWidth disabled={isSubmitting || !stripe}>
+            <Button type="submit" variant="contained" fullWidth disabled={isSubmitting || !stripe} size="large" sx={{ py: 1.5, fontSize: '1.1rem' }}>
                 {isSubmitting ? <CircularProgress size={24} /> : t('payButton', { amount: formatPrice(totalPrice, currency) })}
             </Button>
         </Box>
     );
 };
 
-
 // --- MAIN COMPONENT: CheckoutPage ---
 function CheckoutPage() {
     const { t } = useTranslation(); 
-    usePageTitle(t('checkoutTitle')); // "Checkout | Tablo"
-    const { cartItems, clearCart, currentRestaurant, cartRestaurantId } = useCart();
+    usePageTitle(t('checkoutTitle'));
+    // ✅ Extract updateQuantity from useCart
+    const { cartItems, clearCart, currentRestaurant, cartRestaurantId, updateQuantity } = useCart();
     const navigate = useNavigate();
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -156,23 +171,22 @@ function CheckoutPage() {
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
     
-    // State
     const [orderType, setOrderType] = useState('asap');
     const [selectedDate, setSelectedDate] = useState(null);
     const [clientSecret, setClientSecret] = useState(null);
-
-    // --- NEW STATE: Payment Method Preference ---
-    // Default to 'online' if available, otherwise 'counter'
     const [paymentMethod, setPaymentMethod] = useState('online'); 
 
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-    // --- FIX 2: Payment Intent Logic (Safe) ---
+    // ✅ Auto-redirect to menu if cart becomes empty during checkout edit
     useEffect(() => {
-        // Guard: Don't run if there's a mismatch (wait for the redirect above)
-        if (currentRestaurant && cartRestaurantId && String(currentRestaurant.id) !== String(cartRestaurantId)) {
-            return; 
+        if (cartItems.length === 0 && !isSubmitting && currentRestaurant) {
+            navigate(`/order/${currentRestaurant.slug}`);
         }
+    }, [cartItems.length, currentRestaurant, navigate, isSubmitting]);
+
+    useEffect(() => {
+        if (currentRestaurant && cartRestaurantId && String(currentRestaurant.id) !== String(cartRestaurantId)) return; 
 
         const paymentsSupported = currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled;
 
@@ -197,26 +211,15 @@ function CheckoutPage() {
 
     const handleInputChange = (e) => setCustomerDetails({ ...customerDetails, [e.target.name]: e.target.value });
 
-    // Validation Helpers
-    // --- NEW: The logic to grey out invalid times ---
     const filterPassedTime = (time) => {
         const currentDate = new Date();
         const selectedDate = new Date(time);
-
-        // 1. Block past times (with 20 min buffer for prep)
         const minTime = new Date(currentDate.getTime() + 20 * 60000);
-        if (selectedDate < minTime) {
-            return false;
-        }
-
-        // 2. Block times when restaurant is closed
+        if (selectedDate < minTime) return false;
         if (currentRestaurant && currentRestaurant.openingHoursJson) {
-            // We reuse the helper we wrote!
-            // It returns true if open, false if closed.
             return isRestaurantOpen(selectedDate, currentRestaurant.openingHoursJson);
         }
-
-        return true; // Default to open if no data
+        return true; 
     };
 
     const handleDateChange = (newDate) => {
@@ -224,31 +227,19 @@ function CheckoutPage() {
             setSelectedDate(null);
             return;
         }
-
-        // 1. Is the selected time valid for this new date?
-        // (Note: react-datepicker sets time to 00:00 by default if you pick a date from calendar without time)
         const isValid = filterPassedTime(newDate);
-
         if (isValid) {
-            // Perfect, keep it.
             setSelectedDate(newDate);
         } else {
-            // 2. It's invalid (e.g. 00:00 AM or Mon 10:30 PM). 
-            // Let's find the first valid opening time for this specific day.
             const nextAvailableTime = getFirstOpenSlot(newDate, currentRestaurant?.openingHoursJson);
-            
             if (nextAvailableTime) {
                 setSelectedDate(nextAvailableTime);
-                // Optional: Show toast ("Time adjusted to opening hours")
             } else {
-                // Should be impossible if filterDate works (Sunday case), 
-                // but just in case, set it anyway and let validation catch it.
                 setSelectedDate(newDate);
             }
         }
     };
 
-    // 2. Validate Form Data
     const validateForm = () => {
         if (cartItems.length === 0) {
             setError(t('cartIsEmptyError'));
@@ -271,10 +262,8 @@ function CheckoutPage() {
         return true;
     };
 
-    // 3. Finalize Order (Call Backend)
     const finalizeOrder = async (paymentIntentId) => {
         try {
-            // Create Customer
             const customerResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/customers/find-or-create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -283,31 +272,22 @@ function CheckoutPage() {
             if (!customerResponse.ok) throw new Error('Failed to create customer');
             const customerData = await customerResponse.json();
 
-            // Calculate Pickup Time
             let finalPickupTime = null;
             if (orderType === 'scheduled') {
-                // --- FIX: Check selectedDate, not pickupTime ---
                 if (!selectedDate) {
                     setError(t('pickupTimeRequired'));
-                    setIsSubmitting(false); // Stop the spinner!
-                    return;
-                }
-
-                // --- CRITICAL FIX: Validate the final combination ---
-                // The user might have switched dates to a closed day while keeping an old time.
-                if (!filterPassedTime(selectedDate)) {
-                    setError(t('restaurantClosedAtTime')); // "Restaurant is closed at this time"
                     setIsSubmitting(false);
                     return;
                 }
-                
-                // --- FIX: Timezone handling ---
-                // We use the Date object directly to calculate the offset
+                if (!filterPassedTime(selectedDate)) {
+                    setError(t('restaurantClosedAtTime'));
+                    setIsSubmitting(false);
+                    return;
+                }
                 const offsetMs = selectedDate.getTimezoneOffset() * 60 * 1000;
                 finalPickupTime = new Date(selectedDate.getTime() - offsetMs).toISOString();
             }
 
-            // Create Order
             const orderPayload = {
                 customerId: customerData.id,
                 tableNumber: tableNumber,
@@ -342,7 +322,6 @@ function CheckoutPage() {
         }
     };
 
-    // 4. Handler: Pay with Stripe
     const handleStripeConfirm = async (stripe, elements) => {
         if (!validateForm()) return;
         setIsSubmitting(true);
@@ -357,28 +336,41 @@ function CheckoutPage() {
             toast.error(stripeError.message);
             setIsSubmitting(false);
         } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-            console.log("PAYMENT SUCCESS! ID:", paymentIntent.id);
             await finalizeOrder(paymentIntent.id);
         }
     };
 
-    // 5. Handler: Pay at Counter
     const handlePayAtCounter = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
         setIsSubmitting(true);
         setError(null);
-        await finalizeOrder(null); // No payment ID
+        await finalizeOrder(null);
     };
 
     const paymentsSupported = currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled;
 
+    // Prevent rendering the form if the cart is empty (it will auto-redirect shortly)
+    if (cartItems.length === 0) return null;
+
     return (
-        <Container maxWidth="sm" sx={{ mt: 4 }}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-                <Typography variant="h4" align="center" gutterBottom>{t('checkoutTitle')}</Typography>
+        <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
+            
+            {/* ✅ NEW: BACK TO MENU BUTTON */}
+            <Button 
+                component={RouterLink} 
+                to={currentRestaurant ? `/order/${currentRestaurant.slug}` : '/'}
+                startIcon={<ArrowBackIcon />} 
+                sx={{ mb: 2, color: 'text.secondary', fontWeight: 'bold' }}
+            >
+                {t('backToMenu')}
+            </Button>
+
+            <Paper elevation={4} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+                <Typography variant="h4" align="center" gutterBottom fontWeight="bold">
+                    {t('checkoutTitle')}
+                </Typography>
                 
-                {/* 1. Render Common Inputs */}
                 <CheckoutUI 
                     t={t}
                     customerDetails={customerDetails}
@@ -391,6 +383,7 @@ function CheckoutPage() {
                     currentRestaurant={currentRestaurant}
                     cartItems={cartItems}
                     totalPrice={totalPrice}
+                    updateQuantity={updateQuantity} // ✅ Passed down to UI
                 />
 
                 <Divider sx={{ my: 3 }} />
@@ -401,7 +394,6 @@ function CheckoutPage() {
                     </Alert>
                 )}
 
-                {/* --- NEW: Payment Method Selection --- */}
                 {paymentsSupported && (
                     <Box sx={{ mb: 3 }}>
                         <Typography variant="h6" gutterBottom>{t('paymentMethodTitle')}</Typography>
@@ -411,16 +403,16 @@ function CheckoutPage() {
                             onChange={(e, val) => val && setPaymentMethod(val)}
                             fullWidth
                             color="primary"
+                            sx={{ bgcolor: 'background.paper' }}
                         >
-                            <ToggleButton value="online">{t('payOnline')}</ToggleButton>
-                            <ToggleButton value="counter">{t('payAtCounter')}</ToggleButton>
+                            <ToggleButton value="online" sx={{ fontWeight: 'bold' }}>{t('payOnline')}</ToggleButton>
+                            <ToggleButton value="counter" sx={{ fontWeight: 'bold' }}>{t('payAtCounter')}</ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
                 )}
 
-                {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+                {error && <Alert severity="error" sx={{ mt: 2, mb: 3 }}>{error}</Alert>}
 
-                {/* 2. Render Payment Button (Stripe OR Counter) based on Toggle */}
                 {paymentsSupported && paymentMethod === 'online' && clientSecret && stripePromise ? (
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
                         <StripePaymentSection 
@@ -432,11 +424,15 @@ function CheckoutPage() {
                         />
                     </Elements>
                 ) : (
-                    // Render "Place Order" button if:
-                    // 1. User selected "Pay at Counter"
-                    // 2. OR Payments are not supported at all
                     <Box component="form" onSubmit={handlePayAtCounter} sx={{ mt: 3, position: 'relative' }}>
-                        <Button type="submit" variant="contained" fullWidth disabled={isSubmitting || cartItems.length === 0}>
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            fullWidth 
+                            disabled={isSubmitting || cartItems.length === 0}
+                            size="large"
+                            sx={{ py: 1.5, fontSize: '1.1rem', fontWeight: 'bold' }}
+                        >
                             {paymentsSupported ? t('placeOrderCounter') : t('placeOrder')}
                         </Button>
                         {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', marginTop: '-12px', marginLeft: '-12px' }} />}

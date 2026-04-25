@@ -35,7 +35,12 @@ export default function MinimalistTemplate({ restaurant }) {
     return (
         <Box sx={{ backgroundColor: '#FCFCFC', color: '#1A1A1A', minHeight: '100vh', fontFamily: '"Space Grotesk", sans-serif' }}>
             
-            <WebsiteNavigation restaurantName={restaurant.name} />
+            <WebsiteNavigation 
+                restaurantName={restaurant.name} 
+                textColor="#1A1A1A"
+                scrolledBgColor="#FCFCFC"
+                scrolledTextColor="#1A1A1A"
+            />
 
             <Box sx={{ pt: 8 }}> 
                 <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} />

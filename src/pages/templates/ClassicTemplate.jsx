@@ -13,7 +13,12 @@ import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanne
 export default function ClassicTemplate({ restaurant }) {
     return (
         <Box sx={{ backgroundColor: '#fff', minHeight: '100vh' }}>
-            <WebsiteNavigation restaurantName={restaurant.name} />
+            <WebsiteNavigation 
+                restaurantName={restaurant.name}
+                textColor="#1A1A1A" 
+                scrolledBgColor="#FCFCFC" 
+                scrolledTextColor="#1A1A1A"
+            />
             
             {/* ✅ MOVED BANNER TO THE TOP (Just below the Navbar) */}
             <Box sx={{ pt: 8 }}> 

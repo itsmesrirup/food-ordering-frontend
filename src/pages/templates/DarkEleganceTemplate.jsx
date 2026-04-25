@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
 import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
+import FullMenuModal from '../../components/website/FullMenuModal';
 
 export default function DarkEleganceTemplate({ restaurant, menuData }) {
     const { t } = useTranslation();
@@ -13,6 +14,8 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
     const hasVideoHero = isVideoUrl(restaurant.heroImageUrl);
 
     const videoRef = useRef(null);
+    const [menuOpen, setMenuOpen] = useState(false); // ✅ STATE
+
     useEffect(() => {
         if (hasVideoHero && videoRef.current) {
             const playPromise = videoRef.current.play();
@@ -21,6 +24,19 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
             }
         }
     }, [hasVideoHero, restaurant.heroImageUrl]);
+
+    // ✅ SMART TEASER ALGORITHM FOR DARK ELEGANCE
+    // Finds categories with items (either direct or inside subcategories)
+    const displayCategories = menuData.map(cat => {
+        let allItems = [];
+        if (cat.menuItems) allItems.push(...cat.menuItems);
+        if (cat.subCategories) {
+            cat.subCategories.forEach(sub => {
+                if (sub.menuItems) allItems.push(...sub.menuItems);
+            });
+        }
+        return { ...cat, extractedItems: allItems };
+    }).filter(cat => cat.extractedItems.length > 0).slice(0, 4); // Take top 4 valid categories
 
     return (
         <Box sx={{ backgroundColor: '#0a0a0a', color: '#e0e0e0', minHeight: '100vh', fontFamily: '"Playfair Display", serif' }}>
@@ -75,17 +91,18 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                 </Typography>
             </Container>
 
-            {/* MENU */}
+            {/* MENU PREVIEW (Teaser) */}
             <Box id="menu" sx={{ backgroundColor: '#111', py: 12 }}>
                 <Container maxWidth="lg">
                     <Typography variant="h3" align="center" sx={{ color: gold, mb: 8, letterSpacing: '4px' }}>{t('ourMenu')}</Typography>
                     <Grid container spacing={8}>
-                        {menuData.slice(0, 6).map((category) => (
+                        {displayCategories.map((category) => (
                             <Grid item xs={12} md={6} key={category.id}>
                                 <Typography variant="h5" sx={{ color: '#fff', borderBottom: `1px solid ${gold}`, pb: 1, mb: 4, textTransform: 'uppercase' }}>
                                     {category.name}
                                 </Typography>
-                                {category.menuItems?.map(item => (
+                                {/* Safe extraction: Show first 3 items */}
+                                {category.extractedItems.slice(0, 3).map(item => (
                                     <Box key={item.id} sx={{ mb: 3 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                                             <Typography variant="h6" sx={{ color: '#fff', fontSize: '1.1rem' }}>{item.name}</Typography>
@@ -98,6 +115,12 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                             </Grid>
                         ))}
                     </Grid>
+                    
+                    <Box textAlign="center" mt={8}>
+                        <Button onClick={() => setMenuOpen(true)} sx={{ color: gold, borderBottom: `1px solid ${gold}`, borderRadius: 0, fontFamily: '"Lato", sans-serif', letterSpacing: '2px' }}>
+                            {t('viewFullMenu')}
+                        </Button>
+                    </Box>
                 </Container>
             </Box>
 
@@ -137,6 +160,21 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                     </Grid>
                 </Container>
             </Box>
+            <FullMenuModal 
+                open={menuOpen} 
+                onClose={() => setMenuOpen(false)} 
+                menuData={menuData} 
+                restaurantName={restaurant.name}
+                currency={restaurant.currency}
+                themeConfig={{
+                    fontHeader: '"Playfair Display", serif',
+                    fontBody: '"Lato", sans-serif',
+                    accentColor: gold,
+                    bgColor: '#0a0a0a',     // Dark Background
+                    textColor: '#e0e0e0',   // Light Text for titles
+                    mutedTextColor: '#999'  // ✅ Light Gray for item descriptions!
+                }}
+            />
         </Box>
     );
 }

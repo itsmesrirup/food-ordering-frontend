@@ -114,5 +114,10 @@
   "cartConflictMessage": "You have items from another restaurant in your cart. Adding this item will clear your current cart. Do you want to proceed?",
   "newOrder": "Start New Order",
   "cancel": "Cancel",
-  "clearCart": "Clear Cart"
+  "clearCart": "Clear Cart",
+  "popularHits": "POPULAR HITS",
+  "theVibe": "THE VIBE",
+  "readyToEat": "Ready to eat?",
+  "startOnlineOrder": "Start Your Online Order",
+  "vibrantHeroSubtitle": "Fresh. Fast. Unforgettable."
 }
