@@ -33,8 +33,8 @@ function App() {
                       
                       {/* The Ordering Page (e.g. www.tikkanway.fr/order) */}
                       <Route element={<RestaurantLayout isCustomDomain={true} />}>
-                          <Route path="/order" element={<MenuPage />} />
-                          <Route path="/order/reserve" element={<ReservationPage />} />
+                          <Route path="/order/:slug" element={<MenuPage />} />
+                          <Route path="/order/:slug/reserve" element={<ReservationPage />} />
                       </Route>
                       
                       <Route path="/checkout" element={<CheckoutPage />} />
