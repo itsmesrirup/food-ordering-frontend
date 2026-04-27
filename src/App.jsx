@@ -18,7 +18,7 @@ function App() {
   const isMainSaaSPlatform = 
       hostname.includes('netlify.app') || 
       hostname.includes('localhost') || 
-      hostname === 'tablo.io'; // (If you buy tablo.io later)
+      hostname.includes('tabloapp.fr');
 
   // 2. Custom Domain Routing Override
   // If we are NOT on the main platform, we hijack the root route "/" to show their website.
