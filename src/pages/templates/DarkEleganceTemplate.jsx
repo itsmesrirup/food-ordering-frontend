@@ -7,6 +7,7 @@ import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanne
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
 import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
 import FullMenuModal from '../../components/website/FullMenuModal';
+import { Helmet } from 'react-helmet-async';
 
 export default function DarkEleganceTemplate({ restaurant, menuData }) {
     const { t } = useTranslation();
@@ -40,6 +41,13 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
 
     return (
         <Box sx={{ backgroundColor: '#0a0a0a', color: '#e0e0e0', minHeight: '100vh', fontFamily: '"Playfair Display", serif' }}>
+            <Helmet>
+                <title>{restaurant.metaTitle || `${restaurant.name} | Restaurant Strasbourg`}</title>
+                <meta name="description" content={restaurant.metaDescription || `Order online from ${restaurant.name} in Strasbourg.`} />
+                <meta property="og:title" content={restaurant.name} />
+                <meta property="og:description" content={restaurant.metaDescription} />
+                <meta property="og:image" content={restaurant.heroImageUrl} />
+            </Helmet>
             <WebsiteNavigation restaurantName={restaurant.name} />
 
             <Box sx={{ pt: 8 }}> 

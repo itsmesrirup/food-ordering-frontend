@@ -7,6 +7,7 @@ import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanne
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
 import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils'; 
 import FullMenuModal from '../../components/website/FullMenuModal'; // ✅ IMPORT MODAL
+import { Helmet } from 'react-helmet-async';
 
 export default function MinimalistTemplate({ restaurant, menuData }) {
     const { t } = useTranslation();
@@ -42,6 +43,13 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
 
     return (
         <Box sx={{ backgroundColor: '#FCFCFC', color: '#1A1A1A', minHeight: '100vh', fontFamily: '"Space Grotesk", sans-serif' }}>
+            <Helmet>
+                <title>{restaurant.metaTitle || `${restaurant.name} | Restaurant Strasbourg`}</title>
+                <meta name="description" content={restaurant.metaDescription || `Order online from ${restaurant.name} in Strasbourg.`} />
+                <meta property="og:title" content={restaurant.name} />
+                <meta property="og:description" content={restaurant.metaDescription} />
+                <meta property="og:image" content={restaurant.heroImageUrl} />
+            </Helmet>
             
             <WebsiteNavigation 
                 restaurantName={restaurant.name} 

@@ -8,16 +8,19 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { lightTheme } from './theme';
 import './i18n';
+import { HelmetProvider } from 'react-helmet-async';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider theme={lightTheme}> {/* Apply the theme */}
-      <CssBaseline /> {/* Normalizes CSS across browsers */}
-      <BrowserRouter>
-        <CartProvider>
-          <App />
-        </CartProvider>
-      </BrowserRouter>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider theme={lightTheme}> {/* Apply the theme */}
+        <CssBaseline /> {/* Normalizes CSS across browsers */}
+        <BrowserRouter>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </HelmetProvider>
   </React.StrictMode>,
 )

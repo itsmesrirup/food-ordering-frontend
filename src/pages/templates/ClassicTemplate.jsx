@@ -9,10 +9,18 @@ import InfoBlock from '../../components/website/InfoBlock';
 import SocialMediaBlock from '../../components/website/SocialMediaBlock';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
+import { Helmet } from 'react-helmet-async';
 
 export default function ClassicTemplate({ restaurant }) {
     return (
         <Box sx={{ backgroundColor: '#fff', minHeight: '100vh' }}>
+            <Helmet>
+                <title>{restaurant.metaTitle || `${restaurant.name} | Restaurant Strasbourg`}</title>
+                <meta name="description" content={restaurant.metaDescription || `Order online from ${restaurant.name} in Strasbourg.`} />
+                <meta property="og:title" content={restaurant.name} />
+                <meta property="og:description" content={restaurant.metaDescription} />
+                <meta property="og:image" content={restaurant.heroImageUrl} />
+            </Helmet>
             <WebsiteNavigation 
                 restaurantName={restaurant.name}
                 textColor="#1A1A1A" 
