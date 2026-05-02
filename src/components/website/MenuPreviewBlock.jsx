@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion'; // --- IMPORT ANIMATION ---
 import PublicMenuItemCard from './PublicMenuItemCard';
+import FullMenuModal from './FullMenuModal';
 
 // --- Helper to Render Recursive Categories ---
 const CategoryRenderer = ({ category, currency }) => {
@@ -54,6 +55,7 @@ const MenuPreviewBlock = ({ restaurant }) => {
     const [menuData, setMenuData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(0);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         const fetchMenu = async () => {
@@ -159,23 +161,30 @@ const MenuPreviewBlock = ({ restaurant }) => {
                 {/* Footer Button */}
                 <Box sx={{ textAlign: 'center', mt: 8 }}>
                      <Button 
-                        component={Link} 
-                        to={`/order/${restaurant.slug}`}
+                        onClick={() => setMenuOpen(true)}
                         variant="contained" 
                         size="large"
-                        sx={{ 
-                            borderRadius: 50, 
-                            px: 5, py: 1.5, 
-                            textTransform: 'none', 
-                            fontSize: '1.1rem',
-                            backgroundColor: '#222',
-                            '&:hover': { backgroundColor: '#444' }
-                        }}
+                        sx={{ borderRadius: 50, px: 5, py: 1.5, textTransform: 'none', fontSize: '1.1rem', backgroundColor: '#222', '&:hover': { backgroundColor: '#444' } }}
                     >
                         {t('viewFullMenu')}
                     </Button>
                 </Box>
             </Container>
+            <FullMenuModal 
+                open={menuOpen} 
+                onClose={() => setMenuOpen(false)} 
+                menuData={menuData} 
+                restaurantName={restaurant.name}
+                currency={restaurant.currency}
+                themeConfig={{
+                    fontHeader: '"Playfair Display", serif',
+                    fontBody: '"Lato", sans-serif',
+                    accentColor: '#d32f2f',
+                    bgColor: '#ffffff',
+                    textColor: '#111',
+                    mutedTextColor: '#666'
+                }}
+            />
         </Box>
     );
 };

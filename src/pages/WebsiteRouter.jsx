@@ -6,6 +6,7 @@ import ClassicTemplate from './templates/ClassicTemplate';
 import DarkEleganceTemplate from './templates/DarkEleganceTemplate';
 import VibrantTemplate from './templates/VibrantTemplate';
 import MinimalistTemplate from './templates/MinimalistTemplate';
+import WarmSpiceTemplate from './templates/WarmSpiceTemplate';
 
 function WebsiteRouter({ isCustomDomain }) {
     const { slug } = useParams();
@@ -58,6 +59,7 @@ function WebsiteRouter({ isCustomDomain }) {
         case 'DARK_ELEGANCE': return <DarkEleganceTemplate restaurant={restaurant} menuData={menuData} />;
         case 'VIBRANT': return <VibrantTemplate restaurant={restaurant} menuData={menuData} />;
         case 'MINIMALIST': return <MinimalistTemplate restaurant={restaurant} menuData={menuData} />;
+        case 'WARM_SPICE': return <WarmSpiceTemplate restaurant={restaurant} menuData={menuData} />;
         case 'CLASSIC':
         default: return <ClassicTemplate restaurant={restaurant} menuData={menuData} />;
     }

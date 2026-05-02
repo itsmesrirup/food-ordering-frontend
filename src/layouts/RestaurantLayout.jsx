@@ -101,38 +101,69 @@ function RestaurantLayout() {
         );
     }
 
+    // ✅ INTELLIGENT ROUTING LOGIC FOR THE LOGO
+    const getHomeLink = () => {
+        if (restaurantData.externalWebsiteUrl) {
+            // 1. They have their own external website (WordPress, Wix, etc.)
+            let url = restaurantData.externalWebsiteUrl.trim();
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = `https://${url}`;
+            }
+            return url;
+        } else if (restaurantData.websiteBuilderEnabled) {
+            // 2. They use our internal Website Builder
+            const currentHostname = window.location.hostname;
+            const isMainApp = currentHostname.includes('netlify.app') || currentHostname.includes('localhost') || currentHostname.includes('tabloapp.fr');
+            
+            if (isMainApp) {
+                return `/r/${restaurantData.slug}`; // Generic Tablo domain -> Go to the builder page
+            } else {
+                return '/'; // Custom domain (e.g. www.au-punjab.fr) -> Go to root
+            }
+        }
+        
+        // 3. Fallback (They only use ordering, no website at all)
+        return `/order/${restaurantData.slug}`;
+    };
+
+    const homeLink = restaurantData ? getHomeLink() : '/';
+    const isExternalLink = homeLink.startsWith('http');
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <header>
                 {/* --- RESTORED: White Header Layout --- */}
-                <Box sx={{ p: 1, backgroundColor: '#fff', borderBottom: '1px solid #eaeaea' }}>
+                <Box sx={{ p: 1, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         
-                        <Link component={RouterLink} to={`/order/${slug}`} color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Link 
+                            component={isExternalLink ? 'a' : RouterLink} 
+                            href={isExternalLink ? homeLink : undefined}
+                            to={!isExternalLink ? homeLink : undefined}
+                            color="inherit" 
+                            underline="none" 
+                            sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
+                        >
                             {restaurantData.logoUrl && (
                                 <img 
                                     src={restaurantData.logoUrl} 
                                     alt={`${restaurantData.name} logo`} 
-                                    style={{ height: '32px', objectFit: 'contain' }} 
+                                    style={{ 
+                                        height: '32px', 
+                                        objectFit: 'contain',
+                                        filter: 'drop-shadow(0px 1px 3px rgba(0,0,0,0.4))'
+                                    }} 
                                 />
                             )}
-                            {/* Hide Name on Mobile */}
-                            <Typography 
-                                variant="h6" 
-                                fontWeight="bold" 
-                                sx={{ 
-                                    display: { xs: 'none', sm: 'block' }, 
-                                    color: '#333', 
-                                    letterSpacing: '-0.5px' 
-                                }}
-                            >
+                            <Typography variant="h6" fontWeight="bold" sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.primary', letterSpacing: '-0.5px' }}>
                                 {restaurantData.name}
                             </Typography>
                         </Link>
 
-                        {/* --- RESTORED: mode="dark" for visibility on white background --- */}
-                        <LanguageSwitcher mode="dark" />
+                        <Box sx={{ color: 'text.primary' }}>
+                            <LanguageSwitcher />
+                        </Box>
                     </Container>
                 </Box>
 
@@ -193,13 +224,11 @@ function RestaurantLayout() {
                                     src={restaurantData.logoUrl}
                                     alt={`${restaurantData.name} logo`}
                                     sx={{ 
-                                        maxHeight: '80px', 
-                                        maxWidth: '200px',
-                                        mb: 2,
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                        p: 1,
-                                        borderRadius: 3,
-                                        boxShadow: 3
+                                        maxHeight: '120px',
+                                        maxWidth: '90%',
+                                        objectFit: 'contain',
+                                        mb: 3,
+                                        filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.6))'
                                     }}
                                 />
                             )}
