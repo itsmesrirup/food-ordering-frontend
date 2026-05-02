@@ -244,7 +244,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                 </Fade>
             </Modal>
 
-            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: accent, bgColor: lightBg, textColor: darkBg, mutedTextColor: '#666' }} />
+            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: accent, bgColor: lightBg, textColor: darkBg, mutedTextColor: '#666' }} />
         </Box>
     );
 }

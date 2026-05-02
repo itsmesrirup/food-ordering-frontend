@@ -174,6 +174,7 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                 onClose={() => setMenuOpen(false)} 
                 menuData={menuData} 
                 restaurantName={restaurant.name}
+                restaurantSlug={restaurant.slug}
                 currency={restaurant.currency}
                 themeConfig={{
                     fontHeader: '"Space Grotesk", sans-serif',

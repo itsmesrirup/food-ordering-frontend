@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { formatPrice } from '../../utils/formatPrice';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 // Slide up animation for the modal
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -67,7 +68,7 @@ const CategoryAccordion = ({ category, currency, fontBody, fontHeader, accentCol
     );
 };
 
-export default function FullMenuModal({ open, onClose, menuData, restaurantName, currency, themeConfig }) {
+export default function FullMenuModal({ open, onClose, menuData, restaurantName, restaurantSlug, currency, themeConfig }) {
     const { t } = useTranslation();
     
     // Extract theme props passed from the parent template
@@ -115,10 +116,11 @@ export default function FullMenuModal({ open, onClose, menuData, restaurantName,
                             {t('readyToEat')}
                         </Typography>
                         <Button 
-                            href={`/order/${window.location.pathname.split('/').pop()}`} 
+                            component={Link} 
+                            to={`/order/${restaurantSlug}`} 
                             variant="contained" 
                             size="large"
-                            sx={{ backgroundColor: accentColor, color: '#fff', fontWeight: 'bold', px: 4 }}
+                            sx={{ backgroundColor: accentColor, color: bgColor, fontWeight: 'bold', px: 4, '&:hover': { filter: 'brightness(0.9)' } }}
                         >
                             {t('startOnlineOrder')}
                         </Button>

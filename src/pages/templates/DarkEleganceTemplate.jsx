@@ -183,7 +183,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                 </Fade>
             </Modal>
 
-            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: gold, bgColor: '#0a0a0a', textColor: '#e0e0e0', mutedTextColor: '#999' }} />
+            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: gold, bgColor: '#0a0a0a', textColor: '#e0e0e0', mutedTextColor: '#999' }} />
         </Box>
     );
 }
