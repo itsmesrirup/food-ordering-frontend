@@ -156,7 +156,7 @@ function RestaurantLayout() {
                                     }} 
                                 />
                             )}
-                            <Typography variant="h6" fontWeight="bold" sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.primary', letterSpacing: '-0.5px' }}>
+                            <Typography variant="h6" fontWeight="bold" sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.primary', letterSpacing: '1px', fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>
                                 {restaurantData.name}
                             </Typography>
                         </Link>
@@ -232,7 +232,17 @@ function RestaurantLayout() {
                                     }}
                                 />
                             )}
-                            <Typography component="h1" variant="h3" color="inherit" fontWeight="bold" gutterBottom sx={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                            <Typography 
+                                component="h1" 
+                                variant="h2"
+                                sx={{ 
+                                    color: '#fff', 
+                                    fontFamily: '"Playfair Display", serif', // ✅ Elegance Font added
+                                    fontWeight: 700, 
+                                    mb: 1, 
+                                    textShadow: '0 4px 8px rgba(0,0,0,0.6)' 
+                                }}
+                            >
                                 {restaurantData.name}
                             </Typography>
                             <Typography variant="h6" color="inherit" sx={{ opacity: 0.95, mb: 3, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
