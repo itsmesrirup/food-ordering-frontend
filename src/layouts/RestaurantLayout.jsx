@@ -239,7 +239,7 @@ function RestaurantLayout() {
                                 {restaurantData.address}
                             </Typography>
 
-                            {restaurantData.reservationsEnabled && !isReservationPage && (
+                            {restaurantData.reservationsEnabled && !isReservationPage && !restaurantData.websiteBuilderEnabled && (
                                 <Button 
                                     component={RouterLink} 
                                     to={`/order/${slug}/reserve`} 
@@ -263,7 +263,7 @@ function RestaurantLayout() {
                                     <Typography variant="h4" component="h1" gutterBottom>{restaurantData.name}</Typography>
                                     <Typography variant="subtitle1" color="text.secondary">{restaurantData.address}</Typography>
                                 </Box>
-                                {restaurantData.reservationsEnabled && !isReservationPage && (
+                                {restaurantData.reservationsEnabled && !isReservationPage && !restaurantData.websiteBuilderEnabled && (
                                     <Button 
                                         component={RouterLink} 
                                         to={`/order/${slug}/reserve`} 
