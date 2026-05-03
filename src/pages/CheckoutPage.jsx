@@ -26,7 +26,7 @@ const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 const CheckoutUI = ({ 
     t, customerDetails, handleInputChange, orderType, setOrderType, 
     selectedDate, handleDateChange, filterPassedTime, currentRestaurant, 
-    cartItems, totalPrice, updateQuantity // ✅ ADDED updateQuantity prop
+    cartItems, totalPrice, updateQuantity, isCurrentlyClosed // ✅ ADDED updateQuantity prop
 }) => {
     return (
         <Box>
@@ -50,6 +50,18 @@ const CheckoutUI = ({
             <Divider sx={{ my: 3 }} />
             <Typography variant="h6" gutterBottom>{t('pickupTimeTitle')}</Typography>
             
+            {/* ✅ NEW: Polite Closed Message */}
+            {isCurrentlyClosed && (
+                <Alert severity="warning" icon={false} sx={{ mb: 3, backgroundColor: '#fff3e0', color: '#e65100', border: '1px solid #ffcc80' }}>
+                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                        {t('restaurantClosedMessage')}
+                    </Typography>
+                    <Typography variant="body2">
+                        {t('restaurantClosedSubtext')}
+                    </Typography>
+                </Alert>
+            )}
+
             <ToggleButtonGroup
                 value={orderType}
                 exclusive
@@ -57,7 +69,10 @@ const CheckoutUI = ({
                 fullWidth
                 sx={{ mb: 2 }}
             >
-                <ToggleButton value="asap">{t('asap')}</ToggleButton>
+                {/* ✅ Disable ASAP if they are currently closed */}
+                <ToggleButton value="asap" disabled={isCurrentlyClosed}>
+                    {t('asap')}
+                </ToggleButton>
                 <ToggleButton value="scheduled">{t('scheduleForLater')}</ToggleButton>
             </ToggleButtonGroup>
 
@@ -177,6 +192,26 @@ function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('online'); 
 
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+    // ✅ NEW STATE: Smart Closed Detection
+    const [isCurrentlyClosed, setIsCurrentlyClosed] = useState(false);
+
+    // ✅ NEW EFFECT: Check if open right now, force Pre-Order if closed
+    useEffect(() => {
+        if (currentRestaurant && currentRestaurant.openingHoursJson) {
+            const currentlyOpen = isRestaurantOpen(new Date(), currentRestaurant.openingHoursJson);
+            setIsCurrentlyClosed(!currentlyOpen);
+            
+            if (!currentlyOpen) {
+                setOrderType('scheduled'); // Force to scheduled
+                // Smart feature: Automatically find the next time they are open and pre-fill the calendar!
+                const nextSlot = getFirstOpenSlot(new Date(), currentRestaurant.openingHoursJson);
+                if (nextSlot) {
+                    setSelectedDate(nextSlot);
+                }
+            }
+        }
+    }, [currentRestaurant]);
 
     // ✅ Auto-redirect to menu if cart becomes empty during checkout edit
     useEffect(() => {
@@ -384,6 +419,7 @@ function CheckoutPage() {
                     cartItems={cartItems}
                     totalPrice={totalPrice}
                     updateQuantity={updateQuantity} // ✅ Passed down to UI
+                    isCurrentlyClosed={isCurrentlyClosed}
                 />
 
                 <Divider sx={{ my: 3 }} />

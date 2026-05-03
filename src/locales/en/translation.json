@@ -119,5 +119,7 @@
   "theVibe": "THE VIBE",
   "readyToEat": "Ready to eat?",
   "startOnlineOrder": "Start Your Online Order",
-  "vibrantHeroSubtitle": "Fresh. Fast. Unforgettable."
+  "vibrantHeroSubtitle": "Fresh. Fast. Unforgettable.",
+  "restaurantClosedMessage": "You just missed us! 🌙",
+  "restaurantClosedSubtext": "Our kitchen is currently closed, but don't worry! You can still pre-order your meal right now, and we will have it fresh and ready for you when we open next. Please choose a pickup time below."
 }

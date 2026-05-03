@@ -119,5 +119,7 @@
   "theVibe": "L'AMBIANCE",
   "readyToEat": "Prêt à déguster ?",
   "startOnlineOrder": "Commencer votre commande en ligne",
-  "vibrantHeroSubtitle": "Frais. Rapide. Inoubliable."
+  "vibrantHeroSubtitle": "Frais. Rapide. Inoubliable.",
+  "restaurantClosedMessage": "Vous nous avez manqué de peu ! 🌙",
+  "restaurantClosedSubtext": "Notre cuisine est actuellement fermée, mais pas d'inquiétude ! Vous pouvez précommander votre repas dès maintenant, et nous le préparerons pour notre prochaine ouverture. Veuillez choisir une heure de retrait ci-dessous."
 }

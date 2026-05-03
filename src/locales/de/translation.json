@@ -120,5 +120,7 @@
   "theVibe": "DIE ATMOSPHÄRE",
   "readyToEat": "Bereit zum Essen?",
   "startOnlineOrder": "Online-Bestellung starten",
-  "vibrantHeroSubtitle": "Frisch. Schnell. Unvergesslich."
+  "vibrantHeroSubtitle": "Frisch. Schnell. Unvergesslich.",
+  "restaurantClosedMessage": "Sie haben uns knapp verpasst! 🌙",
+  "restaurantClosedSubtext": "Unsere Küche ist derzeit geschlossen, aber keine Sorge! Sie können Ihr Essen jetzt vorbestellen, und wir bereiten es frisch für Sie zu, wenn wir wieder öffnen. Bitte wählen Sie unten eine Abholzeit."
 }
