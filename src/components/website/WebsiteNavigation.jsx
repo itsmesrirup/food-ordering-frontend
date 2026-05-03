@@ -5,7 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 
 // ✅ ADDED logoUrl to the props
-const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrolledBgColor = 'rgba(255, 255, 255, 0.95)', scrolledTextColor = '#333' }) => {
+const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrolledBgColor = 'rgba(255, 255, 255, 0.95)', scrolledTextColor = '#333', announcementMessage }) => {
   const { t, i18n } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -68,6 +68,23 @@ const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrol
           right: 0               
         }}
       >
+
+        {/* ✅ ADDED: ANNOUNCEMENT BAR */}
+        {announcementMessage && (
+            <Box sx={{ 
+                backgroundColor: '#111', // Sleek dark bar
+                color: '#fff', 
+                textAlign: 'center', 
+                py: 0.8, 
+                px: 2, 
+                fontSize: '0.85rem', 
+                fontWeight: 'bold',
+                letterSpacing: '1px'
+            }}>
+                {announcementMessage}
+            </Box>
+        )}
+
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: 'space-between', minHeight: { md: '80px' } }}>
             

@@ -36,7 +36,14 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
 
     return (
         <Box sx={{ backgroundColor: '#0a0a0a', color: '#e0e0e0', minHeight: '100vh', fontFamily: '"Playfair Display", serif' }}>
-            <WebsiteNavigation restaurantName={restaurant.name} textColor="white" scrolledBgColor="#0a0a0a" scrolledTextColor={gold} />
+            <WebsiteNavigation 
+                restaurantName={restaurant.name} 
+                textColor="white" 
+                scrolledBgColor="#0a0a0a" 
+                scrolledTextColor={gold}
+                logoUrl={restaurant.logoUrl} 
+                announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null}
+                />
 
             <Box sx={{ pt: 8 }}> 
                 <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} />

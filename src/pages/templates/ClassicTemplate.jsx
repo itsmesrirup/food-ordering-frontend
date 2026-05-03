@@ -26,6 +26,8 @@ export default function ClassicTemplate({ restaurant }) {
                 textColor="#1A1A1A" 
                 scrolledBgColor="#FCFCFC" 
                 scrolledTextColor="#1A1A1A"
+                logoUrl={restaurant.logoUrl} 
+                announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null}
             />
             
             {/* ✅ MOVED BANNER TO THE TOP (Just below the Navbar) */}

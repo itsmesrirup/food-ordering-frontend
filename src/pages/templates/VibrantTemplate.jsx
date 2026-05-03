@@ -55,6 +55,8 @@ export default function VibrantTemplate({ restaurant, menuData }) {
                 textColor="#111" // Dark text when at top
                 scrolledBgColor="#111" // Turns black when scrolling
                 scrolledTextColor="#fff" // Turns white when scrolling
+                logoUrl={restaurant.logoUrl} 
+                announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null}
             />
 
             <Box sx={{ pt: 7 }}> 

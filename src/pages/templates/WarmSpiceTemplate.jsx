@@ -99,7 +99,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
 
     return (
         <Box sx={{ backgroundColor: lightBg, color: '#333', minHeight: '100vh', fontFamily: '"Lato", sans-serif' }}>
-            <WebsiteNavigation restaurantName={restaurant.name} textColor="white" scrolledBgColor={lightBg} scrolledTextColor={darkBg} logoUrl={restaurant.logoUrl} />
+            <WebsiteNavigation restaurantName={restaurant.name} textColor="white" scrolledBgColor={lightBg} scrolledTextColor={darkBg} logoUrl={restaurant.logoUrl} announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null} />
             <Box sx={{ pt: 8 }}> <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} /> </Box>
 
             {/* HERO */}

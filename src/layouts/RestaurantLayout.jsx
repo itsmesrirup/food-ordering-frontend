@@ -133,6 +133,21 @@ function RestaurantLayout() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <header>
+                {/* ✅ ADDED: ANNOUNCEMENT BAR FOR ORDERING PAGE */}
+                {restaurantData.announcementEnabled && restaurantData.announcementMessage && (
+                    <Box sx={{ 
+                        backgroundColor: '#111', 
+                        color: '#fff', 
+                        textAlign: 'center', 
+                        py: 0.8, 
+                        px: 2, 
+                        fontSize: '0.9rem', 
+                        fontWeight: 'bold',
+                        letterSpacing: '1px'
+                    }}>
+                        {restaurantData.announcementMessage}
+                    </Box>
+                )}
                 {/* --- RESTORED: White Header Layout --- */}
                 <Box sx={{ p: 1, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

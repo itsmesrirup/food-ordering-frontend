@@ -56,6 +56,8 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                 textColor="#1A1A1A" 
                 scrolledBgColor="#FCFCFC" 
                 scrolledTextColor="#1A1A1A" 
+                logoUrl={restaurant.logoUrl} 
+                announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null}
             />
 
             <Box sx={{ pt: 8 }}> 
