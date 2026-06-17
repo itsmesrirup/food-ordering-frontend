@@ -43,6 +43,8 @@ const CategoryAccordion = ({ category, currency, fontBody, fontHeader, accentCol
                         </Box>
                         <Typography sx={{ fontFamily: fontHeader, fontWeight: 'bold', color: accentColor, flexShrink: 0 }}>
                             {formatPrice(item.price, currency)}
+                            {/* ✅ Add the unit if it exists */}
+                            {item.priceUnit && <span style={{ fontSize: '0.8rem', color: '#666', marginLeft: '4px' }}>/ {item.priceUnit}</span>}
                         </Typography>
                     </Box>
                 ))}
@@ -68,7 +70,7 @@ const CategoryAccordion = ({ category, currency, fontBody, fontHeader, accentCol
     );
 };
 
-export default function FullMenuModal({ open, onClose, menuData, restaurantName, restaurantSlug, currency, themeConfig }) {
+export default function FullMenuModal({ open, onClose, menuData, restaurantName, restaurantSlug, currency, themeConfig, businessType }) {
     const { t } = useTranslation();
     
     // Extract theme props passed from the parent template
@@ -89,7 +91,7 @@ export default function FullMenuModal({ open, onClose, menuData, restaurantName,
         >
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, borderBottom: `1px solid ${accentColor}40` }}>
                 <Typography sx={{ fontFamily: fontHeader, fontWeight: 'bold', fontSize: '1.5rem', textTransform: 'uppercase' }}>
-                    {restaurantName} - {t('ourMenu')}
+                    {restaurantName} - {t('ourMenu', { context: businessType })}
                 </Typography>
                 <IconButton onClick={onClose} sx={{ color: textColor }}>
                     <CloseIcon />

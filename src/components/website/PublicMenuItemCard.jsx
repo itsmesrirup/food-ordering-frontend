@@ -46,13 +46,10 @@ const PublicMenuItemCard = ({ item, currency }) => {
                         minWidth: '20px' // Ensure dots always show at least a bit
                     }} />
 
-                    <Typography variant="h6" sx={{ 
-                        fontFamily: '"Lato", sans-serif', 
-                        fontWeight: 700, 
-                        color: '#d32f2f',
-                        whiteSpace: 'nowrap'
-                    }}>
+                    <Typography variant="h6" sx={{ fontFamily: '"Lato", sans-serif', fontWeight: 700, color: '#d32f2f', whiteSpace: 'nowrap' }}>
                         {formatPrice(item.price, currency)}
+                        {/* ✅ Add the unit if it exists */}
+                        {item.priceUnit && <span style={{ fontSize: '0.8rem', color: '#666', marginLeft: '4px' }}>/ {item.priceUnit}</span>}
                     </Typography>
                 </Box>
 

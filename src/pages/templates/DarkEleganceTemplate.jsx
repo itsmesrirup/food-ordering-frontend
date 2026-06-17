@@ -64,7 +64,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                         {restaurant.logoUrl && <img src={restaurant.logoUrl} alt="logo" style={{ height: '90px', marginBottom: '30px', filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.8))' }} />}
                         <Typography variant="h1" sx={{ color: gold, textTransform: 'uppercase', letterSpacing: '6px', fontSize: { xs: '2.5rem', md: '4rem' }, mb: 2 }}>{restaurant.name}</Typography>
                         <Button onClick={() => setMenuOpen(true)} variant="outlined" sx={{ mt: 4, borderColor: gold, color: gold, px: 5, py: 1.5, letterSpacing: '2px', fontFamily: '"Lato", sans-serif', '&:hover': { backgroundColor: gold, color: '#000' } }}>
-                            {t('viewMenu')}
+                            {t('viewMenu', { context: restaurant.businessType })}
                         </Button>
                     </Box>
                 </motion.div>
@@ -119,7 +119,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                 backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center'
             }}>
                 <Container maxWidth="lg">
-                    <Typography variant="h3" align="center" sx={{ color: gold, mb: 8, letterSpacing: '4px' }}>{t('ourMenu')}</Typography>
+                    <Typography variant="h3" align="center" sx={{ color: gold, mb: 8, letterSpacing: '4px' }}>{t('ourMenu', { context: restaurant.businessType })}</Typography>
                     <Grid container spacing={8}>
                         {displayCategories.map((category) => (
                             <Grid item xs={12} md={6} key={category.id}>
@@ -138,7 +138,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                         ))}
                     </Grid>
                     <Box textAlign="center" mt={8}>
-                        <Button onClick={() => setMenuOpen(true)} sx={{ color: gold, borderBottom: `1px solid ${gold}`, borderRadius: 0, fontFamily: '"Lato", sans-serif', letterSpacing: '2px' }}>{t('viewFullMenu')}</Button>
+                        <Button onClick={() => setMenuOpen(true)} sx={{ color: gold, borderBottom: `1px solid ${gold}`, borderRadius: 0, fontFamily: '"Lato", sans-serif', letterSpacing: '2px' }}>{t('viewFullMenu', { context: restaurant.businessType })}</Button>
                     </Box>
                 </Container>
             </Box>
@@ -190,7 +190,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                 </Fade>
             </Modal>
 
-            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: gold, bgColor: '#0a0a0a', textColor: '#e0e0e0', mutedTextColor: '#999' }} />
+            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: gold, bgColor: '#0a0a0a', textColor: '#e0e0e0', mutedTextColor: '#999' }} businessType={restaurant.businessType} />
         </Box>
     );
 }

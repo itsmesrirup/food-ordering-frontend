@@ -90,7 +90,7 @@ const MenuPreviewBlock = ({ restaurant }) => {
                     viewport={{ once: true }}
                 >
                     <Typography variant="h2" align="center" sx={{ fontFamily: '"Playfair Display", serif', mb: 2 }}>
-                        {t('ourMenu')}
+                        {t('ourMenu', { context: restaurant.businessType })}
                     </Typography>
                     <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 6, maxWidth: 600, mx: 'auto', fontFamily: '"Lato"' }}>
                         {t('menuSubtitle')}
@@ -166,7 +166,7 @@ const MenuPreviewBlock = ({ restaurant }) => {
                         size="large"
                         sx={{ borderRadius: 50, px: 5, py: 1.5, textTransform: 'none', fontSize: '1.1rem', backgroundColor: '#222', '&:hover': { backgroundColor: '#444' } }}
                     >
-                        {t('viewFullMenu')}
+                        {t('viewFullMenu', { context: restaurant.businessType })}
                     </Button>
                 </Box>
             </Container>
@@ -184,6 +184,7 @@ const MenuPreviewBlock = ({ restaurant }) => {
                     textColor: '#111',
                     mutedTextColor: '#666'
                 }}
+                businessType={restaurant.businessType}
             />
         </Box>
     );

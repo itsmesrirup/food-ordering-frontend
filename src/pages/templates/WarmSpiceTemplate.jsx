@@ -168,7 +168,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
             }}>
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
                     <Box sx={{ textAlign: 'center', mb: 8 }}>
-                        <Typography variant="h6" sx={{ color: accent, textTransform: 'uppercase', letterSpacing: '3px', mb: 2 }}>{t('ourMenu')}</Typography>
+                        <Typography variant="h6" sx={{ color: accent, textTransform: 'uppercase', letterSpacing: '3px', mb: 2 }}>{t('ourMenu', { context: restaurant.businessType })}</Typography>
                         <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>Discover the Flavors</Typography>
                     </Box>
 
@@ -189,7 +189,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
 
                     <Box sx={{ textAlign: 'center', mt: 8 }}>
                         <Button onClick={() => setMenuOpen(true)} variant="contained" sx={{ backgroundColor: accent, color: '#fff', px: 5, py: 1.5, fontSize: '1.1rem', borderRadius: 0, '&:hover': { backgroundColor: '#a04926' } }}>
-                            {t('viewFullMenu')}
+                            {t('viewFullMenu', { context: restaurant.businessType })}
                         </Button>
                     </Box>
                 </Container>
@@ -244,7 +244,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                 </Fade>
             </Modal>
 
-            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: accent, bgColor: lightBg, textColor: darkBg, mutedTextColor: '#666' }} />
+            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: accent, bgColor: lightBg, textColor: darkBg, mutedTextColor: '#666' }} businessType={restaurant.businessType} />
         </Box>
     );
 }

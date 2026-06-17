@@ -73,7 +73,7 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                         <Typography variant="h5" sx={{ fontWeight: 600, letterSpacing: '-1px' }}>{restaurant.name}</Typography>
                     )}
                     <Button onClick={() => setMenuOpen(true)} variant="text" sx={{ color: '#1A1A1A', fontWeight: 600, borderBottom: '1px solid #1A1A1A', borderRadius: 0, px: 0 }}>
-                        {t('viewMenu')} {/* ✅ TRANSLATED */}
+                        {t('viewMenu', { context: restaurant.businessType })} {/* ✅ TRANSLATED */}
                     </Button>
                 </Box>
 
@@ -120,7 +120,7 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
             {/* MINIMALIST MENU */}
             <Container id="menu" maxWidth="md" sx={{ py: 15 }}>
                 <Typography variant="h4" sx={{ fontWeight: 400, mb: 8, textAlign: 'center', letterSpacing: '-1px' }}>
-                    {t('ourMenu')} {/* ✅ TRANSLATED */}
+                    {t('ourMenu', { context: restaurant.businessType })} {/* ✅ TRANSLATED */}
                 </Typography>
                 
                 <Box sx={{ columnCount: { xs: 1, md: 2 }, columnGap: '60px' }}>
@@ -138,7 +138,7 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                 {/* ✅ MODAL TRIGGER BUTTON */}
                 <Box textAlign="center" mt={6}>
                     <Button onClick={() => setMenuOpen(true)} variant="outlined" sx={{ color: '#1A1A1A', borderColor: '#E0E0E0', px: 4, py: 1, borderRadius: '4px', textTransform: 'none', '&:hover': { borderColor: '#1A1A1A', backgroundColor: 'transparent' } }}>
-                        {t('viewFullMenu')} {/* ✅ TRANSLATED */}
+                        {t('viewFullMenu', { context: restaurant.businessType })} {/* ✅ TRANSLATED */}
                     </Button>
                 </Box>
             </Container>
@@ -186,6 +186,7 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                     textColor: '#1A1A1A',
                     mutedTextColor: '#666'
                 }}
+                businessType={restaurant.businessType}
             />
         </Box>
     );

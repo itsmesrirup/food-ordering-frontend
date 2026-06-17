@@ -57,7 +57,7 @@ function ReservationPage() {
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
             <Button component={RouterLink} to={`/order/${slug}`} startIcon={<ArrowBackIcon />} sx={{ mb: 2 }}>
-                {t('backToMenu')}
+                {t('backToMenu', { context: currentRestaurant?.businessType })}
             </Button>
             
             <Grid container spacing={4}>

@@ -1,44 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useTranslation, Trans } from 'react-i18next';
-import { Container, Typography, Button, Box, CircularProgress, Paper } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import { Container, Typography, Button, Box, CircularProgress, Paper, Divider } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import usePageTitle from '../hooks/usePageTitle';
 
 function OrderConfirmationPage() {
-    const { orderId } = useParams();
+    const { orderId } = useParams(); // This will be "123,124"
     const { t } = useTranslation();
     usePageTitle(t('orderConfirmationTitle'));
-    // State to hold the order data so we know which restaurant to go back to
-    const [order, setOrder] = useState(null);
+    
+    const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchOrder = async () => {
+        const fetchOrders = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/orders/${orderId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    // Debug: Check what the backend actually returned
-                    console.log("Order Fetched:", data);
-                    setOrder(data);
-                }
+                // Split the IDs and fetch each one
+                const ids = orderId.split(',');
+                const promises = ids.map(id => 
+                    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/orders/${id}`).then(res => res.json())
+                );
+                
+                const data = await Promise.all(promises);
+                setOrders(data);
             } catch (error) {
-                console.error("Error fetching order", error);
+                console.error("Error fetching orders", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchOrder();
+        fetchOrders();
     }, [orderId]);
 
     if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+    if (orders.length === 0) return <Typography align="center" mt={5}>Orders not found.</Typography>;
 
-    // --- ROBUST LINK LOGIC ---
-    // 1. Try order.restaurantId (Flat DTO)
-    // 2. Try order.restaurant.id (Nested Entity)
-    // 3. Default to "/" if neither exists
-    const backLink = order?.restaurantSlug ? `/order/${order.restaurantSlug}` : '/';
+    const backLink = orders[0]?.restaurantSlug ? `/order/${orders[0].restaurantSlug}` : '/';
 
     return (
         <Container maxWidth="sm" sx={{ textAlign: 'center', py: 8 }}>
@@ -48,32 +47,34 @@ function OrderConfirmationPage() {
                 <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
                     {t('orderConfirmation_thankYou')}
                 </Typography>
+                
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
                     {t('orderConfirmation_success')}
                 </Typography>
-                
-                <Box sx={{ bgcolor: '#f5f5f5', p: 2, borderRadius: 2, mb: 4, display: 'inline-block' }}>
-                    <Typography variant="h6">
-                        <Trans i18nKey="orderConfirmation_orderNumber" values={{ orderId: order.orderNumber }}>
-                            Order #: <strong>{{orderId: order.orderNumber}}</strong>
-                        </Trans>
-                    </Typography>
-                </Box>
 
-                <Typography sx={{ mb: 4 }}>
-                    {t('orderConfirmation_preparation')}
-                </Typography>
+                {/* LIST THE ORDERS AND THEIR PICKUP TIMES */}
+                {orders.map(order => (
+                    <Box key={order.id} sx={{ bgcolor: '#f5f5f5', p: 3, borderRadius: 2, mb: 2, textAlign: 'left' }}>
+                        <Typography variant="h6" fontWeight="bold">
+                            Order #: {order.orderNumber}
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, color: 'primary.main' }}>
+                            <AccessTimeIcon fontSize="small" />
+                            <Typography variant="body1" fontWeight="bold">
+                                {order.pickupTime ? new Date(order.pickupTime).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : "ASAP"}
+                            </Typography>
+                        </Box>
+                        
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="body2" color="text.secondary">
+                            {order.items.length} items
+                        </Typography>
+                    </Box>
+                ))}
 
-                {/* --- FIXED: Link back to the specific restaurant --- */}
-                <Button 
-                    component={Link} 
-                    // If we found the order, go to that restaurant. Else go home.
-                    to={backLink} 
-                    variant="contained" 
-                    size="large"
-                    fullWidth
-                >
-                    {t('backToMenu')}
+                <Button component={Link} to={backLink} variant="contained" size="large" fullWidth sx={{ mt: 3 }}>
+                    {t('orderConfirmation_backHome')}
                 </Button>
             </Paper>
         </Container>

@@ -166,7 +166,7 @@ export default function VibrantTemplate({ restaurant, menuData }) {
 
                 <Box textAlign="center" mt={8}>
                     <Button onClick={() => setMenuOpen(true)} variant="outlined" sx={{ border: `4px solid ${dark}`, color: dark, px: 6, py: 2, fontWeight: 900, fontSize: '1.2rem', borderRadius: 0, '&:hover': { backgroundColor: dark, color: '#fff' } }}>
-                        {t('viewFullMenu')} {/* ✅ TRANSLATED */}
+                        {t('viewFullMenu', { context: restaurant.businessType })} {/* ✅ TRANSLATED */}
                     </Button>
                 </Box>
             </Container>
@@ -218,6 +218,7 @@ export default function VibrantTemplate({ restaurant, menuData }) {
                     bgColor: '#fff',
                     textColor: dark
                 }}
+                businessType={restaurant.businessType}
             />
         </Box>
     );

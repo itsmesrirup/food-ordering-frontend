@@ -121,5 +121,19 @@
   "startOnlineOrder": "Commencer votre commande en ligne",
   "vibrantHeroSubtitle": "Frais. Rapide. Inoubliable.",
   "restaurantClosedMessage": "Vous nous avez manqué de peu ! 🌙",
-  "restaurantClosedSubtext": "Notre cuisine est actuellement fermée, mais pas d'inquiétude ! Vous pouvez précommander votre repas dès maintenant, et nous le préparerons pour notre prochaine ouverture. Veuillez choisir une heure de retrait ci-dessous."
+  "restaurantClosedSubtext": "Notre cuisine est actuellement fermée, mais pas d'inquiétude ! Vous pouvez précommander votre repas dès maintenant, et nous le préparerons pour notre prochaine ouverture. Veuillez choisir une heure de retrait ci-dessous.",
+  "ourMenu_BAKERY": "Notre Boulangerie",
+  "ourMenu_RETAIL": "Nos Produits",
+
+  "viewMenu_BAKERY": "Voir la Boulangerie et Commander",
+  "viewMenu_RETAIL": "Voir le Catalogue et Commander",
+
+  "viewFullMenu_BAKERY": "Voir toute la sélection",
+  "viewFullMenu_RETAIL": "Voir tout le catalogue",
+
+  "backToMenu_BAKERY": "Retour à la Boulangerie",
+  "backToMenu_RETAIL": "Retour au Catalogue",
+
+  "menuSubtitle_BAKERY": "Découvrez nos pains frais, pâtisseries et gâteaux sur mesure.",
+  "menuSubtitle_RETAIL": "Parcourez notre sélection de produits locaux haut de gamme."
 }

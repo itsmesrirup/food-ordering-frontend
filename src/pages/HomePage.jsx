@@ -96,7 +96,7 @@ function HomePage() {
                                     fullWidth
                                     endIcon={<ArrowForwardIcon />}
                                 >
-                                    {t('viewMenu')}
+                                    {t('viewMenu', { context: restaurant.businessType })}
                                 </Button>
                             </CardActions>
                         </Card>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
@@ -7,13 +7,14 @@ import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { isRestaurantOpen, isRestaurantOpenOnDay, getFirstOpenSlot } from '../utils/timeValidation';
+import { isRestaurantOpen, isRestaurantOpenOnDay } from '../utils/timeValidation';
 import usePageTitle from '../hooks/usePageTitle';
 
-// ✅ NEW IMPORTS FOR CART EDITING AND NAVIGATION
+// ✅ IMPORTS FOR CART EDITING AND NAVIGATION
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // --- STRIPE IMPORTS ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -22,134 +23,117 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
-// --- COMPONENT 1: Pure UI for Inputs & Summary ---
-const CheckoutUI = ({ 
-    t, customerDetails, handleInputChange, orderType, setOrderType, 
-    selectedDate, handleDateChange, filterPassedTime, currentRestaurant, 
-    cartItems, totalPrice, updateQuantity, isCurrentlyClosed // ✅ ADDED updateQuantity prop
-}) => {
+// --- DYNAMIC TIME HELPERS FOR SPLIT CART ---
+const getMinAllowedDateForGroup = (leadTimeHours) => {
+    const currentDate = new Date();
+    const leadTimeMs = (leadTimeHours || 0) * 60 * 60 * 1000;
+    // Base 20-min prep buffer + Bakery Lead Time
+    return new Date(currentDate.getTime() + (20 * 60000) + leadTimeMs);
+};
+
+const filterPassedTimeForGroup = (time, leadTimeHours, currentRestaurant) => {
+    const selectedDate = new Date(time);
+    if (selectedDate < getMinAllowedDateForGroup(leadTimeHours)) return false;
+    if (currentRestaurant && currentRestaurant.openingHoursJson) {
+        return isRestaurantOpen(selectedDate, currentRestaurant.openingHoursJson);
+    }
+    return true; 
+};
+
+const getNextValidPickupTimeForGroup = (leadTimeHours, currentRestaurant) => {
+    let checkTime = getMinAllowedDateForGroup(leadTimeHours);
+    const remainder = 15 - (checkTime.getMinutes() % 15);
+    checkTime.setMinutes(checkTime.getMinutes() + remainder);
+    checkTime.setSeconds(0);
+    checkTime.setMilliseconds(0);
+
+    for (let i = 0; i < 24 * 4 * 7; i++) {
+        if (isRestaurantOpen(checkTime, currentRestaurant?.openingHoursJson)) {
+            return checkTime;
+        }
+        checkTime = new Date(checkTime.getTime() + 15 * 60000); 
+    }
+    return null;
+};
+
+// --- FULFILLMENT GROUP UI COMPONENT ---
+const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant, isCurrentlyClosed, t }) => {
+    const isImmediateAllowed = group.leadTime === 0;
+    const hideAsap = !isImmediateAllowed || isCurrentlyClosed;
+
+    // Force scheduled if ASAP is hidden but state is still asap
+    useEffect(() => {
+        if (hideAsap && schedule.type === 'asap') {
+            updateSchedule(group.leadTime, 'type', 'scheduled');
+            if (!schedule.date) {
+                const nextSlot = getNextValidPickupTimeForGroup(group.leadTime, currentRestaurant);
+                if (nextSlot) updateSchedule(group.leadTime, 'date', nextSlot);
+            }
+        }
+    }, [hideAsap, schedule.type, group.leadTime, schedule.date, updateSchedule, currentRestaurant]);
+
+    const handleDateChange = (newDate) => {
+        if (!newDate) {
+            updateSchedule(group.leadTime, 'date', null);
+            return;
+        }
+        if (filterPassedTimeForGroup(newDate, group.leadTime, currentRestaurant)) {
+            updateSchedule(group.leadTime, 'date', newDate);
+        } else {
+            const nextValidSlot = getNextValidPickupTimeForGroup(group.leadTime, currentRestaurant);
+            updateSchedule(group.leadTime, 'date', nextValidSlot || newDate);
+        }
+    };
+
     return (
-        <Box>
-            <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
-            <TextField 
-                label={t('fullNameLabel')}
-                name="name" 
-                value={customerDetails.name} 
-                onChange={handleInputChange} 
-                required fullWidth margin="normal"
-            />
-            <TextField 
-                label={t('emailLabel')} 
-                name="email" 
-                type="email"
-                value={customerDetails.email} 
-                onChange={handleInputChange} 
-                required fullWidth margin="normal"
-            />
+        <Box sx={{ mb: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 2, backgroundColor: '#fff' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <AccessTimeIcon color="primary" fontSize="small" />
+                <Typography variant="subtitle1" fontWeight="bold">
+                    {group.leadTime > 0 ? `Requires ${group.leadTime}h notice` : 'Available ASAP'}
+                </Typography>
+            </Box>
 
-            <Divider sx={{ my: 3 }} />
-            <Typography variant="h6" gutterBottom>{t('pickupTimeTitle')}</Typography>
+            <Box sx={{ mb: 2, pl: 2, borderLeft: '2px solid #ccc' }}>
+                {group.items.map(item => (
+                    <Typography key={item.cartItemId} variant="body2" color="text.secondary">
+                        <strong>{item.quantity}x</strong> {item.name}
+                    </Typography>
+                ))}
+            </Box>
             
-            {/* ✅ NEW: Polite Closed Message */}
-            {isCurrentlyClosed && (
-                <Alert severity="warning" icon={false} sx={{ mb: 3, backgroundColor: '#fff3e0', color: '#e65100', border: '1px solid #ffcc80' }}>
-                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                        {t('restaurantClosedMessage')}
-                    </Typography>
-                    <Typography variant="body2">
-                        {t('restaurantClosedSubtext')}
-                    </Typography>
-                </Alert>
-            )}
-
             <ToggleButtonGroup
-                value={orderType}
+                value={schedule.type}
                 exclusive
-                onChange={(e, newAlignment) => { if(newAlignment) setOrderType(newAlignment); }}
+                onChange={(e, val) => { if(val) updateSchedule(group.leadTime, 'type', val); }}
                 fullWidth
                 sx={{ mb: 2 }}
             >
-                {/* ✅ Disable ASAP if they are currently closed */}
-                <ToggleButton value="asap" disabled={isCurrentlyClosed}>
-                    {t('asap')}
-                </ToggleButton>
+                {!hideAsap && <ToggleButton value="asap">{t('asap')}</ToggleButton>}
                 <ToggleButton value="scheduled">{t('scheduleForLater')}</ToggleButton>
             </ToggleButtonGroup>
 
-            {orderType === 'scheduled' && (
-                <Box sx={{ mb: 2, '& .react-datepicker-wrapper': { width: '100%' } }}>
+            {schedule.type === 'scheduled' && (
+                <Box sx={{ '& .react-datepicker-wrapper': { width: '100%' } }}>
                     <DatePicker
-                        selected={selectedDate}
+                        selected={schedule.date}
                         onChange={handleDateChange}
-                        showTimeSelect
-                        timeFormat="HH:mm"
-                        timeIntervals={15}
-                        dateFormat="MMMM d, yyyy h:mm aa"
+                        showTimeSelect timeFormat="HH:mm" timeIntervals={15} dateFormat="MMMM d, yyyy h:mm aa"
                         placeholderText={t('selectPickupTime')}
-                        filterTime={filterPassedTime} 
-                        filterDate={(date) => {
-                            if (!currentRestaurant?.openingHoursJson) return true;
-                            return isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson);
-                        }}
-                        minDate={new Date()}
+                        filterTime={(time) => filterPassedTimeForGroup(time, group.leadTime, currentRestaurant)} 
+                        filterDate={(date) => currentRestaurant?.openingHoursJson ? isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson) : true}
+                        minDate={getMinAllowedDateForGroup(group.leadTime)}
                         customInput={
-                            <TextField 
-                                fullWidth 
-                                label={t('selectPickupTime')}
-                                InputLabelProps={{ shrink: true }}
-                                sx={{ '& input': { textOverflow: 'ellipsis' } }}
-                            />
+                            <TextField fullWidth label={t('selectPickupTime')} InputLabelProps={{ shrink: true }} inputProps={{ readOnly: true }} sx={{ '& input': { cursor: 'pointer', textOverflow: 'ellipsis' } }} />
                         }
                     />
                 </Box>
             )}
-
-            <Divider sx={{ my: 3 }} />
-            
-            {/* ✅ UPDATED ORDER SUMMARY WITH EDIT CONTROLS */}
-            <Typography variant="h6" gutterBottom>{t('orderSummary')}</Typography>
-            <Box sx={{ bgcolor: '#fafafa', p: 2, borderRadius: 2, mb: 3 }}>
-                {cartItems.map(item => (
-                    <Box key={item.cartItemId} sx={{ mb: 2, pb: 2, borderBottom: '1px dashed #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box sx={{ flex: 1, pr: 2 }}>
-                            <Typography fontWeight="bold">{item.name}</Typography>
-                            {item.selectedOptions && (
-                                <Box component="ul" sx={{ pl: 2, my: 0.5, fontSize: '0.85rem', color: 'text.secondary' }}>
-                                    {item.selectedOptions.map(opt => (
-                                        <li key={opt.optionName}><strong>{opt.optionName}:</strong> {opt.choices.join(', ')}</li>
-                                    ))}
-                                </Box>
-                            )}
-                            <Typography variant="body2" color="text.secondary">
-                                {formatPrice(item.price, currentRestaurant?.currency)} / ea
-                            </Typography>
-                        </Box>
-                        
-                        {/* +/- Controls directly in Checkout */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                            <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} color="error">
-                                <RemoveCircleOutlineIcon />
-                            </IconButton>
-                            <Typography sx={{ mx: 1, fontWeight: 'bold' }}>{item.quantity}</Typography>
-                            <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} color="primary">
-                                <AddCircleOutlineIcon />
-                            </IconButton>
-                        </Box>
-                    </Box>
-                ))}
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '2px solid #ddd' }}>
-                    <Typography variant="h6">{t('total')}</Typography>
-                    <Typography variant="h6" fontWeight="bold" color="primary.main">
-                        {formatPrice(totalPrice, currentRestaurant?.currency)}
-                    </Typography>
-                </Box>
-            </Box>
         </Box>
     );
 };
 
-// --- COMPONENT 2: Stripe Specific Section ---
+// --- STRIPE PAYMENT COMPONENT ---
 const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, currency }) => {
     const stripe = useStripe();
     const elements = useElements();
@@ -173,107 +157,88 @@ const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, c
     );
 };
 
-// --- MAIN COMPONENT: CheckoutPage ---
+// --- MAIN CHECKOUT COMPONENT ---
 function CheckoutPage() {
     const { t } = useTranslation(); 
     usePageTitle(t('checkoutTitle'));
-    // ✅ Extract updateQuantity from useCart
+    
     const { cartItems, clearCart, currentRestaurant, cartRestaurantId, updateQuantity } = useCart();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const tableNumber = searchParams.get("table");
+
     const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
-    const [searchParams] = useSearchParams();
-    const tableNumber = searchParams.get("table");
-    
-    const [orderType, setOrderType] = useState('asap');
-    const [selectedDate, setSelectedDate] = useState(null);
     const [clientSecret, setClientSecret] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('online'); 
 
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-    // ✅ NEW STATE: Smart Closed Detection
-    const [isCurrentlyClosed, setIsCurrentlyClosed] = useState(false);
-
-    // ✅ NEW EFFECT: Check if open right now, force Pre-Order if closed
-    useEffect(() => {
-        if (currentRestaurant && currentRestaurant.openingHoursJson) {
-            const currentlyOpen = isRestaurantOpen(new Date(), currentRestaurant.openingHoursJson);
-            setIsCurrentlyClosed(!currentlyOpen);
-            
-            if (!currentlyOpen) {
-                setOrderType('scheduled'); // Force to scheduled
-                // Smart feature: Automatically find the next time they are open and pre-fill the calendar!
-                const nextSlot = getFirstOpenSlot(new Date(), currentRestaurant.openingHoursJson);
-                if (nextSlot) {
-                    setSelectedDate(nextSlot);
-                }
-            }
+    // ✅ SMART CLOSED DETECTION
+    const isCurrentlyClosed = useMemo(() => {
+        if (currentRestaurant?.openingHoursJson) {
+            return !isRestaurantOpen(new Date(), currentRestaurant.openingHoursJson);
         }
+        return false;
     }, [currentRestaurant]);
 
-    // ✅ Auto-redirect to menu if cart becomes empty during checkout edit
+    // ✅ SMART CART SPLITTER (Groups items by lead time)
+    const groupedCart = useMemo(() => {
+        const groups = {};
+        cartItems.forEach(item => {
+            const leadTime = item.advanceOrderLeadTimeHours || 0;
+            if (!groups[leadTime]) {
+                groups[leadTime] = { leadTime, items: [] };
+            }
+            groups[leadTime].items.push(item);
+        });
+        return Object.values(groups).sort((a, b) => a.leadTime - b.leadTime);
+    }, [cartItems]);
+
+    // ✅ SCHEDULES STATE
+    const [schedules, setSchedules] = useState({});
+
+    useEffect(() => {
+        setSchedules(prev => {
+            const newSchedules = { ...prev };
+            groupedCart.forEach(g => {
+                if (!newSchedules[g.leadTime]) {
+                    newSchedules[g.leadTime] = { type: g.leadTime === 0 ? 'asap' : 'scheduled', date: null };
+                }
+            });
+            return newSchedules;
+        });
+    }, [groupedCart]);
+
+    const updateSchedule = useCallback((leadTime, field, value) => {
+        setSchedules(prev => ({ ...prev, [leadTime]: { ...prev[leadTime], [field]: value } }));
+    }, []);
+
+    // Auto-redirect to menu if cart empties
     useEffect(() => {
         if (cartItems.length === 0 && !isSubmitting && currentRestaurant) {
             navigate(`/order/${currentRestaurant.slug}`);
         }
     }, [cartItems.length, currentRestaurant, navigate, isSubmitting]);
 
+    // Stripe Intent
     useEffect(() => {
         if (currentRestaurant && cartRestaurantId && String(currentRestaurant.id) !== String(cartRestaurantId)) return; 
-
         const paymentsSupported = currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled;
 
         if (cartItems.length > 0 && paymentsSupported) {
             const amountInCents = Math.round(totalPrice * 100);
             fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    amount: amountInCents, 
-                    currency: currentRestaurant.currency || "eur",
-                    restaurantId: currentRestaurant.id 
-                }),
-            })
-            .then((res) => res.json())
-            .then((data) => setClientSecret(data.clientSecret))
-            .catch((err) => console.error("Error creating payment intent:", err));
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: amountInCents, currency: currentRestaurant.currency || "eur", restaurantId: currentRestaurant.id }),
+            }).then(res => res.json()).then(data => setClientSecret(data.clientSecret)).catch(console.error);
         } else {
             setPaymentMethod('counter');
         }
     }, [cartItems, currentRestaurant, totalPrice, cartRestaurantId]);
 
     const handleInputChange = (e) => setCustomerDetails({ ...customerDetails, [e.target.name]: e.target.value });
-
-    const filterPassedTime = (time) => {
-        const currentDate = new Date();
-        const selectedDate = new Date(time);
-        const minTime = new Date(currentDate.getTime() + 20 * 60000);
-        if (selectedDate < minTime) return false;
-        if (currentRestaurant && currentRestaurant.openingHoursJson) {
-            return isRestaurantOpen(selectedDate, currentRestaurant.openingHoursJson);
-        }
-        return true; 
-    };
-
-    const handleDateChange = (newDate) => {
-        if (!newDate) {
-            setSelectedDate(null);
-            return;
-        }
-        const isValid = filterPassedTime(newDate);
-        if (isValid) {
-            setSelectedDate(newDate);
-        } else {
-            const nextAvailableTime = getFirstOpenSlot(newDate, currentRestaurant?.openingHoursJson);
-            if (nextAvailableTime) {
-                setSelectedDate(nextAvailableTime);
-            } else {
-                setSelectedDate(newDate);
-            }
-        }
-    };
 
     const validateForm = () => {
         if (cartItems.length === 0) {
@@ -284,14 +249,18 @@ function CheckoutPage() {
             setError("Name and Email are required.");
             return false;
         }
-        if (orderType === 'scheduled') {
-            if (!selectedDate) {
-                setError(t('pickupTimeRequired'));
-                return false;
-            }
-            if (!filterPassedTime(selectedDate)) {
-                setError(t('restaurantClosedAtTime'));
-                return false;
+        for (const group of groupedCart) {
+            const sched = schedules[group.leadTime];
+            if (!sched) continue;
+            if (sched.type === 'scheduled') {
+                if (!sched.date) {
+                    setError(`Please select a pickup time for the items requiring ${group.leadTime}h notice.`);
+                    return false;
+                }
+                if (!filterPassedTimeForGroup(sched.date, group.leadTime, currentRestaurant)) {
+                    setError(`Selected time for group ${group.leadTime}h is invalid or closed.`);
+                    return false;
+                }
             }
         }
         return true;
@@ -300,55 +269,45 @@ function CheckoutPage() {
     const finalizeOrder = async (paymentIntentId) => {
         try {
             const customerResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/customers/find-or-create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(customerDetails)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(customerDetails)
             });
             if (!customerResponse.ok) throw new Error('Failed to create customer');
             const customerData = await customerResponse.json();
 
-            let finalPickupTime = null;
-            if (orderType === 'scheduled') {
-                if (!selectedDate) {
-                    setError(t('pickupTimeRequired'));
-                    setIsSubmitting(false);
-                    return;
+            // ✅ BATCH ORDER CREATION
+            const batchPayload = groupedCart.map(group => {
+                const sched = schedules[group.leadTime];
+                let finalPickupTime = null;
+                
+                if (sched.type === 'scheduled' && sched.date) {
+                    const offsetMs = sched.date.getTimezoneOffset() * 60 * 1000;
+                    finalPickupTime = new Date(sched.date.getTime() - offsetMs).toISOString();
                 }
-                if (!filterPassedTime(selectedDate)) {
-                    setError(t('restaurantClosedAtTime'));
-                    setIsSubmitting(false);
-                    return;
-                }
-                const offsetMs = selectedDate.getTimezoneOffset() * 60 * 1000;
-                finalPickupTime = new Date(selectedDate.getTime() - offsetMs).toISOString();
-            }
 
-            const orderPayload = {
-                customerId: customerData.id,
-                tableNumber: tableNumber,
-                pickupTime: finalPickupTime,
-                paymentIntentId: paymentIntentId, 
-                items: cartItems.map(item => ({
-                    menuItemId: item.id,
-                    quantity: item.quantity,
-                    selectedOptions: item.selectedOptions || []
-                }))
-            };
+                return {
+                    customerId: customerData.id,
+                    tableNumber: tableNumber,
+                    pickupTime: finalPickupTime,
+                    paymentIntentId: paymentIntentId, 
+                    items: group.items.map(item => ({
+                        menuItemId: item.id,
+                        quantity: item.quantity,
+                        selectedOptions: item.selectedOptions || []
+                    }))
+                };
+            });
 
-            const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/orders`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderPayload)
+            const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/orders/batch`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(batchPayload)
             });
             
-            if (!orderResponse.ok) {
-                const errData = await orderResponse.json().catch(() => ({}));
-                throw new Error(errData.message || 'Failed to place order');
-            }
+            if (!orderResponse.ok) throw new Error('Failed to place order');
             
-            const newOrder = await orderResponse.json();
+            const newOrders = await orderResponse.json();
             clearCart();
-            navigate(`/order-confirmation/${newOrder.id}`);
+            const orderIdsString = newOrders.map(o => o.id).join(',');
+            navigate(`/order-confirmation/${orderIdsString}`);
 
         } catch (err) {
             setError(err.message || t('unexpectedError'));
@@ -361,16 +320,11 @@ function CheckoutPage() {
         if (!validateForm()) return;
         setIsSubmitting(true);
         setError(null);
-
         const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
-            elements,
-            redirect: 'if_required',
+            elements, redirect: 'if_required',
         });
-
-        if (stripeError) {
-            toast.error(stripeError.message);
-            setIsSubmitting(false);
-        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        if (stripeError) { toast.error(stripeError.message); setIsSubmitting(false); } 
+        else if (paymentIntent && paymentIntent.status === 'succeeded') {
             await finalizeOrder(paymentIntent.id);
         }
     };
@@ -383,15 +337,12 @@ function CheckoutPage() {
         await finalizeOrder(null);
     };
 
-    const paymentsSupported = currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled;
-
-    // Prevent rendering the form if the cart is empty (it will auto-redirect shortly)
     if (cartItems.length === 0) return null;
+    const paymentsSupported = currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled;
 
     return (
         <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
             
-            {/* ✅ NEW: BACK TO MENU BUTTON */}
             <Button 
                 component={RouterLink} 
                 to={currentRestaurant ? `/order/${currentRestaurant.slug}` : '/'}
@@ -406,30 +357,97 @@ function CheckoutPage() {
                     {t('checkoutTitle')}
                 </Typography>
                 
-                <CheckoutUI 
-                    t={t}
-                    customerDetails={customerDetails}
-                    handleInputChange={handleInputChange}
-                    orderType={orderType}
-                    setOrderType={setOrderType}
-                    selectedDate={selectedDate}
-                    handleDateChange={handleDateChange}
-                    filterPassedTime={filterPassedTime}
-                    currentRestaurant={currentRestaurant}
-                    cartItems={cartItems}
-                    totalPrice={totalPrice}
-                    updateQuantity={updateQuantity} // ✅ Passed down to UI
-                    isCurrentlyClosed={isCurrentlyClosed}
-                />
+                {/* --- CUSTOMER DETAILS --- */}
+                <Box>
+                    <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
+                    <TextField label={t('fullNameLabel')} name="name" value={customerDetails.name} onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField label={t('emailLabel')} name="email" type="email" value={customerDetails.email} onChange={handleInputChange} required fullWidth margin="normal" />
+                </Box>
 
                 <Divider sx={{ my: 3 }} />
 
-                {totalPrice > 25 && paymentsSupported && (
-                    <Alert severity="info" sx={{ mb: 3 }}>
-                         {t('ticketRestaurantLimitWarning')}
-                    </Alert>
-                )}
+                {/* --- PICKUP TIME SELECTION --- */}
+                <Box>
+                    <Typography variant="h6" gutterBottom>{t('pickupTimeTitle')}</Typography>
+                    
+                    {isCurrentlyClosed && (
+                        <Alert severity="warning" icon={false} sx={{ mb: 3, backgroundColor: '#fff3e0', color: '#e65100', border: '1px solid #ffcc80' }}>
+                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>{t('restaurantClosedMessage')}</Typography>
+                            <Typography variant="body2">{t('restaurantClosedSubtext')}</Typography>
+                        </Alert>
+                    )}
 
+                    {groupedCart.length > 1 && (
+                        <Alert severity="info" sx={{ mb: 3 }}>
+                            Your order contains items that require different preparation times. Please select a pickup time for each group.
+                        </Alert>
+                    )}
+
+                    {groupedCart.map(group => (
+                        schedules[group.leadTime] ? (
+                            <FulfillmentGroupUI 
+                                key={group.leadTime} 
+                                group={group} 
+                                schedule={schedules[group.leadTime]} 
+                                updateSchedule={updateSchedule}
+                                currentRestaurant={currentRestaurant}
+                                isCurrentlyClosed={isCurrentlyClosed}
+                                t={t}
+                            />
+                        ) : null
+                    ))}
+                </Box>
+
+                <Divider sx={{ my: 3 }} />
+
+                {/* --- ORDER SUMMARY --- */}
+                <Box>
+                    <Typography variant="h6" gutterBottom>{t('orderSummary')}</Typography>
+                    <Box sx={{ bgcolor: '#fafafa', p: 2, borderRadius: 2, mb: 3 }}>
+                        {cartItems.map(item => (
+                            <Box key={item.cartItemId} sx={{ mb: 2, pb: 2, borderBottom: '1px dashed #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box sx={{ flex: 1, pr: 2 }}>
+                                    <Typography fontWeight="bold">{item.name}</Typography>
+                                    {item.selectedOptions && (
+                                        <Box component="ul" sx={{ pl: 2, my: 0.5, fontSize: '0.85rem', color: 'text.secondary' }}>
+                                            {item.selectedOptions.map(opt => (
+                                                <li key={opt.optionName}><strong>{opt.optionName}:</strong> {opt.choices.join(', ')}</li>
+                                            ))}
+                                        </Box>
+                                    )}
+                                    <Typography variant="body2" color="text.secondary">
+                                        {formatPrice(item.price, currentRestaurant?.currency)} / ea
+                                    </Typography>
+                                </Box>
+                                
+                                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                                    <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} color="error">
+                                        <RemoveCircleOutlineIcon />
+                                    </IconButton>
+                                    <Typography sx={{ mx: 1, fontWeight: 'bold' }}>{item.quantity}</Typography>
+                                    <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} color="primary">
+                                        <AddCircleOutlineIcon />
+                                    </IconButton>
+                                </Box>
+                            </Box>
+                        ))}
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '2px solid #ddd' }}>
+                            <Typography variant="h6">{t('total')}</Typography>
+                            <Typography variant="h6" fontWeight="bold" color="primary.main">
+                                {formatPrice(totalPrice, currentRestaurant?.currency)}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+
+                {/* --- WARNINGS & ERRORS --- */}
+                {totalPrice > 25 && paymentsSupported && (
+                    <Alert severity="info" sx={{ mb: 3 }}>{t('ticketRestaurantLimitWarning')}</Alert>
+                )}
+                {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+                {/* --- PAYMENT METHOD SELECTION --- */}
                 {paymentsSupported && (
                     <Box sx={{ mb: 3 }}>
                         <Typography variant="h6" gutterBottom>{t('paymentMethodTitle')}</Typography>
@@ -447,33 +465,20 @@ function CheckoutPage() {
                     </Box>
                 )}
 
-                {error && <Alert severity="error" sx={{ mt: 2, mb: 3 }}>{error}</Alert>}
-
+                {/* --- PAYMENT ACTION BUTTONS --- */}
                 {paymentsSupported && paymentMethod === 'online' && clientSecret && stripePromise ? (
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
-                        <StripePaymentSection 
-                            t={t}
-                            isSubmitting={isSubmitting}
-                            onConfirmPayment={handleStripeConfirm}
-                            totalPrice={totalPrice}
-                            currency={currentRestaurant?.currency}
-                        />
+                        <StripePaymentSection t={t} isSubmitting={isSubmitting} onConfirmPayment={handleStripeConfirm} totalPrice={totalPrice} currency={currentRestaurant?.currency} />
                     </Elements>
                 ) : (
                     <Box component="form" onSubmit={handlePayAtCounter} sx={{ mt: 3, position: 'relative' }}>
-                        <Button 
-                            type="submit" 
-                            variant="contained" 
-                            fullWidth 
-                            disabled={isSubmitting || cartItems.length === 0}
-                            size="large"
-                            sx={{ py: 1.5, fontSize: '1.1rem', fontWeight: 'bold' }}
-                        >
+                        <Button type="submit" variant="contained" fullWidth disabled={isSubmitting || cartItems.length === 0} size="large" sx={{ py: 1.5, fontSize: '1.1rem', fontWeight: 'bold' }}>
                             {paymentsSupported ? t('placeOrderCounter') : t('placeOrder')}
                         </Button>
                         {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', marginTop: '-12px', marginLeft: '-12px' }} />}
                     </Box>
                 )}
+
             </Paper>
         </Container>
     );

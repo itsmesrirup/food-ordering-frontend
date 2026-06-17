@@ -121,5 +121,19 @@
   "startOnlineOrder": "Start Your Online Order",
   "vibrantHeroSubtitle": "Fresh. Fast. Unforgettable.",
   "restaurantClosedMessage": "You just missed us! 🌙",
-  "restaurantClosedSubtext": "Our kitchen is currently closed, but don't worry! You can still pre-order your meal right now, and we will have it fresh and ready for you when we open next. Please choose a pickup time below."
+  "restaurantClosedSubtext": "Our kitchen is currently closed, but don't worry! You can still pre-order your meal right now, and we will have it fresh and ready for you when we open next. Please choose a pickup time below.",
+  "ourMenu_BAKERY": "Our Bakery",
+  "ourMenu_RETAIL": "Our Products",
+
+  "viewMenu_BAKERY": "View Bakery & Order",
+  "viewMenu_RETAIL": "View Catalog & Order",
+
+  "viewFullMenu_BAKERY": "View Full Bakery Selection",
+  "viewFullMenu_RETAIL": "View Full Catalog",
+
+  "backToMenu_BAKERY": "Back to Bakery",
+  "backToMenu_RETAIL": "Back to Catalog",
+
+  "menuSubtitle_BAKERY": "Explore our freshly baked breads, pastries, and custom cakes.",
+  "menuSubtitle_RETAIL": "Browse our curated selection of premium local products."
 }

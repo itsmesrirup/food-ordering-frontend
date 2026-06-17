@@ -49,6 +49,12 @@ const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCar
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                     <Typography variant="subtitle1" color="primary" fontWeight="bold">
                         {formatPrice(item.price, restaurant?.currency)}
+                        {/* ✅ Add the unit here, un-bolded and slightly smaller so the main price still pops */}
+                        {item.priceUnit && (
+                            <span style={{ fontSize: '0.8rem', color: 'gray', fontWeight: 'normal', marginLeft: '4px' }}>
+                                / {item.priceUnit}
+                            </span>
+                        )}
                     </Typography>
                     <Button 
                         variant={isJustAdded ? "contained" : "outlined"}
