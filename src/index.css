@@ -76,3 +76,72 @@ html {
   scroll-padding-top: 120px; /* A safe value for your tallest sticky header */
   scroll-behavior: smooth;
 }
+
+/* --- DATEPICKER Z-INDEX & TELEPORT FIX --- */
+.react-datepicker-popper {
+  z-index: 999999 !important; /* Absolute top layer */
+}
+
+/* Force every container inside the calendar to be solid white */
+.react-datepicker,
+.react-datepicker__month-container,
+.react-datepicker__time-container,
+.react-datepicker__time,
+.react-datepicker__time-box,
+.react-datepicker__time-list,
+.react-datepicker__time-list-item {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Add a beautiful, deep drop-shadow so it pops off the screen */
+.react-datepicker {
+  box-shadow: 0px 15px 50px rgba(0, 0, 0, 0.4) !important; 
+  border: 1px solid #ccc !important;
+}
+
+/* --- PERFECT MOBILE DATEPICKER LAYOUT --- */
+@media (max-width: 600px) {
+  .react-datepicker {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 320px !important;
+    font-family: inherit !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+  
+  .react-datepicker__month-container {
+    float: none !important;
+    width: 100% !important;
+  }
+
+  .react-datepicker__time-container {
+    float: none !important;
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid #ddd !important;
+  }
+
+  .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box {
+    width: 100% !important;
+    height: 150px !important; 
+    border-radius: 0 0 12px 12px !important;
+  }
+
+  .react-datepicker__time-list-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 45px !important;
+    font-size: 1.1rem !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+  }
+
+  .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+    background-color: #1976d2 !important;
+    color: white !important;
+    font-weight: bold !important;
+  }
+}

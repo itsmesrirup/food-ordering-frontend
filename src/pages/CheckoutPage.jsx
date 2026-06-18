@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
-import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup, IconButton, Card } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup, IconButton, Card, useTheme, useMediaQuery } from '@mui/material';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import DatePicker from "react-datepicker";
@@ -74,7 +74,7 @@ const getNextValidPickupTimeForGroup = (leadTimeHours, currentRestaurant, starti
 };
 
 // --- FULFILLMENT GROUP UI COMPONENT ---
-const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant, isCurrentlyClosed, t }) => {
+const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant, isCurrentlyClosed, t, isMobile }) => {
     const isImmediateAllowed = group.leadTime === 0;
     const hideAsap = !isImmediateAllowed || isCurrentlyClosed;
 
@@ -113,7 +113,7 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
     }
 
     return (
-        <Card variant="outlined" sx={{ mb: 3, p: 3, borderColor: 'primary.main', borderWidth: '2px' }}>
+        <Card variant="outlined" sx={{ mb: 3, p: 3, borderColor: 'primary.main', borderWidth: '2px', overflow: 'visible' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <AccessTimeIcon color="primary" />
                 <Typography variant="h6" fontWeight="bold">
@@ -154,6 +154,7 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
                         filterTime={(time) => filterPassedTimeForGroup(time, group.leadTime, currentRestaurant)} 
                         filterDate={(date) => currentRestaurant?.openingHoursJson ? isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson) : true}
                         minDate={getMinAllowedDateForGroup(group.leadTime)}
+                        portalId="datepicker-portal"
                         customInput={
                             <TextField fullWidth label={t('selectPickupTime')} InputLabelProps={{ shrink: true }} inputProps={{ readOnly: true }} sx={{ '& input': { cursor: 'pointer', textOverflow: 'ellipsis' } }} />
                         }
@@ -192,6 +193,8 @@ const StripePaymentSection = ({ t, isSubmitting, onConfirmPayment, totalPrice, c
 function CheckoutPage() {
     const { t } = useTranslation(); 
     usePageTitle(t('checkoutTitle'));
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     
     const { cartItems, clearCart, currentRestaurant, cartRestaurantId, updateQuantity } = useCart();
     const navigate = useNavigate();
@@ -383,7 +386,7 @@ function CheckoutPage() {
                 {t('backToMenu')}
             </Button>
 
-            <Paper elevation={4} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+            <Paper elevation={4} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3, overflow: 'visible' }}>
                 <Typography variant="h4" align="center" gutterBottom fontWeight="bold">
                     {t('checkoutTitle')}
                 </Typography>
@@ -424,6 +427,7 @@ function CheckoutPage() {
                                 currentRestaurant={currentRestaurant}
                                 isCurrentlyClosed={isCurrentlyClosed}
                                 t={t}
+                                isMobile={isMobile}
                             />
                         ) : null
                     ))}
