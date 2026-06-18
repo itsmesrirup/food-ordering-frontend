@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
-import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup, IconButton, Card } from '@mui/material';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import DatePicker from "react-datepicker";
@@ -40,13 +40,30 @@ const filterPassedTimeForGroup = (time, leadTimeHours, currentRestaurant) => {
     return true; 
 };
 
-const getNextValidPickupTimeForGroup = (leadTimeHours, currentRestaurant) => {
-    let checkTime = getMinAllowedDateForGroup(leadTimeHours);
+const getNextValidPickupTimeForGroup = (leadTimeHours, currentRestaurant, startingFromDate = null) => {
+    
+    // 1. If the user clicked a specific date, start scanning from there.
+    // Otherwise, start scanning from the minimum allowed time (Today + lead time).
+    let checkTime;
+    if (startingFromDate) {
+        checkTime = new Date(startingFromDate);
+        
+        // Safety: Ensure the date they clicked isn't BEFORE the bakery's required lead time!
+        const minAllowed = getMinAllowedDateForGroup(leadTimeHours);
+        if (checkTime < minAllowed) {
+            checkTime = minAllowed;
+        }
+    } else {
+        checkTime = getMinAllowedDateForGroup(leadTimeHours);
+    }
+
+    // Round up to the next 15-minute mark
     const remainder = 15 - (checkTime.getMinutes() % 15);
     checkTime.setMinutes(checkTime.getMinutes() + remainder);
     checkTime.setSeconds(0);
     checkTime.setMilliseconds(0);
 
+    // Scan forward in 15-minute increments
     for (let i = 0; i < 24 * 4 * 7; i++) {
         if (isRestaurantOpen(checkTime, currentRestaurant?.openingHoursJson)) {
             return checkTime;
@@ -80,27 +97,41 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
         if (filterPassedTimeForGroup(newDate, group.leadTime, currentRestaurant)) {
             updateSchedule(group.leadTime, 'date', newDate);
         } else {
-            const nextValidSlot = getNextValidPickupTimeForGroup(group.leadTime, currentRestaurant);
+            const nextValidSlot = getNextValidPickupTimeForGroup(group.leadTime, currentRestaurant, newDate);
             updateSchedule(group.leadTime, 'date', nextValidSlot || newDate);
         }
     };
 
+    // ✅ SMART HEADER LOGIC
+    let groupStatusText = "";
+    if (group.leadTime > 0) {
+        groupStatusText = t('requiresNotice', { hours: group.leadTime, defaultValue: `(Requires ${group.leadTime}h notice)` });
+    } else if (isCurrentlyClosed) {
+        groupStatusText = t('preOrderOnly', { defaultValue: '(Pre-order for later)' });
+    } else {
+        groupStatusText = t('availableAsapText', { defaultValue: '(Available ASAP)' });
+    }
+
     return (
-        <Box sx={{ mb: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 2, backgroundColor: '#fff' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <AccessTimeIcon color="primary" fontSize="small" />
-                <Typography variant="subtitle1" fontWeight="bold">
-                    {group.leadTime > 0 ? `Requires ${group.leadTime}h notice` : 'Available ASAP'}
+        <Card variant="outlined" sx={{ mb: 3, p: 3, borderColor: 'primary.main', borderWidth: '2px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <AccessTimeIcon color="primary" />
+                <Typography variant="h6" fontWeight="bold">
+                    {/* ✅ TRANSLATED & DYNAMIC TEXT */}
+                    {t('pickupGroup')} {groupStatusText}
                 </Typography>
             </Box>
 
-            <Box sx={{ mb: 2, pl: 2, borderLeft: '2px solid #ccc' }}>
+            {/* Items in this group */}
+            <Box sx={{ mb: 3, pl: 2, borderLeft: '2px solid #eee' }}>
                 {group.items.map(item => (
-                    <Typography key={item.cartItemId} variant="body2" color="text.secondary">
+                    <Typography key={item.cartItemId} variant="body2" sx={{ mb: 0.5 }}>
                         <strong>{item.quantity}x</strong> {item.name}
                     </Typography>
                 ))}
             </Box>
+
+            <Typography variant="subtitle2" gutterBottom>{t('selectPickupTime')}</Typography>
             
             <ToggleButtonGroup
                 value={schedule.type}
@@ -129,7 +160,7 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
                     />
                 </Box>
             )}
-        </Box>
+        </Card>
     );
 };
 

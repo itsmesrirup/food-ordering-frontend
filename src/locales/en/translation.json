@@ -135,5 +135,9 @@
   "backToMenu_RETAIL": "Back to Catalog",
 
   "menuSubtitle_BAKERY": "Explore our freshly baked breads, pastries, and custom cakes.",
-  "menuSubtitle_RETAIL": "Browse our curated selection of premium local products."
+  "menuSubtitle_RETAIL": "Browse our curated selection of premium local products.",
+  "pickupGroup": "Pickup Group",
+  "requiresNotice": "(Requires {{hours}}h notice)",
+  "preOrderOnly": "(Pre-order for later)",
+  "availableAsapText": "(Available ASAP)"
 }

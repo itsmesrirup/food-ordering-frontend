@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils'; 
+import { isVideoUrl, getPosterUrl, getOptimizedUrl } from '../../utils/mediaUtils'; 
 import FullMenuModal from '../../components/website/FullMenuModal'; // ✅ IMPORT MODAL
 import { Helmet } from 'react-helmet-async';
 
@@ -109,7 +109,7 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                         ) : (
                             <motion.img 
                                 initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.5 }}
-                                src={restaurant.heroImageUrl} 
+                                src={getOptimizedUrl(restaurant.heroImageUrl, 1600)} 
                                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} 
                             />
                         )}

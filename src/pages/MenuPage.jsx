@@ -15,6 +15,7 @@ import EventIcon from '@mui/icons-material/Event';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import usePageTitle from '../hooks/usePageTitle';
+import { getOptimizedUrl } from '../utils/mediaUtils';
 
 // --- MenuItemCard (Unchanged) ---
 const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCart, onCustomizeClick, t, theme }) => {
@@ -37,7 +38,8 @@ const MenuItemCard = React.memo(({ item, restaurant, justAddedItemId, onAddToCar
                 <CardMedia
                     component="img"
                     sx={{ width: 100, height: 'auto', objectFit: 'cover', flexShrink: 0 }} // Fixed width 100px
-                    image={item.imageUrl}
+                    image={getOptimizedUrl(item.imageUrl, 300)}
+                    loading="lazy"
                     alt={item.name}
                 />
             )}

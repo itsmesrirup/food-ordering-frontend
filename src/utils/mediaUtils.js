@@ -14,3 +14,23 @@ export const getPosterUrl = (videoUrl) => {
     }
     return '';
 };
+
+// Automatically injects Cloudinary optimizations
+export const getOptimizedUrl = (url, targetWidth) => {
+    if (!url) return '';
+    
+    // Only apply this to Cloudinary image URLs (don't mess with videos or external links)
+    if (url.includes('res.cloudinary.com') && !url.includes('.mp4')) {
+        
+        // If the URL already has transformations (like the user manually added them), leave it alone
+        if (url.includes('/upload/q_')) return url;
+
+        // Build the optimization string (e.g., "q_auto,f_auto,w_800")
+        const optimizations = `q_auto,f_auto,c_limit,w_${targetWidth}`;
+
+        // Inject it right after the "/upload/" part of the URL
+        return url.replace('/upload/', `/upload/${optimizations}/`);
+    }
+    
+    return url; // Return normal URL if it's not Cloudinary
+};

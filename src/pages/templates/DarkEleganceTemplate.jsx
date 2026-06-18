@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
+import { isVideoUrl, getPosterUrl, getOptimizedUrl } from '../../utils/mediaUtils';
 import FullMenuModal from '../../components/website/FullMenuModal';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -56,7 +56,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                         <source src={restaurant.heroImageUrl} type="video/mp4" />
                     </video>
                 ) : (
-                    <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, backgroundImage: `url('${restaurant.heroImageUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3)' }} />
+                    <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, backgroundImage: `url('${getOptimizedUrl(restaurant.heroImageUrl, 1600)}')`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3)' }} />
                 )}
 
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.5 }} style={{ zIndex: 2, position: 'relative' }}>

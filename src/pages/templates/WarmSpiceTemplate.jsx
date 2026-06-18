@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
+import { isVideoUrl, getPosterUrl, getOptimizedUrl } from '../../utils/mediaUtils';
 import FullMenuModal from '../../components/website/FullMenuModal';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -52,15 +52,15 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
         const style = restaurant.galleryStyle || 'GRID';
 
         if (style === 'COLLAGE') {
-            const img1 = getSafeImg(rawImages[0]);
-            const img2 = rawImages.length > 1 ? getSafeImg(rawImages[1]) : null;
+            const img1 = getOptimizedUrl(getSafeImg(rawImages[0]), 800);
+            const img2 = rawImages.length > 1 ? getOptimizedUrl(getSafeImg(rawImages[1]), 800) : null;
             return (
                 <Box sx={{ position: 'relative', height: { xs: '350px', md: '500px' }, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Box component="img" src={img1} onClick={() => setSelectedImage(img1)} alt="Ambiance" 
+                    <Box component="img" src={img1} onClick={() => setSelectedImage(img1)} loading="lazy" alt="Ambiance" 
                         sx={{ width: '80%', height: { xs: '280px', md: '400px' }, objectFit: 'cover', position: 'absolute', top: 0, right: 0, zIndex: 2, boxShadow: '0 20px 40px rgba(0,0,0,0.4)', cursor: 'pointer', borderRadius: '8px' }} 
                     />
                     {img2 && (
-                        <Box component="img" src={img2} onClick={() => setSelectedImage(img2)} alt="Food" 
+                        <Box component="img" src={img2} onClick={() => setSelectedImage(img2)} loading="lazy" alt="Food" 
                             sx={{ width: '70%', height: { xs: '200px', md: '300px' }, objectFit: 'cover', position: 'absolute', bottom: 0, left: 0, zIndex: 3, border: `8px solid ${lightBg}`, boxShadow: '0 20px 40px rgba(0,0,0,0.5)', cursor: 'pointer', borderRadius: '8px' }} 
                         />
                     )}
@@ -109,7 +109,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                         <source src={restaurant.heroImageUrl} type="video/mp4" />
                     </video>
                 ) : (
-                    <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, backgroundImage: `url('${restaurant.heroImageUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                    <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, backgroundImage: `url('${getOptimizedUrl(restaurant.heroImageUrl, 1600)}')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                 )}
                 <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, background: 'radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(24,20,18,0.9) 100%)' }} />
 

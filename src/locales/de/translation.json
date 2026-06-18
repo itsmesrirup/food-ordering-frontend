@@ -136,5 +136,9 @@
   "backToMenu_RETAIL": "Zurück zum Katalog",
 
   "menuSubtitle_BAKERY": "Entdecken Sie unsere frisch gebackenen Brote, Gebäck und individuellen Kuchen.",
-  "menuSubtitle_RETAIL": "Durchstöbern Sie unsere handverlesene Auswahl an erstklassigen lokalen Produkten."
+  "menuSubtitle_RETAIL": "Durchstöbern Sie unsere handverlesene Auswahl an erstklassigen lokalen Produkten.",
+  "pickupGroup": "Abholgruppe",
+  "requiresNotice": "({{hours}}h Vorlaufzeit erforderlich)",
+  "preOrderOnly": "(Vorbestellung für später)",
+  "availableAsapText": "(Sofort verfügbar)"
 }

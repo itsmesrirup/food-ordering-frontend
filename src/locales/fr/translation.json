@@ -135,5 +135,9 @@
   "backToMenu_RETAIL": "Retour au Catalogue",
 
   "menuSubtitle_BAKERY": "Découvrez nos pains frais, pâtisseries et gâteaux sur mesure.",
-  "menuSubtitle_RETAIL": "Parcourez notre sélection de produits locaux haut de gamme."
+  "menuSubtitle_RETAIL": "Parcourez notre sélection de produits locaux haut de gamme.",
+  "pickupGroup": "Groupe de Retrait",
+  "requiresNotice": "(Nécessite {{hours}}h de préavis)",
+  "preOrderOnly": "(Précommande pour plus tard)",
+  "availableAsapText": "(Disponible dès que possible)"
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { formatPrice } from '../../utils/formatPrice';
+import { getOptimizedUrl } from '../../utils/mediaUtils';
 
 const PublicMenuItemCard = ({ item, currency }) => {
     return (
@@ -10,14 +11,14 @@ const PublicMenuItemCard = ({ item, currency }) => {
             {item.imageUrl && (
                 <Box 
                     component="img"
-                    src={item.imageUrl}
+                    src={getOptimizedUrl(item.imageUrl, 300)}
                     alt={item.name}
+                    loading="lazy"
                     sx={{ 
                         width: 80, 
                         height: 80, 
                         borderRadius: 1, 
-                        objectFit: 'cover',
-                        flexShrink: 0
+                        objectFit: 'cover'
                     }}
                 />
             )}

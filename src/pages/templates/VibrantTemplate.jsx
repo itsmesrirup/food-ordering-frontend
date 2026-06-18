@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanner';
 import WebsiteNavigation from '../../components/website/WebsiteNavigation';
-import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
+import { isVideoUrl, getPosterUrl, getOptimizedUrl } from '../../utils/mediaUtils';
 import FullMenuModal from '../../components/website/FullMenuModal';
 import { Helmet } from 'react-helmet-async';
 
@@ -122,7 +122,7 @@ export default function VibrantTemplate({ restaurant, menuData }) {
                     ) : (
                         <Box sx={{ 
                             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
-                            backgroundImage: `url('${restaurant.heroImageUrl}')`, 
+                            backgroundImage: `url('${getOptimizedUrl(restaurant.heroImageUrl, 1600)}')`, 
                             backgroundSize: 'cover', backgroundPosition: 'center' 
                         }} />
                     )}
