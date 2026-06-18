@@ -104,11 +104,24 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
 
     // ✅ SMART HEADER LOGIC
     let groupStatusText = "";
+    
     if (group.leadTime > 0) {
+        // Case 1: Bakery items that STRICTLY require advance notice
         groupStatusText = t('requiresNotice', { hours: group.leadTime, defaultValue: `(Requires ${group.leadTime}h notice)` });
     } else if (isCurrentlyClosed) {
+        // Case 2: Restaurant is currently closed
         groupStatusText = t('preOrderOnly', { defaultValue: '(Pre-order for later)' });
+    } else if (schedule.type === 'scheduled') {
+        // ✅ NEW Case 3: The user clicked "Schedule for Later"
+        if (schedule.date) {
+            // They picked a date! Show it in the header.
+            groupStatusText = `(${schedule.date.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })})`;
+        } else {
+            // They clicked the tab but haven't picked a date yet
+            groupStatusText = `(${t('scheduleForLater')})`;
+        }
     } else {
+        // Case 4: They are on the ASAP tab
         groupStatusText = t('availableAsapText', { defaultValue: '(Available ASAP)' });
     }
 
