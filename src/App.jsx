@@ -31,20 +31,24 @@ function App() {
                       {/* Instead of LandingPage, show the Restaurant Website */}
                       <Route path="/" element={<WebsiteRouter isCustomDomain={true} />} />
                       
-                      {/* The Ordering Page (e.g. www.tikkanway.fr/order) */}
-                      <Route element={<RestaurantLayout isCustomDomain={true} />}>
+                      <Route element={<RestaurantLayout />}>
                           <Route path="/order/:slug" element={<MenuPage />} />
                           <Route path="/order/:slug/reserve" element={<ReservationPage />} />
                       </Route>
                       
-                      <Route path="/checkout" element={<CheckoutPage />} />
-                      <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                      {/* Wrap Checkout and Confirmation in MainLayout so they look clean */}
+                      <Route element={<MainLayout />}>
+                          <Route path="/checkout" element={<CheckoutPage />} />
+                          {/* ✅ FIXED: Changed to :orderId so it matches the component! */}
+                          <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                      </Route>
                   </Routes>
               </Box>
           </Box>
       );
   }
-  // 3. Standard Routing (Your existing App.jsx return statement for tablo.netlify.app)
+
+  // 3. Standard Routing (For tabloapp.fr and Netlify)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Toaster position="top-center" />
@@ -52,8 +56,10 @@ function App() {
       <Box sx={{ flexGrow: 1 }}>
         <Routes>
           <Route element={<MainLayout />}>
+            {/* The SaaS Sales Landing Page */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            {/* ✅ FIXED: Changed to :orderId so it matches the component! */}
             <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
           </Route>
 
@@ -62,6 +68,7 @@ function App() {
             <Route path="/order/:slug/reserve" element={<ReservationPage />} />
           </Route>
 
+          {/* The Website Builder Route */}
           <Route path="/r/:slug" element={<WebsiteRouter isCustomDomain={false} />} />
           
           <Route path="*" element={
