@@ -55,9 +55,9 @@ function App() {
       
       <Box sx={{ flexGrow: 1 }}>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route element={<MainLayout />}>
             {/* The SaaS Sales Landing Page */}
-            <Route path="/" element={<LandingPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             {/* ✅ FIXED: Changed to :orderId so it matches the component! */}
             <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
@@ -85,8 +85,9 @@ function App() {
         <Typography variant="body2" color="text.secondary">
           Online ordering seamlessly powered by{' '}
           <Link 
-            component={RouterLink} 
-            to="/" 
+            href="https://www.tabloapp.fr" 
+            target="_blank"
+            rel="noopener noreferrer"
             color="inherit" 
             sx={{ fontWeight: 'bold', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
           >
