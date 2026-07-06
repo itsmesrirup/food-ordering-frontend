@@ -12,6 +12,7 @@ import SpecialOccasionBanner from '../../components/website/SpecialOccasionBanne
 import { Helmet } from 'react-helmet-async';
 
 export default function ClassicTemplate({ restaurant }) {
+    const [selectedImage, setSelectedImage] = useState(null);
     return (
         <Box sx={{ backgroundColor: '#fff', minHeight: '100vh' }}>
             <Helmet>
@@ -28,6 +29,7 @@ export default function ClassicTemplate({ restaurant }) {
                 scrolledTextColor="#1A1A1A"
                 logoUrl={restaurant.logoUrl} 
                 announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null}
+                onOpenMenuModal={() => setMenuOpen(true)} 
             />
             
             {/* ✅ MOVED BANNER TO THE TOP (Just below the Navbar) */}

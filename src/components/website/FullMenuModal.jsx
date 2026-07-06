@@ -70,7 +70,7 @@ const CategoryAccordion = ({ category, currency, fontBody, fontHeader, accentCol
     );
 };
 
-export default function FullMenuModal({ open, onClose, menuData, restaurantName, restaurantSlug, currency, themeConfig, businessType }) {
+export default function FullMenuModal({ open, onClose, menuData, restaurantName, restaurantSlug, currency, themeConfig, businessType, menuPdfUrl }) {
     const { t } = useTranslation();
     
     // Extract theme props passed from the parent template
@@ -87,6 +87,7 @@ export default function FullMenuModal({ open, onClose, menuData, restaurantName,
             onClose={onClose} 
             fullScreen // Makes it take up the whole screen like a booklet
             TransitionComponent={Transition}
+            disableRestoreFocus
             PaperProps={{ sx: { backgroundColor: bgColor, color: textColor } }}
         >
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, borderBottom: `1px solid ${accentColor}40` }}>
@@ -98,35 +99,42 @@ export default function FullMenuModal({ open, onClose, menuData, restaurantName,
                 </IconButton>
             </DialogTitle>
             
-            <DialogContent sx={{ p: { xs: 2, md: 5 } }}>
-                <Box sx={{ maxWidth: '800px', margin: '0 auto' }}>
-                    {menuData.map(category => (
-                        <CategoryAccordion 
-                            key={category.id} 
-                            category={category} 
-                            currency={currency}
-                            fontBody={fontBody}
-                            fontHeader={fontHeader}
-                            accentColor={accentColor}
-                            mutedTextColor={mutedTextColor}
+            <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                
+                {/* ✅ SMART RENDERING: Show PDF if it exists, otherwise show the digital list */}
+                {menuPdfUrl ? (
+                    <Box sx={{ flexGrow: 1, width: '100%', WebkitOverflowScrolling: 'touch' }}>
+                        {/* Using Google Docs Viewer ensures the PDF renders beautifully on iPhones/Androids */}
+                        <iframe 
+                            src={`https://docs.google.com/gview?url=${encodeURIComponent(menuPdfUrl)}&embedded=true`} 
+                            width="100%" 
+                            height="100%" 
+                            style={{ border: 'none' }} 
+                            title="Menu PDF" 
                         />
-                    ))}
-
-                    {/* ✅ TRANSLATED CTA BUTTON */}
-                    <Box sx={{ mt: 5, textAlign: 'center', p: 3, backgroundColor: `${accentColor}15`, borderRadius: 2 }}>
-                        <Typography sx={{ fontFamily: fontHeader, fontWeight: 'bold', fontSize: '1.2rem', mb: 2 }}>
-                            {t('readyToEat')}
-                        </Typography>
-                        <Button 
-                            component={Link} 
-                            to={`/order/${restaurantSlug}`} 
-                            variant="contained" 
-                            size="large"
-                            sx={{ backgroundColor: accentColor, color: bgColor, fontWeight: 'bold', px: 4, '&:hover': { filter: 'brightness(0.9)' } }}
-                        >
-                            {t('startOnlineOrder')}
-                        </Button>
                     </Box>
+                ) : (
+                    <Box sx={{ flexGrow: 1, maxWidth: '800px', width: '100%', margin: '0 auto', p: { xs: 2, md: 5 }, overflowY: 'auto' }}>
+                        {menuData.map(category => (
+                            <CategoryAccordion key={category.id} category={category} currency={currency} fontBody={fontBody} fontHeader={fontHeader} accentColor={accentColor} mutedTextColor={mutedTextColor} />
+                        ))}
+                    </Box>
+                )}
+
+                {/* THE "ORDER NOW" FOOTER BUTTON */}
+                <Box sx={{ textAlign: 'center', p: 3, backgroundColor: `${accentColor}15`, borderTop: `1px solid ${accentColor}40` }}>
+                    <Typography sx={{ fontFamily: fontHeader, fontWeight: 'bold', fontSize: '1.2rem', mb: 2 }}>
+                        {t('readyToEat')}
+                    </Typography>
+                    <Button 
+                        component={Link} 
+                        to={`/order/${restaurantSlug}`} 
+                        variant="contained" 
+                        size="large"
+                        sx={{ backgroundColor: accentColor, color: bgColor, fontWeight: 'bold', px: 4, '&:hover': { filter: 'brightness(0.9)' } }}
+                    >
+                        {t('startOnlineOrder')}
+                    </Button>
                 </Box>
             </DialogContent>
         </Dialog>

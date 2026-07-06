@@ -5,7 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 
 // ✅ ADDED logoUrl to the props
-const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrolledBgColor = 'rgba(255, 255, 255, 0.95)', scrolledTextColor = '#333', announcementMessage }) => {
+const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrolledBgColor = 'rgba(255, 255, 255, 0.95)', scrolledTextColor = '#333', announcementMessage, onOpenMenuModal }) => {
   const { t, i18n } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -34,6 +34,17 @@ const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrol
         behavior: "smooth"
       });
       setMobileOpen(false); 
+    }
+  };
+
+  const handleNavClick = (id) => {
+    if (id === 'menu' && onOpenMenuModal) {
+      // ✅ If it's the Menu, pop open the Modal instantly!
+      onOpenMenuModal();
+      setMobileOpen(false); // Close mobile drawer if open
+    } else {
+      // ✅ Otherwise, scroll normally
+      scrollToSection(id);
     }
   };
 
@@ -125,7 +136,7 @@ const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrol
                 <Button 
                   key={item.id} 
                   color="inherit" 
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => handleNavClick(item.id)}
                   sx={{ 
                       fontFamily: '"Lato", sans-serif', 
                       fontWeight: 600,
@@ -173,7 +184,7 @@ const WebsiteNavigation = ({ restaurantName, logoUrl, textColor = 'white', scrol
         <List>
             {navItems.map((item) => (
                 <ListItem key={item.id} disablePadding>
-                    <ListItemButton onClick={() => scrollToSection(item.id)}>
+                    <ListItemButton onClick={() => handleNavClick(item.id)}>
                         <ListItemText primary={item.label} />
                     </ListItemButton>
                 </ListItem>

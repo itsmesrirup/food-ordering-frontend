@@ -99,7 +99,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
 
     return (
         <Box sx={{ backgroundColor: lightBg, color: '#333', minHeight: '100vh', fontFamily: '"Lato", sans-serif' }}>
-            <WebsiteNavigation restaurantName={restaurant.name} textColor="white" scrolledBgColor={lightBg} scrolledTextColor={darkBg} logoUrl={restaurant.logoUrl} announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null} />
+            <WebsiteNavigation restaurantName={restaurant.name} textColor="white" scrolledBgColor={lightBg} scrolledTextColor={darkBg} logoUrl={restaurant.logoUrl} announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null} onOpenMenuModal={() => setMenuOpen(true)} />
             <Box sx={{ pt: 8 }}> <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} /> </Box>
 
             {/* HERO */}
@@ -244,7 +244,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                 </Fade>
             </Modal>
 
-            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: accent, bgColor: lightBg, textColor: darkBg, mutedTextColor: '#666' }} businessType={restaurant.businessType} />
+            <FullMenuModal open={menuOpen} onClose={() => setMenuOpen(false)} menuData={menuData} restaurantName={restaurant.name} restaurantSlug={restaurant.slug} currency={restaurant.currency} businessType={restaurant.businessType} menuPdfUrl={restaurant.menuPdfUrl} themeConfig={{ fontHeader: '"Playfair Display", serif', fontBody: '"Lato", sans-serif', accentColor: accent, bgColor: lightBg, textColor: darkBg, mutedTextColor: '#666' }} />
         </Box>
     );
 }

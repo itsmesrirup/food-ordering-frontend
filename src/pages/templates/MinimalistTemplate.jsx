@@ -58,6 +58,7 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                 scrolledTextColor="#1A1A1A" 
                 logoUrl={restaurant.logoUrl} 
                 announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null}
+                onOpenMenuModal={() => setMenuOpen(true)} 
             />
 
             <Box sx={{ pt: 8 }}> 
@@ -178,6 +179,8 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                 restaurantName={restaurant.name}
                 restaurantSlug={restaurant.slug}
                 currency={restaurant.currency}
+                businessType={restaurant.businessType}
+                menuPdfUrl={restaurant.menuPdfUrl}
                 themeConfig={{
                     fontHeader: '"Space Grotesk", sans-serif',
                     fontBody: '"Space Grotesk", sans-serif',
@@ -186,7 +189,6 @@ export default function MinimalistTemplate({ restaurant, menuData }) {
                     textColor: '#1A1A1A',
                     mutedTextColor: '#666'
                 }}
-                businessType={restaurant.businessType}
             />
         </Box>
     );

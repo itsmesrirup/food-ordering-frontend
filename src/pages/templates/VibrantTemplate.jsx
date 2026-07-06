@@ -57,6 +57,7 @@ export default function VibrantTemplate({ restaurant, menuData }) {
                 scrolledTextColor="#fff" // Turns white when scrolling
                 logoUrl={restaurant.logoUrl} 
                 announcementMessage={restaurant.announcementEnabled ? restaurant.announcementMessage : null}
+                onOpenMenuModal={() => setMenuOpen(true)} 
             />
 
             <Box sx={{ pt: 7 }}> 
@@ -211,6 +212,8 @@ export default function VibrantTemplate({ restaurant, menuData }) {
                 restaurantName={restaurant.name}
                 restaurantSlug={restaurant.slug}
                 currency={restaurant.currency}
+                businessType={restaurant.businessType}
+                menuPdfUrl={restaurant.menuPdfUrl}
                 themeConfig={{
                     fontHeader: '"Montserrat", sans-serif',
                     fontBody: '"Montserrat", sans-serif',
@@ -218,7 +221,6 @@ export default function VibrantTemplate({ restaurant, menuData }) {
                     bgColor: '#fff',
                     textColor: dark
                 }}
-                businessType={restaurant.businessType}
             />
         </Box>
     );
