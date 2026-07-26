@@ -158,5 +158,14 @@
   "readyToDigitize": "Prêt à digitaliser votre établissement ?",
   "joinRestaurants": "Rejoignez les restaurants qui ont repris leur indépendance face aux plateformes de livraison. Configuration en 48 heures.",
   "letUsTalk": "Discutons.",
-  "contactFormDesc": "Laissez-nous vos coordonnées et nous organiserons une démo vidéo rapide de 10 minutes."
+  "contactFormDesc": "Laissez-nous vos coordonnées et nous organiserons une démo vidéo rapide de 10 minutes.",
+  "diningPreference": "Sur place ou à emporter ?",
+  "takeaway": "À emporter",
+  "eatIn": "Sur place",
+  "dineInDisclaimer": "Note : En période de forte affluence, une courte attente pour une table est possible. Votre repas chaud sera prioritaire !",
+  "arrivalTimeTitle": "Heure d'arrivée",
+  "dineInGroup": "Repas sur place",
+  "selectArrivalTime": "Sélectionnez l'heure d'arrivée",
+  "rightAway": "Immédiatement",
+  "scheduleArrivalLater": "(Programmer l'arrivée pour plus tard)"
 }

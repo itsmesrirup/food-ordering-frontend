@@ -140,5 +140,15 @@
   "pickupGroup": "Abholgruppe",
   "requiresNotice": "({{hours}}h Vorlaufzeit erforderlich)",
   "preOrderOnly": "(Vorbestellung für später)",
-  "availableAsapText": "(Sofort verfügbar)"
+  "availableAsapText": "(Sofort verfügbar)",
+
+  "diningPreference": "Bestellart",
+  "takeaway": "Zum Mitnehmen",
+  "eatIn": "Vor Ort essen",
+  "dineInDisclaimer": "Hinweis: Zu Stoßzeiten kann es zu einer kurzen Wartezeit auf einen freien Tisch kommen. Ihr warmes Essen hat jedoch Vorrang!",
+  "arrivalTimeTitle": "Ankunftszeit",
+  "dineInGroup": "Vor Ort essen",
+  "selectArrivalTime": "Ankunftszeit wählen",
+  "rightAway": "Sofort",
+  "scheduleArrivalLater": "(Ankunft für später planen)"
 }

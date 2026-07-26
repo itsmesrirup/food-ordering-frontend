@@ -74,7 +74,7 @@ const getNextValidPickupTimeForGroup = (leadTimeHours, currentRestaurant, starti
 };
 
 // --- FULFILLMENT GROUP UI COMPONENT ---
-const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant, isCurrentlyClosed, t, isMobile }) => {
+const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant, isCurrentlyClosed, t, isMobile, diningOption }) => {
     const isImmediateAllowed = group.leadTime === 0;
     const hideAsap = !isImmediateAllowed || isCurrentlyClosed;
 
@@ -110,7 +110,10 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
         groupStatusText = t('requiresNotice', { hours: group.leadTime, defaultValue: `(Requires ${group.leadTime}h notice)` });
     } else if (isCurrentlyClosed) {
         // Case 2: Restaurant is currently closed
-        groupStatusText = t('preOrderOnly', { defaultValue: '(Pre-order for later)' });
+        // ✅ SMART TEXT: Adapts based on Dine-In vs Takeaway when closed!
+        groupStatusText = diningOption === 'DINE_IN' 
+            ? t('scheduleArrivalLater', { defaultValue: '(Schedule arrival for later)' })
+            : t('preOrderOnly', { defaultValue: '(Pre-order for later)' });
     } else if (schedule.type === 'scheduled') {
         // ✅ NEW Case 3: The user clicked "Schedule for Later"
         if (schedule.date) {
@@ -122,16 +125,24 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
         }
     } else {
         // Case 4: They are on the ASAP tab
-        groupStatusText = t('availableAsapText', { defaultValue: '(Available ASAP)' });
+        groupStatusText = diningOption === 'DINE_IN' 
+            ? `(${t('rightAway', 'Right Away')})` 
+            : t('availableAsapText', { defaultValue: '(Available ASAP)' });
     }
+
+    // ✅ DYNAMIC PREFIX & LABELS
+    const groupPrefix = diningOption === 'DINE_IN' ? t('dineInGroup', 'Dine-In Group') : t('pickupGroup', 'Pickup Group');
+    const selectTimeLabel = diningOption === 'DINE_IN' ? t('selectArrivalTime', 'Select Arrival Time') : t('selectPickupTime', 'Select Pickup Time');
+    
+    // ✅ DYNAMIC ASAP BUTTON TEXT
+    const asapButtonText = diningOption === 'DINE_IN' ? t('rightAway', 'Right Away') : t('asap', 'As Soon As Possible');
 
     return (
         <Card variant="outlined" sx={{ mb: 3, p: 3, borderColor: 'primary.main', borderWidth: '2px', overflow: 'visible' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <AccessTimeIcon color="primary" />
                 <Typography variant="h6" fontWeight="bold">
-                    {/* ✅ TRANSLATED & DYNAMIC TEXT */}
-                    {t('pickupGroup')} {groupStatusText}
+                    {groupPrefix} {groupStatusText}
                 </Typography>
             </Box>
 
@@ -144,16 +155,10 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
                 ))}
             </Box>
 
-            <Typography variant="subtitle2" gutterBottom>{t('selectPickupTime')}</Typography>
+            <Typography variant="subtitle2" gutterBottom>{selectTimeLabel}</Typography>
             
-            <ToggleButtonGroup
-                value={schedule.type}
-                exclusive
-                onChange={(e, val) => { if(val) updateSchedule(group.leadTime, 'type', val); }}
-                fullWidth
-                sx={{ mb: 2 }}
-            >
-                {!hideAsap && <ToggleButton value="asap">{t('asap')}</ToggleButton>}
+            <ToggleButtonGroup value={schedule.type} exclusive onChange={(e, val) => { if(val) updateSchedule(group.leadTime, 'type', val); }} fullWidth sx={{ mb: 2 }}>
+                {!hideAsap && <ToggleButton value="asap" sx={{ fontWeight: 'bold' }}>{asapButtonText}</ToggleButton>}
                 <ToggleButton value="scheduled">{t('scheduleForLater')}</ToggleButton>
             </ToggleButtonGroup>
 
@@ -163,13 +168,13 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
                         selected={schedule.date}
                         onChange={handleDateChange}
                         showTimeSelect timeFormat="HH:mm" timeIntervals={15} dateFormat="MMMM d, yyyy h:mm aa"
-                        placeholderText={t('selectPickupTime')}
+                        placeholderText={selectTimeLabel}
                         filterTime={(time) => filterPassedTimeForGroup(time, group.leadTime, currentRestaurant)} 
                         filterDate={(date) => currentRestaurant?.openingHoursJson ? isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson) : true}
                         minDate={getMinAllowedDateForGroup(group.leadTime)}
                         portalId="datepicker-portal"
                         customInput={
-                            <TextField fullWidth label={t('selectPickupTime')} InputLabelProps={{ shrink: true }} inputProps={{ readOnly: true }} sx={{ '& input': { cursor: 'pointer', textOverflow: 'ellipsis' } }} />
+                            <TextField fullWidth label={selectTimeLabel} InputLabelProps={{ shrink: true }} inputProps={{ readOnly: true }} sx={{ '& input': { cursor: 'pointer', textOverflow: 'ellipsis' } }} />
                         }
                     />
                 </Box>
@@ -219,6 +224,7 @@ function CheckoutPage() {
     const [error, setError] = useState(null);
     const [clientSecret, setClientSecret] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('online'); 
+    const [diningOption, setDiningOption] = useState('TAKEAWAY');
 
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
@@ -336,6 +342,7 @@ function CheckoutPage() {
                     tableNumber: tableNumber,
                     pickupTime: finalPickupTime,
                     paymentIntentId: paymentIntentId, 
+                    diningOption: diningOption,
                     items: group.items.map(item => ({
                         menuItemId: item.id,
                         quantity: item.quantity,
@@ -409,13 +416,41 @@ function CheckoutPage() {
                     <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
                     <TextField label={t('fullNameLabel')} name="name" value={customerDetails.name} onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField label={t('emailLabel')} name="email" type="email" value={customerDetails.email} onChange={handleInputChange} required fullWidth margin="normal" />
+
+                    {/* ✅ ADDED: DINING PREFERENCE BOX */}
+                    {currentRestaurant?.dineInOrdersEnabled && (
+                        <Box sx={{ mt: 3 }}>
+                            <Typography variant="h6" gutterBottom>{t('diningPreference')}</Typography>
+                            <ToggleButtonGroup
+                                value={diningOption}
+                                exclusive
+                                onChange={(e, val) => val && setDiningOption(val)}
+                                fullWidth
+                                color="primary"
+                                sx={{ mb: 1, bgcolor: 'background.paper' }}
+                            >
+                                <ToggleButton value="TAKEAWAY" sx={{ fontWeight: 'bold' }}>🛍️ {t('takeaway')}</ToggleButton>
+                                <ToggleButton value="DINE_IN" sx={{ fontWeight: 'bold' }}>🍽️ {t('eatIn')}</ToggleButton>
+                            </ToggleButtonGroup>
+
+                            {/* Polite Disclaimer when Dine-In is selected */}
+                            {diningOption === 'DINE_IN' && (
+                                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                                    ⚠️ {t('dineInDisclaimer')}
+                                </Typography>
+                            )}
+                        </Box>
+                    )}
                 </Box>
 
                 <Divider sx={{ my: 3 }} />
 
                 {/* --- PICKUP TIME SELECTION --- */}
                 <Box>
-                    <Typography variant="h6" gutterBottom>{t('pickupTimeTitle')}</Typography>
+                    <Typography variant="h6" gutterBottom>
+                        {/* ✅ Changes from "Pickup Time" to "Arrival Time" */}
+                        {diningOption === 'DINE_IN' ? t('arrivalTimeTitle', 'Arrival Time') : t('pickupTimeTitle')}
+                    </Typography>
                     
                     {isCurrentlyClosed && (
                         <Alert severity="warning" icon={false} sx={{ mb: 3, backgroundColor: '#fff3e0', color: '#e65100', border: '1px solid #ffcc80' }}>
@@ -441,6 +476,7 @@ function CheckoutPage() {
                                 isCurrentlyClosed={isCurrentlyClosed}
                                 t={t}
                                 isMobile={isMobile}
+                                diningOption={diningOption}
                             />
                         ) : null
                     ))}

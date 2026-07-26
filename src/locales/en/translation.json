@@ -158,5 +158,14 @@
   "readyToDigitize": "Ready to digitize your business?",
   "joinRestaurants": "Join restaurants that have regained their independence from delivery platforms. Setup in 48 hours.",
   "letUsTalk": "Let's Talk.",
-  "contactFormDesc": "Leave us your details and we will organize a quick 10-minute video demo."
+  "contactFormDesc": "Leave us your details and we will organize a quick 10-minute video demo.",
+  "diningPreference": "Dining Preference",
+  "takeaway": "Takeaway",
+  "eatIn": "Eat-In (Dine at restaurant)",
+  "dineInDisclaimer": "Note: During peak hours, there might be a short wait for an available table. Your hot food will be prioritized!",
+  "arrivalTimeTitle": "Arrival Time",
+  "dineInGroup": "Dine-In Group",
+  "selectArrivalTime": "Select Arrival Time",
+  "rightAway": "Right Away",
+  "scheduleArrivalLater": "(Schedule arrival for later)"
 }
