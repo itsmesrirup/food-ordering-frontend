@@ -18,7 +18,8 @@ function App() {
   const isMainSaaSPlatform = 
       hostname.includes('netlify.app') || 
       hostname.includes('localhost') || 
-      hostname.includes('tabloapp.fr');
+      hostname.includes('tabloapp.fr') ||
+      hostname.match(/^[0-9\.]+$/) !== null;
 
   // 2. Custom Domain Routing Override
   // If we are NOT on the main platform, we hijack the root route "/" to show their website.

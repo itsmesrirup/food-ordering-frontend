@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
-import { Container, Box, Typography, Button, Grid, Paper, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Container, Box, Typography, Button, Grid, Paper, Accordion, AccordionSummary, AccordionDetails, Dialog, Slide, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import DevicesIcon from '@mui/icons-material/Devices';
@@ -12,6 +12,10 @@ import ContactForm from '../components/landing/ContactForm';
 import LanguageSwitcher from '../components/LanguageSwitcher'; // ✅ IMPORTED LANGUAGE SWITCHER
 import usePageTitle from '../hooks/usePageTitle';
 
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 export default function LandingPage() {
     const { t } = useTranslation();
     usePageTitle('Tablo | L\'OS de votre Restaurant'); 
@@ -19,6 +23,10 @@ export default function LandingPage() {
     const videoRef = useRef(null);
     const bgVideoRef = useRef(null);
     const browserVideoRef = useRef(null);
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const [showDemoPrompt, setShowDemoPrompt] = useState(false);
     
     useEffect(() => { setCartContext(null); }, [setCartContext]);
 
@@ -26,6 +34,13 @@ export default function LandingPage() {
         if (bgVideoRef.current) bgVideoRef.current.play().catch(e => console.warn(e));
         if (browserVideoRef.current) browserVideoRef.current.play().catch(e => console.warn(e));
     }, []);
+
+    useEffect(() => {
+        if (isMobile) {
+            const timer = setTimeout(() => setShowDemoPrompt(true), 800);
+            return () => clearTimeout(timer);
+        }
+    }, [isMobile]);
 
     const scrollToForm = () => document.getElementById('contact-form').scrollIntoView({ behavior: 'smooth' });
 
@@ -205,6 +220,58 @@ export default function LandingPage() {
                     </Paper>
                 </Container>
             </Box>
+            {/* ✅ THE VIP MOBILE DEMO INTERCEPTOR */}
+            <Dialog 
+                open={showDemoPrompt} 
+                TransitionComponent={Transition}
+                keepMounted
+                onClose={() => setShowDemoPrompt(false)}
+                PaperProps={{ 
+                    sx: { 
+                        borderRadius: '24px', 
+                        p: 3, 
+                        m: 2, 
+                        textAlign: 'center',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+                    } 
+                }}
+            >
+                <Typography variant="h4" sx={{ mb: 2 }}>👋</Typography>
+                <Typography variant="h5" fontWeight="900" sx={{ mb: 2, color: darkBg, letterSpacing: '-0.5px' }}>
+                    Bienvenue !
+                </Typography>
+                <Typography color="text.secondary" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.6 }}>
+                    Vous venez de scanner notre carte ? Plongez directement dans notre espace de démonstration interactif.
+                </Typography>
+                
+                {/* Ensure the href points to your demo restaurant slug! */}
+                <Button 
+                    variant="contained" 
+                    href="/r/la-boulangerie-de-demo" 
+                    sx={{ 
+                        backgroundColor: primary, 
+                        color: '#fff', 
+                        py: 2, 
+                        borderRadius: '50px', 
+                        fontSize: '1.1rem', 
+                        fontWeight: 800, 
+                        width: '100%',
+                        mb: 2,
+                        boxShadow: `0 8px 20px ${primary}40`,
+                        '&:hover': { backgroundColor: '#d92635' }
+                    }}
+                >
+                    Lancer la Démo 🚀
+                </Button>
+                
+                <Button 
+                    variant="text" 
+                    onClick={() => setShowDemoPrompt(false)} 
+                    sx={{ color: '#888', fontWeight: 600, textTransform: 'none' }}
+                >
+                    Non merci, voir le site classique
+                </Button>
+            </Dialog>
         </Box>
     );
 }

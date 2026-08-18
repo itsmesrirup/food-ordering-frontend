@@ -113,7 +113,8 @@ function RestaurantLayout() {
         } else if (restaurantData.websiteBuilderEnabled) {
             // 2. They use our internal Website Builder
             const currentHostname = window.location.hostname;
-            const isMainApp = currentHostname.includes('netlify.app') || currentHostname.includes('localhost') || currentHostname.includes('tabloapp.fr');
+            const isMainApp = currentHostname.includes('netlify.app') || currentHostname.includes('localhost') || currentHostname.includes('tabloapp.fr') ||
+                currentHostname.match(/^[0-9\.]+$/) !== null;
             
             if (isMainApp) {
                 return `/r/${restaurantData.slug}`; // Generic Tablo domain -> Go to the builder page
