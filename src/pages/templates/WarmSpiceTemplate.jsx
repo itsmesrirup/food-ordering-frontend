@@ -137,7 +137,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                         <>
                             <Box sx={{ textAlign: 'center', mb: 8 }}>
                                 <Typography variant="h6" sx={{ color: accent, textTransform: 'uppercase', letterSpacing: '3px', mb: 2 }}>{t('aboutUs')}</Typography>
-                                <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', color: darkBg, fontWeight: 700, mb: 4 }}>The True Taste</Typography>
+                                <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', color: darkBg, fontWeight: 700, mb: 4 }}>{t('trueTaste')}</Typography>
                                 <Typography variant="body1" sx={{ fontSize: '1.1rem', color: '#555', lineHeight: 1.8, maxWidth: '800px', mx: 'auto' }}>{restaurant.aboutUsText}</Typography>
                             </Box>
                             {renderGallery()}
@@ -147,7 +147,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                             <Grid item xs={12} md={6}>
                                 <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
                                     <Typography variant="h6" sx={{ color: accent, textTransform: 'uppercase', letterSpacing: '3px', mb: 2 }}>{t('aboutUs')}</Typography>
-                                    <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', color: darkBg, fontWeight: 700, mb: 4 }}>The True Taste</Typography>
+                                    <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', color: darkBg, fontWeight: 700, mb: 4 }}>{t('trueTaste')}</Typography>
                                     <Typography variant="body1" sx={{ fontSize: '1.1rem', color: '#555', lineHeight: 1.8 }}>{restaurant.aboutUsText}</Typography>
                                 </motion.div>
                             </Grid>
@@ -169,7 +169,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
                     <Box sx={{ textAlign: 'center', mb: 8 }}>
                         <Typography variant="h6" sx={{ color: accent, textTransform: 'uppercase', letterSpacing: '3px', mb: 2 }}>{t('ourMenu', { context: restaurant.businessType })}</Typography>
-                        <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>Discover the Flavors</Typography>
+                        <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>{t('discoverFlavors')}</Typography>
                     </Box>
 
                     <Grid container spacing={6}>
