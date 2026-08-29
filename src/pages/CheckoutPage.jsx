@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
-import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup, IconButton, Card, useTheme, useMediaQuery } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert, Divider, ToggleButton, ToggleButtonGroup, IconButton, Card, useTheme, useMediaQuery, Autocomplete } from '@mui/material';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import DatePicker from "react-datepicker";
@@ -77,17 +77,23 @@ const getNextValidPickupTimeForGroup = (leadTimeHours, currentRestaurant, starti
 const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant, isCurrentlyClosed, t, isMobile, diningOption }) => {
     const isImmediateAllowed = group.leadTime === 0;
     const hideAsap = !isImmediateAllowed || isCurrentlyClosed;
+    const isDelivery = diningOption === 'DELIVERY'; // ✅ Check if it's a delivery
 
     // Force scheduled if ASAP is hidden but state is still asap
     useEffect(() => {
-        if (hideAsap && schedule.type === 'asap') {
+        if (!isDelivery && hideAsap && schedule.type === 'asap') {
             updateSchedule(group.leadTime, 'type', 'scheduled');
             if (!schedule.date) {
                 const nextSlot = getNextValidPickupTimeForGroup(group.leadTime, currentRestaurant);
                 if (nextSlot) updateSchedule(group.leadTime, 'date', nextSlot);
             }
         }
-    }, [hideAsap, schedule.type, group.leadTime, schedule.date, updateSchedule, currentRestaurant]);
+        // ✅ If Delivery, FORCE type to 'asap' in the background
+        if (isDelivery && schedule.type !== 'asap') {
+            updateSchedule(group.leadTime, 'type', 'asap');
+            updateSchedule(group.leadTime, 'date', null);
+        }
+    }, [hideAsap, schedule.type, group.leadTime, schedule.date, updateSchedule, currentRestaurant, isDelivery]);
 
     const handleDateChange = (newDate) => {
         if (!newDate) {
@@ -105,7 +111,9 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
     // ✅ SMART HEADER LOGIC
     let groupStatusText = "";
     
-    if (group.leadTime > 0) {
+    if (isDelivery) {
+        groupStatusText = ""; // Keep it clean for delivery
+    } else if (group.leadTime > 0) {
         // Case 1: Bakery items that STRICTLY require advance notice
         groupStatusText = t('requiresNotice', { hours: group.leadTime, defaultValue: `(Requires ${group.leadTime}h notice)` });
     } else if (isCurrentlyClosed) {
@@ -130,9 +138,8 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
             : t('availableAsapText', { defaultValue: '(Available ASAP)' });
     }
 
-    // ✅ DYNAMIC PREFIX & LABELS
-    const groupPrefix = diningOption === 'DINE_IN' ? t('dineInGroup', 'Dine-In Group') : t('pickupGroup', 'Pickup Group');
-    const selectTimeLabel = diningOption === 'DINE_IN' ? t('selectArrivalTime', 'Select Arrival Time') : t('selectPickupTime', 'Select Pickup Time');
+    const groupPrefix = diningOption === 'DINE_IN' ? t('dineInGroup') : diningOption === 'DELIVERY' ? t('deliveryGroup', 'Delivery Group') : t('pickupGroup');
+    const selectTimeLabel = diningOption === 'DINE_IN' ? t('selectArrivalTime') : t('selectPickupTime');
     
     // ✅ DYNAMIC ASAP BUTTON TEXT
     const asapButtonText = diningOption === 'DINE_IN' ? t('rightAway', 'Right Away') : t('asap', 'As Soon As Possible');
@@ -155,29 +162,48 @@ const FulfillmentGroupUI = ({ group, schedule, updateSchedule, currentRestaurant
                 ))}
             </Box>
 
-            <Typography variant="subtitle2" gutterBottom>{selectTimeLabel}</Typography>
-            
-            <ToggleButtonGroup value={schedule.type} exclusive onChange={(e, val) => { if(val) updateSchedule(group.leadTime, 'type', val); }} fullWidth sx={{ mb: 2 }}>
-                {!hideAsap && <ToggleButton value="asap" sx={{ fontWeight: 'bold' }}>{asapButtonText}</ToggleButton>}
-                <ToggleButton value="scheduled">{t('scheduleForLater')}</ToggleButton>
-            </ToggleButtonGroup>
-
-            {schedule.type === 'scheduled' && (
-                <Box sx={{ '& .react-datepicker-wrapper': { width: '100%' } }}>
-                    <DatePicker
-                        selected={schedule.date}
-                        onChange={handleDateChange}
-                        showTimeSelect timeFormat="HH:mm" timeIntervals={15} dateFormat="MMMM d, yyyy h:mm aa"
-                        placeholderText={selectTimeLabel}
-                        filterTime={(time) => filterPassedTimeForGroup(time, group.leadTime, currentRestaurant)} 
-                        filterDate={(date) => currentRestaurant?.openingHoursJson ? isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson) : true}
-                        minDate={getMinAllowedDateForGroup(group.leadTime)}
-                        portalId="datepicker-portal"
-                        customInput={
-                            <TextField fullWidth label={selectTimeLabel} InputLabelProps={{ shrink: true }} inputProps={{ readOnly: true }} sx={{ '& input': { cursor: 'pointer', textOverflow: 'ellipsis' } }} />
-                        }
-                    />
+            {/* ✅ IF DELIVERY: Hide the calendar and show simple status messages */}
+            {isDelivery ? (
+                <Box sx={{ mt: 2 }}>
+                    {isCurrentlyClosed ? (
+                        <Alert severity="error">{t('deliveryClosedMsg', 'Delivery is unavailable because the restaurant is currently closed.')}</Alert>
+                    ) : group.leadTime > 0 ? (
+                        <Alert severity="error">{t('deliveryNoPreorderMsg', 'Delivery is not available for items requiring advance notice. Please select Takeaway.')}</Alert>
+                    ) : (
+                        <Alert severity="success" icon={<AccessTimeIcon/>}>
+                            {t('deliveryAsapMsg', 'Your order will be delivered as soon as possible (approx. 40-50 mins).')}
+                        </Alert>
+                    )}
                 </Box>
+            ) : (
+                /* ✅ IF TAKEAWAY OR DINE-IN: Show your existing perfectly working Calendar code! */
+                <>
+
+                <Typography variant="subtitle2" gutterBottom>{selectTimeLabel}</Typography>
+                
+                <ToggleButtonGroup value={schedule.type} exclusive onChange={(e, val) => { if(val) updateSchedule(group.leadTime, 'type', val); }} fullWidth sx={{ mb: 2 }}>
+                    {!hideAsap && <ToggleButton value="asap" sx={{ fontWeight: 'bold' }}>{asapButtonText}</ToggleButton>}
+                    <ToggleButton value="scheduled">{t('scheduleForLater')}</ToggleButton>
+                </ToggleButtonGroup>
+
+                {schedule.type === 'scheduled' && (
+                    <Box sx={{ '& .react-datepicker-wrapper': { width: '100%' } }}>
+                        <DatePicker
+                            selected={schedule.date}
+                            onChange={handleDateChange}
+                            showTimeSelect timeFormat="HH:mm" timeIntervals={15} dateFormat="MMMM d, yyyy h:mm aa"
+                            placeholderText={selectTimeLabel}
+                            filterTime={(time) => filterPassedTimeForGroup(time, group.leadTime, currentRestaurant)} 
+                            filterDate={(date) => currentRestaurant?.openingHoursJson ? isRestaurantOpenOnDay(date, currentRestaurant.openingHoursJson) : true}
+                            minDate={getMinAllowedDateForGroup(group.leadTime)}
+                            portalId="datepicker-portal"
+                            customInput={
+                                <TextField fullWidth label={selectTimeLabel} InputLabelProps={{ shrink: true }} inputProps={{ readOnly: true }} sx={{ '& input': { cursor: 'pointer', textOverflow: 'ellipsis' } }} />
+                            }
+                        />
+                    </Box>
+                )}
+            </>
             )}
         </Card>
     );
@@ -225,16 +251,11 @@ function CheckoutPage() {
     const [clientSecret, setClientSecret] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('online'); 
     const [diningOption, setDiningOption] = useState('TAKEAWAY');
+    const [deliveryAddress, setDeliveryAddress] = useState('');
 
-    const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-
-    // ✅ SMART CLOSED DETECTION
-    const isCurrentlyClosed = useMemo(() => {
-        if (currentRestaurant?.openingHoursJson) {
-            return !isRestaurantOpen(new Date(), currentRestaurant.openingHoursJson);
-        }
-        return false;
-    }, [currentRestaurant]);
+    // ✅ NEW STATES FOR ADDRESS AUTOCOMPLETE
+    const [addressOptions, setAddressOptions] = useState([]);
+    const [isFetchingAddress, setIsFetchingAddress] = useState(false);
 
     // ✅ SMART CART SPLITTER (Groups items by lead time)
     const groupedCart = useMemo(() => {
@@ -248,6 +269,51 @@ function CheckoutPage() {
         });
         return Object.values(groups).sort((a, b) => a.leadTime - b.leadTime);
     }, [cartItems]);
+
+    // ✅ NEW: Fetch verified addresses from the French Government API
+    useEffect(() => {
+        // Only search if they typed at least 4 characters
+        if (!deliveryAddress || deliveryAddress.length < 4) {
+            setAddressOptions([]);
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(async () => {
+            setIsFetchingAddress(true);
+            try {
+                // Call the free Base Adresse Nationale (BAN) API
+                const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(deliveryAddress)}&limit=5`);
+                const data = await response.json();
+                if (data && data.features) {
+                    // Extract the perfectly formatted official addresses
+                    const formattedAddresses = data.features.map(f => f.properties.label);
+                    setAddressOptions(formattedAddresses);
+                }
+            } catch (error) {
+                console.error("Address search failed", error);
+            } finally {
+                setIsFetchingAddress(false);
+            }
+        }, 400); // Wait 400ms after they stop typing
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [deliveryAddress]);
+
+    const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+    // Add the fee for EACH fulfillment group (If they want a cake tomorrow and a croissant today, that's 2 deliveries!)
+    const totalDeliveryFee = (diningOption === 'DELIVERY' && currentRestaurant?.deliveryEnabled) 
+        ? (currentRestaurant.deliveryFee * groupedCart.length) 
+        : 0;
+    const finalTotalPrice = cartTotal + totalDeliveryFee;
+
+    // ✅ SMART CLOSED DETECTION
+    const isCurrentlyClosed = useMemo(() => {
+        if (currentRestaurant?.openingHoursJson) {
+            return !isRestaurantOpen(new Date(), currentRestaurant.openingHoursJson);
+        }
+        return false;
+    }, [currentRestaurant]);
 
     // ✅ SCHEDULES STATE
     const [schedules, setSchedules] = useState({});
@@ -281,7 +347,7 @@ function CheckoutPage() {
         const paymentsSupported = currentRestaurant?.stripeDetailsSubmitted && currentRestaurant?.paymentsEnabled;
 
         if (cartItems.length > 0 && paymentsSupported) {
-            const amountInCents = Math.round(totalPrice * 100);
+            const amountInCents = Math.round(finalTotalPrice * 100);
             fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ amount: amountInCents, currency: currentRestaurant.currency || "eur", restaurantId: currentRestaurant.id }),
@@ -289,7 +355,7 @@ function CheckoutPage() {
         } else {
             setPaymentMethod('counter');
         }
-    }, [cartItems, currentRestaurant, totalPrice, cartRestaurantId]);
+    }, [cartItems, currentRestaurant, finalTotalPrice, cartRestaurantId]);
 
     const handleInputChange = (e) => setCustomerDetails({ ...customerDetails, [e.target.name]: e.target.value });
 
@@ -298,9 +364,34 @@ function CheckoutPage() {
             setError(t('cartIsEmptyError'));
             return false;
         }
-        if (!customerDetails.name || !customerDetails.email) {
-            setError("Name and Email are required.");
+        if (!customerDetails.name && !customerDetails.email) {
+            setError(t('nameAndEmailRequired'));
             return false;
+        }
+        if (!customerDetails.name) {
+            setError(t('nameRequired'));
+            return false;
+        }
+        if (!customerDetails.email) {
+            setError(t('emailRequired'));
+            return false;
+        }
+        // Delivery Address Validation
+        if (diningOption === 'DELIVERY') {
+            if (!deliveryAddress || !deliveryAddress.trim()) {
+                setError(t('addressRequired', 'Delivery address is required.'));
+                return false;
+            }
+            if (isCurrentlyClosed) {
+                setError(t('deliveryClosedMsg', 'Delivery is unavailable because the restaurant is currently closed.'));
+                return false;
+            }
+            const hasPreorderItems = groupedCart.some(g => g.leadTime > 0);
+            if (hasPreorderItems) {
+                setError(t('deliveryNoPreorderMsg', 'Delivery is not available for pre-order items.'));
+                return false;
+            }
+            return true; // If delivery passes these checks, we are good to go!
         }
         for (const group of groupedCart) {
             const sched = schedules[group.leadTime];
@@ -343,6 +434,7 @@ function CheckoutPage() {
                     pickupTime: finalPickupTime,
                     paymentIntentId: paymentIntentId, 
                     diningOption: diningOption,
+                    deliveryAddress: diningOption === 'DELIVERY' ? deliveryAddress : null,
                     items: group.items.map(item => ({
                         menuItemId: item.id,
                         quantity: item.quantity,
@@ -416,32 +508,109 @@ function CheckoutPage() {
                     <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
                     <TextField label={t('fullNameLabel')} name="name" value={customerDetails.name} onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField label={t('emailLabel')} name="email" type="email" value={customerDetails.email} onChange={handleInputChange} required fullWidth margin="normal" />
+                </Box>
 
-                    {/* ✅ ADDED: DINING PREFERENCE BOX */}
-                    {currentRestaurant?.dineInOrdersEnabled && (
-                        <Box sx={{ mt: 3 }}>
-                            <Typography variant="h6" gutterBottom>{t('diningPreference')}</Typography>
+                {/* ✅ MISSING BLOCK RESTORED: DINING PREFERENCE (Takeaway / Eat-In / Delivery) */}
+                {(currentRestaurant?.dineInOrdersEnabled || currentRestaurant?.deliveryEnabled) && (
+                    <>
+                        <Divider sx={{ my: 3 }} />
+                        <Box>
+                            <Typography variant="h6" gutterBottom fontWeight="bold">
+                                {t('diningPreference', 'Dining Preference')}
+                            </Typography>
+                            
                             <ToggleButtonGroup
                                 value={diningOption}
                                 exclusive
                                 onChange={(e, val) => val && setDiningOption(val)}
                                 fullWidth
                                 color="primary"
-                                sx={{ mb: 1, bgcolor: 'background.paper' }}
+                                sx={{ mb: 2, bgcolor: 'background.paper', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
                             >
-                                <ToggleButton value="TAKEAWAY" sx={{ fontWeight: 'bold' }}>🛍️ {t('takeaway')}</ToggleButton>
-                                <ToggleButton value="DINE_IN" sx={{ fontWeight: 'bold' }}>🍽️ {t('eatIn')}</ToggleButton>
+                                <ToggleButton value="TAKEAWAY" sx={{ fontWeight: 'bold', py: 1.5 }}>
+                                    🛍️ {t('takeaway', 'Takeaway')}
+                                </ToggleButton>
+                                
+                                {currentRestaurant?.dineInOrdersEnabled && (
+                                    <ToggleButton value="DINE_IN" sx={{ fontWeight: 'bold', py: 1.5 }}>
+                                        🍽️ {t('eatIn', 'Eat-In')}
+                                    </ToggleButton>
+                                )}
+
+                                {currentRestaurant?.deliveryEnabled && (
+                                    <ToggleButton value="DELIVERY" sx={{ fontWeight: 'bold', py: 1.5 }}>
+                                        🛵 {t('delivery', 'Delivery')}
+                                    </ToggleButton>
+                                )}
                             </ToggleButtonGroup>
 
                             {/* Polite Disclaimer when Dine-In is selected */}
                             {diningOption === 'DINE_IN' && (
-                                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mt: 1 }}>
-                                    ⚠️ {t('dineInDisclaimer')}
+                                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mb: 2 }}>
+                                    ⚠️ {t('dineInDisclaimer', 'Note: During peak hours, there might be a short wait for an available table. Your hot food will be prioritized!')}
                                 </Typography>
                             )}
+
+                            {/* Delivery Address Box when Delivery is selected */}
+                            {diningOption === 'DELIVERY' && (
+                                <Box sx={{ mt: 2, p: 2, bgcolor: '#f0f8ff', borderRadius: 2, border: '1px solid #90caf9' }}>
+                                    <Autocomplete
+                                    freeSolo
+                                    filterOptions={(x) => x} // ✅ CRITICAL FIX: Stops MUI from hiding the API results!
+                                    options={addressOptions}
+                                    value={deliveryAddress}
+                                    onChange={(event, newValue) => {
+                                        setDeliveryAddress(newValue || '');
+                                    }}
+                                    onInputChange={(event, newInputValue) => {
+                                        setDeliveryAddress(newInputValue || '');
+                                    }}
+                                    loading={isFetchingAddress}
+                                    renderInput={(params) => (
+                                        <TextField 
+                                            {...params} 
+                                            label={t('deliveryAddress')} 
+                                            required={diningOption === 'DELIVERY'} // ✅ Syncs required star with state
+                                            fullWidth 
+                                            placeholder="Ex: 10 Rue des Boulangers, 67000 Strasbourg"
+                                            sx={{ bgcolor: 'white' }}
+                                            InputProps={{
+                                                ...params.InputProps,
+                                                endAdornment: (
+                                                    <React.Fragment>
+                                                        {isFetchingAddress ? <CircularProgress color="inherit" size={20} /> : null}
+                                                        {params.InputProps.endAdornment}
+                                                    </React.Fragment>
+                                                ),
+                                            }}
+                                        />
+                                    )}
+                                />
+                                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                                        {t('deliveryFee', 'Delivery Fee')}: {formatPrice(currentRestaurant.deliveryFee || 0, currentRestaurant.currency)}
+                                    </Typography>
+
+                                    {/* ✅ NEW: LEGAL DISCLAIMER TO PROTECT YOUR SAAS */}
+                                    <Typography 
+                                        variant="caption" 
+                                        sx={{ 
+                                            display: 'block', 
+                                            mt: 2, 
+                                            pt: 1.5, 
+                                            borderTop: '1px solid #bbdefb', 
+                                            color: '#555',
+                                            fontStyle: 'italic',
+                                            lineHeight: 1.4
+                                        }}
+                                    >
+                                        {t('deliveryDisclaimer', { restaurantName: currentRestaurant?.name })}
+                                    </Typography>
+
+                                </Box>
+                            )}
                         </Box>
-                    )}
-                </Box>
+                    </>
+                )}
 
                 <Divider sx={{ my: 3 }} />
 
@@ -519,14 +688,14 @@ function CheckoutPage() {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, pt: 2, borderTop: '2px solid #ddd' }}>
                             <Typography variant="h6">{t('total')}</Typography>
                             <Typography variant="h6" fontWeight="bold" color="primary.main">
-                                {formatPrice(totalPrice, currentRestaurant?.currency)}
+                                {formatPrice(finalTotalPrice, currentRestaurant?.currency)}
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
 
                 {/* --- WARNINGS & ERRORS --- */}
-                {totalPrice > 25 && paymentsSupported && (
+                {finalTotalPrice > 25 && paymentsSupported && (
                     <Alert severity="info" sx={{ mb: 3 }}>{t('ticketRestaurantLimitWarning')}</Alert>
                 )}
                 {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
@@ -552,7 +721,7 @@ function CheckoutPage() {
                 {/* --- PAYMENT ACTION BUTTONS --- */}
                 {paymentsSupported && paymentMethod === 'online' && clientSecret && stripePromise ? (
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
-                        <StripePaymentSection t={t} isSubmitting={isSubmitting} onConfirmPayment={handleStripeConfirm} totalPrice={totalPrice} currency={currentRestaurant?.currency} />
+                        <StripePaymentSection t={t} isSubmitting={isSubmitting} onConfirmPayment={handleStripeConfirm} totalPrice={finalTotalPrice} currency={currentRestaurant?.currency} />
                     </Elements>
                 ) : (
                     <Box component="form" onSubmit={handlePayAtCounter} sx={{ mt: 3, position: 'relative' }}>

@@ -169,5 +169,18 @@
   "rightAway": "Right Away",
   "scheduleArrivalLater": "(Schedule arrival for later)",
   "trueTaste": "The True Taste",
-  "discoverFlavors": "Discover the Flavors"
+  "discoverFlavors": "Discover the Flavors",
+  "delivery": "Delivery",
+  "deliveryAddress": "Delivery Address",
+  "deliveryFee": "Delivery Fee",
+  "addressRequired": "Delivery address is required.",
+  "nameAndEmailRequired": "Name and Email are required.",
+  "nameRequired": "Please enter your Full Name.",
+  "emailRequired": "Please enter your Email Address.",
+  "selectDeliveryTime": "Select Delivery Time",
+  "deliveryGroup": "Delivery Group",
+  "deliveryDisclaimer": "Disclaimer: Delivery is managed and fulfilled directly by {{restaurantName}}. Tablo provides the ordering technology but is not responsible for delivery logistics or delays.",
+  "deliveryAsapMsg": "Your order will be delivered as soon as possible (approx. 40-50 mins).",
+  "deliveryClosedMsg": "Delivery is unavailable because the restaurant is currently closed.",
+  "deliveryNoPreorderMsg": "Delivery is not available for items requiring advance notice. Please select Takeaway."
 }

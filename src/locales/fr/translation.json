@@ -169,5 +169,18 @@
   "rightAway": "Immédiatement",
   "scheduleArrivalLater": "(Programmer l'arrivée pour plus tard)",
   "trueTaste": "Le Goût Authentique",
-  "discoverFlavors": "Découvrez nos Saveurs"
+  "discoverFlavors": "Découvrez nos Saveurs",
+  "delivery": "Livraison",
+  "deliveryAddress": "Adresse de livraison",
+  "deliveryFee": "Frais de livraison",
+  "addressRequired": "L'adresse de livraison est requise.",
+  "nameAndEmailRequired": "Le nom et l'adresse e-mail sont requis.",
+  "nameRequired": "Veuillez saisir votre Nom et Prénom.",
+  "emailRequired": "Veuillez saisir votre Adresse e-mail.",
+  "selectDeliveryTime": "Sélectionnez l'heure de livraison",
+  "deliveryGroup": "Groupe de Livraison",
+  "deliveryDisclaimer": "Avis de non-responsabilité : La livraison est gérée et effectuée directement par {{restaurantName}}. Tablo fournit la technologie de commande mais n'est responsable ni de la logistique ni des retards éventuels.",
+  "deliveryAsapMsg": "Votre commande sera livrée dès que possible (environ 40 à 50 minutes).",
+  "deliveryClosedMsg": "La livraison n'est pas disponible car le restaurant est actuellement fermé.",
+  "deliveryNoPreorderMsg": "La livraison n'est pas disponible pour les articles nécessitant une commande à l'avance. Veuillez sélectionner le retrait à emporter."
 }
