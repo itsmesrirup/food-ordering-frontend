@@ -245,13 +245,14 @@ function CheckoutPage() {
     const [searchParams] = useSearchParams();
     const tableNumber = searchParams.get("table");
 
-    const [customerDetails, setCustomerDetails] = useState({ name: '', email: '' });
+    const [customerDetails, setCustomerDetails] = useState({ name: '', email: '', phone: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [clientSecret, setClientSecret] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('online'); 
     const [diningOption, setDiningOption] = useState('TAKEAWAY');
     const [deliveryAddress, setDeliveryAddress] = useState('');
+    const [specialInstructions, setSpecialInstructions] = useState('');
 
     // ✅ NEW STATES FOR ADDRESS AUTOCOMPLETE
     const [addressOptions, setAddressOptions] = useState([]);
@@ -364,7 +365,7 @@ function CheckoutPage() {
             setError(t('cartIsEmptyError'));
             return false;
         }
-        if (!customerDetails.name && !customerDetails.email) {
+        if (!customerDetails.name && !customerDetails.email && !customerDetails.phone) {
             setError(t('nameAndEmailRequired'));
             return false;
         }
@@ -375,6 +376,10 @@ function CheckoutPage() {
         if (!customerDetails.email) {
             setError(t('emailRequired'));
             return false;
+        }
+        if (!customerDetails.phone) { 
+            setError(t('phoneRequired')); 
+            return false; 
         }
         // Delivery Address Validation
         if (diningOption === 'DELIVERY') {
@@ -435,6 +440,7 @@ function CheckoutPage() {
                     paymentIntentId: paymentIntentId, 
                     diningOption: diningOption,
                     deliveryAddress: diningOption === 'DELIVERY' ? deliveryAddress : null,
+                    specialInstructions: specialInstructions,
                     items: group.items.map(item => ({
                         menuItemId: item.id,
                         quantity: item.quantity,
@@ -508,6 +514,16 @@ function CheckoutPage() {
                     <Typography variant="h6" gutterBottom>{t('yourDetails')}</Typography>
                     <TextField label={t('fullNameLabel')} name="name" value={customerDetails.name} onChange={handleInputChange} required fullWidth margin="normal" />
                     <TextField label={t('emailLabel')} name="email" type="email" value={customerDetails.email} onChange={handleInputChange} required fullWidth margin="normal" />
+                    <TextField 
+                        label={t('phoneNumberLabel')} 
+                        name="phone" 
+                        type="tel" // Pulls up the number keypad on mobile!
+                        value={customerDetails.phone} 
+                        onChange={handleInputChange} 
+                        required 
+                        fullWidth 
+                        margin="normal" 
+                    />
                 </Box>
 
                 {/* ✅ MISSING BLOCK RESTORED: DINING PREFERENCE (Takeaway / Eat-In / Delivery) */}
@@ -611,6 +627,19 @@ function CheckoutPage() {
                         </Box>
                     </>
                 )}
+
+                <TextField 
+                        label={t('specialInstructions')} 
+                        name="specialInstructions" 
+                        value={specialInstructions} 
+                        onChange={(e) => setSpecialInstructions(e.target.value)} 
+                        fullWidth 
+                        multiline
+                        rows={2}
+                        margin="normal"
+                        placeholder={t('specialInstructionsHelper')}
+                        sx={{ bgcolor: '#fff' }}
+                    />
 
                 <Divider sx={{ my: 3 }} />
 

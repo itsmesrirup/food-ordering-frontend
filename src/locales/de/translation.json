@@ -165,5 +165,13 @@
   "deliveryDisclaimer": "Haftungsausschluss: Die Lieferung wird direkt von {{restaurantName}} verwaltet und durchgeführt. Tablo stellt die Bestelltechnologie zur Verfügung, ist jedoch nicht für die Lieferlogistik oder Verspätungen verantwortlich.",
   "deliveryAsapMsg": "Ihre Bestellung wird so schnell wie möglich geliefert (ca. 40–50 Minuten).",
   "deliveryClosedMsg": "Die Lieferung ist derzeit nicht verfügbar, da das Restaurant geschlossen ist.",
-  "deliveryNoPreorderMsg": "Die Lieferung ist für Artikel, die eine Vorbestellung erfordern, nicht verfügbar. Bitte wählen Sie Abholung."
+  "deliveryNoPreorderMsg": "Die Lieferung ist für Artikel, die eine Vorbestellung erfordern, nicht verfügbar. Bitte wählen Sie Abholung.",
+  "specialInstructions": "Spezielle Anweisungen (Optional)", 
+  "specialInstructionsHelper": "Allergien, Schärfegrad oder Lieferhinweise.",
+  "phoneRequired": "Bitte geben Sie Ihre Telefonnummer ein.",
+  "orderNumberLabel": "Bestell-Nr.",
+  "orderDetails": "Bestelldetails",
+  "itemCount_one": "{{count}} Artikel",
+  "itemCount_other": "{{count}} Artikel"
+
 }

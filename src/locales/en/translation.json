@@ -182,5 +182,12 @@
   "deliveryDisclaimer": "Disclaimer: Delivery is managed and fulfilled directly by {{restaurantName}}. Tablo provides the ordering technology but is not responsible for delivery logistics or delays.",
   "deliveryAsapMsg": "Your order will be delivered as soon as possible (approx. 40-50 mins).",
   "deliveryClosedMsg": "Delivery is unavailable because the restaurant is currently closed.",
-  "deliveryNoPreorderMsg": "Delivery is not available for items requiring advance notice. Please select Takeaway."
+  "deliveryNoPreorderMsg": "Delivery is not available for items requiring advance notice. Please select Takeaway.",
+  "specialInstructions": "Special Instructions (Optional)", 
+  "specialInstructionsHelper": "Allergies, spice level, or delivery instructions.",
+  "phoneRequired": "Please enter your phone number.",
+  "orderNumberLabel": "Order #",
+  "orderDetails": "Order Details",
+  "itemCount_one": "{{count}} item",
+  "itemCount_other": "{{count}} items"
 }
