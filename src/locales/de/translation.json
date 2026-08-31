@@ -94,7 +94,6 @@
   "selectPickupTime": "Abholzeit wählen",
   "pickupTimeRequired": "Bitte wählen Sie eine Abholzeit.",
   "scheduledFilter": "Geplant",
-  "pickupAsap": "Abholung: Sofort",
   "restaurantClosedAtTime": "Das Restaurant ist zu der ausgewählten Zeit geschlossen. Bitte wählen Sie eine andere Uhrzeit.",
   "closed": "Geschlossen",
   "days": {
@@ -172,6 +171,22 @@
   "orderNumberLabel": "Bestell-Nr.",
   "orderDetails": "Bestelldetails",
   "itemCount_one": "{{count}} Artikel",
-  "itemCount_other": "{{count}} Artikel"
+  "itemCount_other": "{{count}} Artikel",
+  "pickupAsap": "So schnell wie möglich",
+  "orderStatus": {
+    "PENDING": "Ausstehend",
+    "CONFIRMED": "Bestätigt",
+    "PREPARING": "Wird zubereitet",
+    "READY_FOR_PICKUP": "Abholbereit",
+    "DELIVERED": "Abgeschlossen",
+    "CANCELLED": "Storniert"
+  },
+  "orderCancelledMessage": "Leider musste das Restaurant diese Bestellung stornieren. Wenn Sie online bezahlt haben, wurde eine Rückerstattung veranlasst.",
+  "stepSent": "Gesendet",
+  "stepConfirmed": "Akzeptiert",
+  "stepPreparing": "Zubereitung",
+  "stepReady": "Bereit",
+  "stepOnTheWay": "Unterwegs",
+  "stepDone": "Abgeschlossen"
 
 }

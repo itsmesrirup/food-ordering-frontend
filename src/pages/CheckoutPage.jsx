@@ -459,6 +459,9 @@ function CheckoutPage() {
             const newOrders = await orderResponse.json();
             clearCart();
             const orderIdsString = newOrders.map(o => o.id).join(',');
+            // ✅ ADD THESE TWO LINES: Save to local storage with a timestamp
+            localStorage.setItem('activeOrderIds', orderIdsString);
+            localStorage.setItem('activeOrderTimestamp', Date.now().toString());
             navigate(`/order-confirmation/${orderIdsString}`);
 
         } catch (err) {

@@ -189,5 +189,21 @@
   "orderNumberLabel": "Order #",
   "orderDetails": "Order Details",
   "itemCount_one": "{{count}} item",
-  "itemCount_other": "{{count}} items"
+  "itemCount_other": "{{count}} items",
+  "pickupAsap": "ASAP",
+  "orderStatus": {
+    "PENDING": "Pending",
+    "CONFIRMED": "Confirmed",
+    "PREPARING": "Preparing",
+    "READY_FOR_PICKUP": "Ready",
+    "DELIVERED": "Completed",
+    "CANCELLED": "Cancelled"
+  },
+  "orderCancelledMessage": "Unfortunately, the restaurant had to cancel this order. If you paid online, a refund has been initiated.",
+  "stepSent": "Sent",
+  "stepConfirmed": "Accepted",
+  "stepPreparing": "Cooking",
+  "stepReady": "Ready",
+  "stepOnTheWay": "On the way",
+  "stepDone": "Completed"
 }

@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import Cart from '../components/Cart';
 import CustomizeItemModal from '../components/CustomizeItemModal';
 import { useRestaurant } from '../layouts/RestaurantLayout';
-import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Card, CardMedia, AppBar, Tabs, Tab, Chip } from '@mui/material';
+import { Container, Typography, Grid, Paper, Button, CircularProgress, Box, Divider, Card, CardMedia, AppBar, Tabs, Tab, Chip, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -129,6 +129,29 @@ function MenuPage() {
     // --- CHECK THE FEATURE ---
     // Assuming restaurant.availableFeatures is an array of strings
     const showSpecials = restaurant.availableFeatures?.includes('SPECIALS');
+
+    // ✅ ADDED STATE: Track active order recovery
+    const [activeOrderToRecover, setActiveOrderToRecover] = useState(null);
+
+    // ✅ ADDED EFFECT: Check for recent orders
+    useEffect(() => {
+        const savedIds = localStorage.getItem('activeOrderIds');
+        const savedTime = localStorage.getItem('activeOrderTimestamp');
+        
+        if (savedIds && savedTime) {
+            // Check how many hours have passed since they ordered
+            const hoursPassed = (Date.now() - parseInt(savedTime)) / (1000 * 60 * 60);
+            
+            if (hoursPassed < 3) {
+                // If it's been less than 3 hours, show the banner!
+                setActiveOrderToRecover(savedIds);
+            } else {
+                // If it's an old order from yesterday, wipe it from memory
+                localStorage.removeItem('activeOrderIds');
+                localStorage.removeItem('activeOrderTimestamp');
+            }
+        }
+    }, []);
     
     useEffect(() => {
         if (restaurant && restaurant.id) {
@@ -229,6 +252,32 @@ function MenuPage() {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4, pb: { xs: '100px', md: 4 } }}> 
+            {/* ✅ ADDED: THE RECOVERY BANNER */}
+            {activeOrderToRecover && (
+                <Alert 
+                    severity="info" 
+                    sx={{ mb: 4, borderRadius: 2, alignItems: 'center' }}
+                    action={
+                        <Button 
+                            component={Link} 
+                            to={`/order-confirmation/${activeOrderToRecover}`} 
+                            color="inherit" 
+                            size="small" 
+                            variant="outlined"
+                        >
+                            Track Order
+                        </Button>
+                    }
+                >
+                    <Typography variant="body1" fontWeight="bold">
+                        You have a recent order!
+                    </Typography>
+                    <Typography variant="body2">
+                        Did you close the page? You can still track its live status.
+                    </Typography>
+                </Alert>
+            )}
+            
             {/* Only render if they pay for it */}
             {showSpecials && <SpecialsBoard />}
 

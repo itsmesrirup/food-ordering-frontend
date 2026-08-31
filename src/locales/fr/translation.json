@@ -189,5 +189,21 @@
   "orderNumberLabel": "Commande N°",
   "orderDetails": "Détails de la commande",
   "itemCount_one": "{{count}} article",
-  "itemCount_other": "{{count}} articles"
+  "itemCount_other": "{{count}} articles",
+  "pickupAsap": "Dès que possible",
+  "orderStatus": {
+    "PENDING": "En attente",
+    "CONFIRMED": "Confirmée",
+    "PREPARING": "En préparation",
+    "READY_FOR_PICKUP": "Prête",
+    "DELIVERED": "Terminée",
+    "CANCELLED": "Annulée"
+  },
+  "orderCancelledMessage": "Malheureusement, le restaurant a dû annuler cette commande. Si vous avez payé en ligne, un remboursement a été initié.",
+  "stepSent": "Envoyée",
+  "stepConfirmed": "Acceptée",
+  "stepPreparing": "En cuisine",
+  "stepReady": "Prête",
+  "stepOnTheWay": "En route",
+  "stepDone": "Terminée"
 }
