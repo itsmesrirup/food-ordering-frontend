@@ -20,8 +20,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
+//const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+//const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 // --- DYNAMIC TIME HELPERS FOR SPLIT CART ---
 const getMinAllowedDateForGroup = (leadTimeHours) => {
@@ -250,6 +250,7 @@ function CheckoutPage() {
     const [error, setError] = useState(null);
     const [clientSecret, setClientSecret] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('online'); 
+    const [stripePromise, setStripePromise] = useState(null);
     const [diningOption, setDiningOption] = useState('TAKEAWAY');
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
@@ -270,6 +271,17 @@ function CheckoutPage() {
         });
         return Object.values(groups).sort((a, b) => a.leadTime - b.leadTime);
     }, [cartItems]);
+
+    // ✅ NEW EFFECT: Load Stripe acting as the connected restaurant
+    useEffect(() => {
+        if (currentRestaurant?.stripeAccountId) {
+            const pk = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+            // Tell Stripe to act on behalf of this specific restaurant!
+            setStripePromise(loadStripe(pk, {
+                stripeAccount: currentRestaurant.stripeAccountId
+            }));
+        }
+    }, [currentRestaurant?.stripeAccountId]);
 
     // ✅ NEW: Fetch verified addresses from the French Government API
     useEffect(() => {
@@ -745,7 +757,7 @@ function CheckoutPage() {
                             sx={{ bgcolor: 'background.paper' }}
                         >
                             <ToggleButton value="online" sx={{ fontWeight: 'bold' }}>{t('payOnline')}</ToggleButton>
-                            <ToggleButton value="counter" sx={{ fontWeight: 'bold' }}>{t('payAtCounter')}</ToggleButton>
+                            <ToggleButton value="counter" sx={{ fontWeight: 'bold' }}>{diningOption === 'DELIVERY' ? t('payOnDelivery') : t('payAtCounter')}</ToggleButton>
                         </ToggleButtonGroup>
                     </Box>
                 )}
@@ -758,7 +770,9 @@ function CheckoutPage() {
                 ) : (
                     <Box component="form" onSubmit={handlePayAtCounter} sx={{ mt: 3, position: 'relative' }}>
                         <Button type="submit" variant="contained" fullWidth disabled={isSubmitting || cartItems.length === 0} size="large" sx={{ py: 1.5, fontSize: '1.1rem', fontWeight: 'bold' }}>
-                            {paymentsSupported ? t('placeOrderCounter') : t('placeOrder')}
+                            {paymentsSupported 
+                                ? (diningOption === 'DELIVERY' ? t('placeOrderDelivery') : t('placeOrderCounter')) 
+                                : t('placeOrder')}
                         </Button>
                         {isSubmitting && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', marginTop: '-12px', marginLeft: '-12px' }} />}
                     </Box>

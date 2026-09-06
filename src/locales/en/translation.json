@@ -205,5 +205,7 @@
   "stepPreparing": "Cooking",
   "stepReady": "Ready",
   "stepOnTheWay": "On the way",
-  "stepDone": "Completed"
+  "stepDone": "Completed",
+  "payOnDelivery": "Pay on Delivery",
+"placeOrderDelivery": "Place Order (Pay on Delivery)"
 }
