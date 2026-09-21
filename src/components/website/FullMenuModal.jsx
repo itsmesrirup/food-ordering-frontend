@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, IconButton, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Slide, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { formatPrice } from '../../utils/formatPrice';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -101,25 +102,44 @@ export default function FullMenuModal({ open, onClose, menuData, restaurantName,
             
             <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
                 
-                {/* ✅ SMART RENDERING: Show PDF if it exists, otherwise show the digital list */}
-                {menuPdfUrl ? (
-                    <Box sx={{ flexGrow: 1, width: '100%', WebkitOverflowScrolling: 'touch' }}>
-                        {/* Using Google Docs Viewer ensures the PDF renders beautifully on iPhones/Androids */}
-                        <iframe 
-                            src={`https://docs.google.com/gview?url=${encodeURIComponent(menuPdfUrl)}&embedded=true`} 
-                            width="100%" 
-                            height="100%" 
-                            style={{ border: 'none' }} 
-                            title="Menu PDF" 
+                <Box sx={{ flexGrow: 1, maxWidth: '800px', width: '100%', margin: '0 auto', p: { xs: 2, md: 5 }, overflowY: 'auto' }}>
+                    
+                    {/* ✅ IF A PDF EXISTS, SHOW THIS BUTTON AT THE TOP */}
+                    {menuPdfUrl && (
+                        <Box sx={{ textAlign: 'center', mb: 4 }}>
+                            <Button 
+                                href={menuPdfUrl} 
+                                target="_blank" // Safely opens in a new tab!
+                                rel="noopener noreferrer"
+                                variant="outlined"
+                                startIcon={<PictureAsPdfIcon />}
+                                sx={{ 
+                                    borderColor: accentColor, 
+                                    color: accentColor, 
+                                    fontWeight: 'bold',
+                                    borderRadius: 50,
+                                    px: 4, py: 1.5,
+                                    '&:hover': { backgroundColor: `${accentColor}15` }
+                                }}
+                            >
+                                {t('viewPdfMenu', 'View PDF Menu')}
+                            </Button>
+                        </Box>
+                    )}
+
+                    {/* ✅ ALWAYS SHOW THE NATIVE DIGITAL MENU BELOW IT */}
+                    {menuData.map(category => (
+                        <CategoryAccordion 
+                            key={category.id} 
+                            category={category} 
+                            currency={currency} 
+                            fontBody={fontBody} 
+                            fontHeader={fontHeader} 
+                            accentColor={accentColor} 
+                            mutedTextColor={mutedTextColor} 
                         />
-                    </Box>
-                ) : (
-                    <Box sx={{ flexGrow: 1, maxWidth: '800px', width: '100%', margin: '0 auto', p: { xs: 2, md: 5 }, overflowY: 'auto' }}>
-                        {menuData.map(category => (
-                            <CategoryAccordion key={category.id} category={category} currency={currency} fontBody={fontBody} fontHeader={fontHeader} accentColor={accentColor} mutedTextColor={mutedTextColor} />
-                        ))}
-                    </Box>
-                )}
+                    ))}
+                </Box>
 
                 {/* THE "ORDER NOW" FOOTER BUTTON */}
                 <Box sx={{ textAlign: 'center', p: 3, backgroundColor: `${accentColor}15`, borderTop: `1px solid ${accentColor}40` }}>

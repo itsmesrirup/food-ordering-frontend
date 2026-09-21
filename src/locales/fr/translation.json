@@ -207,5 +207,6 @@
   "stepOnTheWay": "En route",
   "stepDone": "Terminée",
   "payOnDelivery": "Payer à la livraison",
-"placeOrderDelivery": "Commander (Paiement à la livraison)"
+"placeOrderDelivery": "Commander (Paiement à la livraison)",
+"viewPdfMenu": "Voir le menu en PDF"
 }
