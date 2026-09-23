@@ -208,5 +208,12 @@
   "stepDone": "Completed",
   "payOnDelivery": "Pay on Delivery",
 "placeOrderDelivery": "Place Order (Pay on Delivery)",
-"viewPdfMenu": "View PDF Menu"
+"viewPdfMenu": "View PDF Menu",
+"howWillYouPay": "How will you pay at the counter?",
+  "howWillYouPayDelivery": "How will you pay the driver?",
+  "payCash": "Cash",
+  "payCb": "Credit Card (Terminal)",
+  "payTicketRestoCard": "Meal Voucher (Card)",
+  "payTicketRestoPaper": "Meal Voucher (Paper)",
+  "payChequeVacances": "Holiday Voucher"
 }
