@@ -46,10 +46,6 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                 onOpenMenuModal={() => setMenuOpen(true)} 
                 />
 
-            <Box sx={{ pt: 8 }}> 
-                <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} />
-            </Box>
-
             {/* HERO */}
             <Box id="home" sx={{ height: { xs: '100svh', md: '90vh' }, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: '#000', transform: 'translateZ(0)' }}>
                 {hasVideoHero ? (
@@ -69,6 +65,10 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                         </Button>
                     </Box>
                 </motion.div>
+            </Box>
+
+            <Box sx={{ pt: 8 }}> 
+                <SpecialOccasionBanner restaurantId={restaurant.id} restaurantSlug={restaurant.slug} />
             </Box>
 
             {/* ABOUT US */}
