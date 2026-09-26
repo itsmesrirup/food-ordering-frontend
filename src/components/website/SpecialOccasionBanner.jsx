@@ -149,30 +149,26 @@ export default function SpecialOccasionBanner({ restaurantId, restaurantSlug }) 
                                     {/* 3. MULTIPLE IMAGES (GRID GALLERY) */}
                                     {isGallery && (
                                         <Grid container spacing={2}>
-                                            {/* ✅ REMOVED LIMIT: It now maps every image provided */}
-                                            {rawUrls.map((imgUrl, i) => {
-                                                // ✅ SMART UX: If there is an odd number of images, make the very last one full-width!
-                                                const isLastOddItem = rawUrls.length % 2 !== 0 && i === rawUrls.length - 1;
-                                                
-                                                return (
-                                                    <Grid item xs={isLastOddItem ? 12 : 6} key={i}>
-                                                        <Box 
-                                                            component="img" 
-                                                            src={getSafeImg(imgUrl)} // ✅ Added SafeImg just in case!
-                                                            alt={`${event.title} ${i}`}
-                                                            sx={{ 
-                                                                width: '100%', 
-                                                                height: { xs: '150px', md: isLastOddItem ? '350px' : '240px' }, 
-                                                                objectFit: 'cover', 
-                                                                borderRadius: 3, 
-                                                                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-                                                                transition: 'transform 0.3s ease',
-                                                                '&:hover': { transform: 'scale(1.02)' }
-                                                            }} 
-                                                        />
-                                                    </Grid>
-                                                );
-                                            })}
+                                            {/* ✅ FIXED: xs={12} forces stacking on mobile. sm={6} makes a perfect 2-column grid on desktop. */}
+                                            {rawUrls.map((imgUrl, i) => (
+                                                <Grid item xs={12} sm={6} key={i}>
+                                                    <Box 
+                                                        component="img" 
+                                                        src={getSafeImg(imgUrl)}
+                                                        alt={`${event.title} ${i}`}
+                                                        sx={{ 
+                                                            width: '100%', 
+                                                            height: '240px', // ✅ STRICT: Every single image is exactly 240px tall. No inconsistent sizes!
+                                                            objectFit: 'cover', 
+                                                            borderRadius: 3, 
+                                                            boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
+                                                            transition: 'transform 0.3s ease',
+                                                            cursor: 'pointer',
+                                                            '&:hover': { transform: 'scale(1.02)' }
+                                                        }} 
+                                                    />
+                                                </Grid>
+                                            ))}
                                         </Grid>
                                     )}
 
