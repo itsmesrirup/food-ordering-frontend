@@ -43,62 +43,77 @@ const CartContent = ({onEditCartItem, onCheckout}) => {
 
     return (
         <>
-        <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ 
+            p: 2, 
+            borderRadius: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            // ✅ FIX 1: Restrict the maximum height to the size of the screen!
+            maxHeight: { xs: '85vh', md: 'calc(100vh - 120px)' }, 
+            overflow: 'hidden' 
+        }}>
             <Typography variant="h6" gutterBottom>{t('yourOrder')}</Typography>
+            
             {cartItems.length === 0 ? (
                 <Typography variant="body2">{t('yourCartIsCurrentlyEmpty')}</Typography>
             ) : (
                 <>
-                    <List>
-                        {cartItems.map((item, idx) => (
-                            <ListItem key={item.cartItemId} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-                                    <ListItemText 
-                                      // --- CHANGED: Combined quantity and name for clarity ---
-                                      primary={`${item.quantity} x ${item.name}`} 
-                                      // --- CHANGED: Use formatPrice for currency ---
-                                      secondary={formatPrice(item.price, currentRestaurant?.currency)} 
-                                    />
-                                    <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}><RemoveCircleOutlineIcon fontSize="small" /></IconButton>
-                                    <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
-                                    <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}><AddCircleOutlineIcon fontSize="small" /></IconButton>
-                                    {item.selectedOptions && (
-                                        <IconButton size="small" onClick={() => handleEditClick(idx)} title="Edit Choices">
-                                            <EditIcon fontSize="small" />
-                                        </IconButton>
-                                    )}
-                                </Box>
-                                {item.selectedOptions && (
-                                    <Box component="ul" sx={{ pl: 2, my: 0, fontSize: '0.8rem', color: 'text.secondary' }}>
-                                        {item.selectedOptions.map(opt => 
-                                            <li key={opt.optionName}>
-                                                <strong>{opt.optionName}:</strong> {opt.choices.join(', ')}
-                                            </li>
+                    {/* ✅ FIX 2: Wrap the List in an auto-scrolling container! */}
+                    <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 1 }}>
+                        <List disablePadding>
+                            {cartItems.map((item, idx) => (
+                                <ListItem key={item.cartItemId} disableGutters sx={{ flexDirection: 'column', alignItems: 'flex-start', mb: 1 }}>
+                                    <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                                        <ListItemText 
+                                          primary={`${item.quantity} x ${item.name}`} 
+                                          secondary={formatPrice(item.price, currentRestaurant?.currency)} 
+                                        />
+                                        <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}><RemoveCircleOutlineIcon fontSize="small" /></IconButton>
+                                        <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
+                                        <IconButton size="small" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}><AddCircleOutlineIcon fontSize="small" /></IconButton>
+                                        {item.selectedOptions && (
+                                            <IconButton size="small" onClick={() => handleEditClick(idx)} title="Edit Choices">
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
                                         )}
                                     </Box>
-                                )}
-                            </ListItem>
-                        ))}
-                    </List>
-                    <Divider sx={{ my: 2 }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="h6">{t('total')}</Typography>
-                        {/* --- CHANGED: Use formatPrice for total --- */}
-                        <Typography variant="h6" fontWeight="bold">
-                            {formatPrice(totalPrice, currentRestaurant?.currency)}
-                        </Typography>
+                                    {item.selectedOptions && (
+                                        <Box component="ul" sx={{ pl: 2, my: 0, fontSize: '0.8rem', color: 'text.secondary' }}>
+                                            {item.selectedOptions.map(opt => 
+                                                <li key={opt.optionName}>
+                                                    <strong>{opt.optionName}:</strong> {opt.choices.join(', ')}
+                                                </li>
+                                            )}
+                                        </Box>
+                                    )}
+                                </ListItem>
+                            ))}
+                        </List>
+
+                        {/* Moved recommendations inside the scrollable area */}
+                        {currentRestaurant?.recommendationsEnabled && (
+                            <Recommendations lastAddedItemId={lastAddedItemId} />
+                        )}
                     </Box>
-                    <Button 
-                        onClick={onCheckout} 
-                        variant="contained" 
-                        fullWidth
-                        disabled={!currentRestaurant}
-                    >
-                        {t('proceedToCheckout')}
-                    </Button>
-                    {currentRestaurant?.recommendationsEnabled && (
-                        <Recommendations lastAddedItemId={lastAddedItemId} />
-                    )}
+
+                    {/* ✅ FOOTER SECTION: Now safely pinned to the bottom! */}
+                    <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #eee' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography variant="h6">{t('total')}</Typography>
+                            <Typography variant="h6" fontWeight="bold" color="primary.main">
+                                {formatPrice(totalPrice, currentRestaurant?.currency)}
+                            </Typography>
+                        </Box>
+                        <Button 
+                            onClick={onCheckout} 
+                            variant="contained" 
+                            fullWidth
+                            size="large"
+                            disabled={!currentRestaurant}
+                        >
+                            {t('proceedToCheckout')}
+                        </Button>
+                    </Box>
                 </>
             )}
         </Paper>
