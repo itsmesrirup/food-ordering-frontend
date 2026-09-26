@@ -1,115 +1,188 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, Container, Grid, Paper } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { isVideoUrl, getPosterUrl } from '../../utils/mediaUtils';
 
-const SpecialOccasionBanner = ({ restaurantId, restaurantSlug }) => {
+export default function SpecialOccasionBanner({ restaurantId, restaurantSlug }) {
     const [activeEvents, setActiveEvents] = useState([]);
+    const videoRefs = useRef({}); 
 
     useEffect(() => {
         if (!restaurantId) return;
-        // ✅ NOW FETCHING A LIST OF EVENTS
         fetch(`${import.meta.env.VITE_API_BASE_URL}/api/special-menus/restaurant/${restaurantId}/active`)
             .then(res => res.ok ? res.json() : [])
             .then(data => {
-                // Filter out any events that don't have a banner image to keep the site looking premium
+                // Only show events that have media attached
                 const visualEvents = data.filter(event => event.bannerImageUrl);
                 setActiveEvents(visualEvents);
             })
             .catch(console.error);
     }, [restaurantId]);
 
+    // Force play videos on mobile
+    useEffect(() => {
+        Object.values(videoRefs.current).forEach(video => {
+            if (video) video.play().catch(e => console.warn("Autoplay blocked", e));
+        });
+    }, [activeEvents]);
+
     if (activeEvents.length === 0) return null;
 
+    const getSafeImg = (url) => {
+        if (!url) return '';
+        return isVideoUrl(url) ? getPosterUrl(url) : url;
+    };
+
     return (
-        <Box>
-            {/* ✅ LOOP THROUGH ALL ACTIVE PROMO BLOCKS */}
-            {activeEvents.map((event, index) => {
-                const hasItems = event.items && event.items.length > 0;
-                const accentColor = event.themeColor || '#f5d76e';
+        <Box sx={{ py: { xs: 6, md: 10 }, backgroundColor: 'transparent' }}>
+            <Container maxWidth="lg">
+                {activeEvents.map((event, index) => {
+                    const hasItems = event.items && event.items.length > 0;
+                    const accentColor = event.themeColor || '#d32f2f'; // Fallback to a default accent
+                    
+                    // ✅ SMART MEDIA PARSING
+                    const rawUrls = event.bannerImageUrl ? event.bannerImageUrl.split(',').map(u => u.trim()).filter(u => u) : [];
+                    const isVideo = rawUrls.length === 1 && isVideoUrl(rawUrls[0]);
+                    const isGallery = !isVideo && rawUrls.length > 1;
+                    const isSingleImage = !isVideo && !isGallery && rawUrls.length === 1;
 
-                return (
-                    <Box key={event.id} sx={{ 
-                        position: 'relative', 
-                        py: { xs: 8, md: 12 }, 
-                        backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.85)), url('${event.bannerImageUrl}')`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundAttachment: 'fixed', // Keeps the rich parallax effect
-                        color: 'white',
-                        textAlign: 'center',
-                        borderBottom: `4px solid ${accentColor}`,
-                        // Optional: Add a subtle gap if there are multiple banners stacked
-                        mb: index !== activeEvents.length - 1 ? 0 : 0 
-                    }}>
-                        <Container maxWidth="lg">
-                            <motion.div initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-                                
-                                <Typography variant="h2" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 'bold', mb: 2, color: accentColor }}>
-                                    {event.title}
-                                </Typography>
-                                
-                                {event.subtitle && (
-                                    <Typography variant="h5" sx={{ mb: hasItems ? 6 : 4, fontStyle: 'italic', opacity: 0.9, maxWidth: '800px', mx: 'auto', lineHeight: 1.6 }}>
-                                        {event.subtitle}
+                    // Alternating Layout: Even index = Media on Left, Odd index = Media on Right
+                    const isEven = index % 2 === 0;
+
+                    return (
+                        <Grid 
+                            container 
+                            spacing={6} 
+                            key={event.id} 
+                            alignItems="center" 
+                            sx={{ 
+                                mb: index !== activeEvents.length - 1 ? 12 : 0,
+                                // On mobile, content always stacks normally. On desktop, we alternate!
+                                flexDirection: { xs: 'column-reverse', md: isEven ? 'row' : 'row-reverse' }
+                            }}
+                        >
+                            {/* --- THE TEXT & MENU ITEMS SIDE --- */}
+                            <Grid item xs={12} md={6}>
+                                <motion.div initial={{ opacity: 0, x: isEven ? -30 : 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
+                                    
+                                    <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 'bold', mb: 2, color: accentColor }}>
+                                        {event.title}
                                     </Typography>
-                                )}
+                                    
+                                    {event.subtitle && (
+                                        <Typography variant="h6" sx={{ mb: 4, fontStyle: 'italic', opacity: 0.8, lineHeight: 1.6 }}>
+                                            {event.subtitle}
+                                        </Typography>
+                                    )}
 
-                                {hasItems && (
-                                    <Grid container spacing={3} justifyContent="center" sx={{ mb: 6 }}>
-                                        {event.items.map(item => (
-                                            <Grid item xs={12} sm={6} md={4} key={item.id}>
-                                                <Paper sx={{ 
-                                                    p: 4, 
-                                                    backgroundColor: 'rgba(255, 255, 255, 0.05)', 
-                                                    backdropFilter: 'blur(10px)',
-                                                    color: 'white',
-                                                    border: `1px solid ${accentColor}40`,
-                                                    borderRadius: 2,
-                                                    height: '100%',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    justifyContent: 'center',
-                                                    transition: 'transform 0.3s ease',
-                                                    '&:hover': { transform: 'translateY(-5px)', backgroundColor: 'rgba(255, 255, 255, 0.1)' }
-                                                }}>
-                                                    <Typography variant="h5" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 'bold', mb: 1 }}>
-                                                        {item.name}
-                                                    </Typography>
-                                                    <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                                    {/* Menu Items for this Special Event */}
+                                    {hasItems && (
+                                        <Box sx={{ mb: 5 }}>
+                                            {event.items.map(item => (
+                                                <Box key={item.id} sx={{ mb: 2.5, pb: 2.5, borderBottom: '1px dashed rgba(128,128,128,0.3)' }}>
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.5 }}>
+                                                        <Typography variant="h6" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 'bold' }}>
+                                                            {item.name}
+                                                        </Typography>
+                                                        <Typography variant="h6" sx={{ color: accentColor, fontWeight: 'bold', ml: 2 }}>
+                                                            €{item.price.toFixed(2)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Typography variant="body2" sx={{ opacity: 0.7, fontStyle: 'italic' }}>
                                                         {item.description}
                                                     </Typography>
-                                                </Paper>
-                                            </Grid>
-                                        ))}
-                                    </Grid>
-                                )}
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    )}
 
-                                <Button 
-                                    component={Link} 
-                                    to={`/order/${restaurantSlug}`}
-                                    variant="contained" 
-                                    size="large"
-                                    sx={{ 
-                                        backgroundColor: accentColor, 
-                                        color: '#111', 
-                                        fontWeight: 'bold', 
-                                        borderRadius: 50, 
-                                        px: 5, py: 1.8,
-                                        fontSize: '1.1rem',
-                                        '&:hover': { backgroundColor: accentColor, filter: 'brightness(0.85)' }
-                                    }}
-                                >
-                                    {hasItems ? "Commander ce menu" : "Commander en ligne"}
-                                </Button>
+                                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                        <Button 
+                                            component={Link} 
+                                            to={`/order/${restaurantSlug}`}
+                                            variant="contained" 
+                                            size="large"
+                                            sx={{ 
+                                                backgroundColor: accentColor, 
+                                                color: '#fff', 
+                                                fontWeight: 'bold', 
+                                                borderRadius: 50, 
+                                                px: 4, py: 1.5,
+                                                '&:hover': { backgroundColor: accentColor, filter: 'brightness(0.85)' }
+                                            }}
+                                        >
+                                            {hasItems ? "Commander ce menu" : "Commander en ligne"}
+                                        </Button>
+                                    </Box>
 
-                            </motion.div>
-                        </Container>
-                    </Box>
-                );
-            })}
+                                </motion.div>
+                            </Grid>
+
+                            {/* --- THE MEDIA SIDE (Image, Video, or Gallery) --- */}
+                            <Grid item xs={12} md={6}>
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
+                                    
+                                    {/* 1. SINGLE VIDEO */}
+                                    {isVideo && (
+                                        <Box sx={{ width: '100%', height: { xs: '300px', md: '500px' }, borderRadius: 4, overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+                                            <video 
+                                                ref={el => videoRefs.current[event.id] = el}
+                                                autoPlay loop muted playsInline preload="auto" poster={getPosterUrl(rawUrls[0])} 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            >
+                                                <source src={rawUrls[0]} type="video/mp4" />
+                                            </video>
+                                        </Box>
+                                    )}
+
+                                    {/* 2. SINGLE IMAGE */}
+                                    {isSingleImage && (
+                                        <Box 
+                                            component="img" 
+                                            src={rawUrls[0]} 
+                                            alt={event.title}
+                                            sx={{ width: '100%', height: { xs: '300px', md: '500px' }, objectFit: 'cover', borderRadius: 4, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }} 
+                                        />
+                                    )}
+
+                                    {/* 3. MULTIPLE IMAGES (GRID GALLERY) */}
+                                    {isGallery && (
+                                        <Grid container spacing={2}>
+                                            {/* ✅ REMOVED LIMIT: It now maps every image provided */}
+                                            {rawUrls.map((imgUrl, i) => {
+                                                // ✅ SMART UX: If there is an odd number of images, make the very last one full-width!
+                                                const isLastOddItem = rawUrls.length % 2 !== 0 && i === rawUrls.length - 1;
+                                                
+                                                return (
+                                                    <Grid item xs={isLastOddItem ? 12 : 6} key={i}>
+                                                        <Box 
+                                                            component="img" 
+                                                            src={getSafeImg(imgUrl)} // ✅ Added SafeImg just in case!
+                                                            alt={`${event.title} ${i}`}
+                                                            sx={{ 
+                                                                width: '100%', 
+                                                                height: { xs: '150px', md: isLastOddItem ? '350px' : '240px' }, 
+                                                                objectFit: 'cover', 
+                                                                borderRadius: 3, 
+                                                                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                                                                transition: 'transform 0.3s ease',
+                                                                '&:hover': { transform: 'scale(1.02)' }
+                                                            }} 
+                                                        />
+                                                    </Grid>
+                                                );
+                                            })}
+                                        </Grid>
+                                    )}
+
+                                </motion.div>
+                            </Grid>
+
+                        </Grid>
+                    );
+                })}
+            </Container>
         </Box>
     );
-};
-
-export default SpecialOccasionBanner;
+}
