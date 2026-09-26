@@ -75,7 +75,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
             <Box id="about" sx={{ 
                 py: 15, textAlign: 'center',
                 backgroundImage: restaurant.aboutSectionImageUrl ? `linear-gradient(rgba(10,10,10,0.85), rgba(10,10,10,0.85)), url('${restaurant.aboutSectionImageUrl}')` : 'none',
-                backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center'
+                backgroundSize: 'cover', backgroundAttachment: { xs: 'scroll', md: 'fixed' }, backgroundPosition: 'center'
             }}>
                 <Container maxWidth="md">
                     <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1 }}>
@@ -117,7 +117,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
             <Box id="menu" sx={{ 
                 py: 12, backgroundColor: restaurant.menuSectionImageUrl ? 'transparent' : '#111',
                 backgroundImage: restaurant.menuSectionImageUrl ? `linear-gradient(rgba(17,17,17,0.9), rgba(17,17,17,0.9)), url('${restaurant.menuSectionImageUrl}')` : 'none',
-                backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center'
+                backgroundSize: 'cover', backgroundAttachment: { xs: 'scroll', md: 'fixed' }, backgroundPosition: 'center'
             }}>
                 <Container maxWidth="lg">
                     <Typography variant="h3" align="center" sx={{ color: gold, mb: 8, letterSpacing: '4px' }}>{t('ourMenu', { context: restaurant.businessType })}</Typography>
@@ -149,7 +149,7 @@ export default function DarkEleganceTemplate({ restaurant, menuData }) {
                 <Box id="reservation" sx={{ 
                     py: 12, textAlign: 'center', borderTop: `1px solid ${gold}40`, backgroundColor: restaurant.reservationSectionImageUrl ? 'transparent' : '#050505',
                     backgroundImage: restaurant.reservationSectionImageUrl ? `linear-gradient(rgba(5,5,5,0.8), rgba(5,5,5,0.8)), url('${restaurant.reservationSectionImageUrl}')` : 'none',
-                    backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center'
+                    backgroundSize: 'cover', backgroundAttachment: { xs: 'scroll', md: 'fixed' }, backgroundPosition: 'center'
                 }}>
                     <Container maxWidth="sm">
                         <Typography variant="h3" sx={{ color: gold, mb: 3, fontFamily: '"Playfair Display", serif' }}>{t('bookTable')}</Typography>

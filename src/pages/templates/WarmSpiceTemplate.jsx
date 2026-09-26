@@ -130,7 +130,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                 position: 'relative', py: { xs: 10, md: 15 },
                 backgroundImage: restaurant.aboutSectionImageUrl ? `linear-gradient(rgba(253, 251, 247, 0.85), rgba(253, 251, 247, 0.85)), url('${restaurant.aboutSectionImageUrl}')` : 'none',
                 backgroundColor: restaurant.aboutSectionImageUrl ? 'transparent' : lightBg,
-                backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center', overflow: 'hidden'
+                backgroundSize: 'cover', backgroundAttachment: { xs: 'scroll', md: 'fixed' }, backgroundPosition: 'center', overflow: 'hidden'
             }}>
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
                     {restaurant.galleryStyle === 'MARQUEE' ? (
@@ -164,7 +164,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                 position: 'relative', color: '#fff', py: 12,
                 backgroundImage: restaurant.menuSectionImageUrl ? `linear-gradient(rgba(24, 20, 18, 0.85), rgba(24, 20, 18, 0.85)), url('${restaurant.menuSectionImageUrl}')` : 'none',
                 backgroundColor: restaurant.menuSectionImageUrl ? 'transparent' : darkBg,
-                backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center'
+                backgroundSize: 'cover', backgroundAttachment: { xs: 'scroll', md: 'fixed' }, backgroundPosition: 'center'
             }}>
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
                     <Box sx={{ textAlign: 'center', mb: 8 }}>
@@ -201,7 +201,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                     position: 'relative', py: 12, textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)',
                     backgroundImage: restaurant.reservationSectionImageUrl ? `linear-gradient(rgba(24, 20, 18, 0.85), rgba(24, 20, 18, 0.85)), url('${restaurant.reservationSectionImageUrl}')` : 'none',
                     backgroundColor: restaurant.reservationSectionImageUrl ? 'transparent' : '#110d0b',
-                    backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center'
+                    backgroundSize: 'cover', backgroundAttachment: { xs: 'scroll', md: 'fixed' }, backgroundPosition: 'center'
                 }}>
                     <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 2 }}>
                         <Typography variant="h3" sx={{ fontFamily: '"Playfair Display", serif', color: lightText, mb: 3 }}>{t('bookTable')}</Typography>
@@ -216,7 +216,7 @@ export default function WarmSpiceTemplate({ restaurant, menuData }) {
                 position: 'relative', pt: 10, pb: 6, textAlign: 'center', borderTop: '1px solid #eaeaea',
                 backgroundImage: restaurant.contactSectionImageUrl ? `linear-gradient(rgba(253, 251, 247, 0.90), rgba(253, 251, 247, 0.90)), url('${restaurant.contactSectionImageUrl}')` : 'none',
                 backgroundColor: restaurant.contactSectionImageUrl ? 'transparent' : lightBg,
-                backgroundSize: 'cover', backgroundAttachment: 'fixed', backgroundPosition: 'center'
+                backgroundSize: 'cover', backgroundAttachment: { xs: 'scroll', md: 'fixed' }, backgroundPosition: 'center'
             }}>
                 <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
                     <Typography variant="h4" sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 700, color: darkBg, mb: 4, letterSpacing: '2px' }}>{restaurant.name}</Typography>
