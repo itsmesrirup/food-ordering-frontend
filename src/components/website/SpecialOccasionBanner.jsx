@@ -148,28 +148,40 @@ export default function SpecialOccasionBanner({ restaurantId, restaurantSlug }) 
 
                                     {/* 3. MULTIPLE IMAGES (GRID GALLERY) */}
                                     {isGallery && (
-                                        <Grid container spacing={2}>
-                                            {/* ✅ FIXED: xs={12} forces stacking on mobile. sm={6} makes a perfect 2-column grid on desktop. */}
-                                            {rawUrls.map((imgUrl, i) => (
-                                                <Grid item xs={12} sm={6} key={i}>
+                                        <Box sx={{ 
+                                            display: 'grid', 
+                                            // Mobile: 1 column (Stacked). Desktop: 2 columns side-by-side.
+                                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, 
+                                            gap: 2, // Perfect, mathematically even spacing
+                                            width: '100%' 
+                                        }}>
+                                            {rawUrls.map((imgUrl, i) => {
+                                                // ✅ SMART UX: If there is an odd number of images, find the last one!
+                                                const isLastOddItem = rawUrls.length % 2 !== 0 && i === rawUrls.length - 1;
+                                                
+                                                return (
                                                     <Box 
+                                                        key={i}
                                                         component="img" 
                                                         src={getSafeImg(imgUrl)}
                                                         alt={`${event.title} ${i}`}
                                                         sx={{ 
+                                                            display: 'block', // Removes invisible gaps under images
                                                             width: '100%', 
-                                                            height: '240px', // ✅ STRICT: Every single image is exactly 240px tall. No inconsistent sizes!
+                                                            height: { xs: '280px', md: '240px' }, // Tall and beautiful on mobile
                                                             objectFit: 'cover', 
                                                             borderRadius: 3, 
                                                             boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
-                                                            transition: 'transform 0.3s ease',
                                                             cursor: 'pointer',
-                                                            '&:hover': { transform: 'scale(1.02)' }
+                                                            transition: 'transform 0.3s ease',
+                                                            '&:hover': { transform: 'scale(1.02)' },
+                                                            // ✅ THE MAGIC: If it's the last odd image, stretch it across BOTH columns on desktop!
+                                                            gridColumn: isLastOddItem ? { xs: 'span 1', sm: 'span 2' } : 'span 1'
                                                         }} 
                                                     />
-                                                </Grid>
-                                            ))}
-                                        </Grid>
+                                                );
+                                            })}
+                                        </Box>
                                     )}
 
                                 </motion.div>
